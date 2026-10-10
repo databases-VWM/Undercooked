@@ -12,8 +12,8 @@ connection = mysql.connector.connect(
     database="undercooked"
 )
 
-player_ID = generate_player_ID(connection)
-print("Generated player ID:", player_ID)
+user_ID = generate_user_ID(connection)
+print("Generated user ID:", user_ID)
 
 #Holds the game logic
 class GameInstance:
