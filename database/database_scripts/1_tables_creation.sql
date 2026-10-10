@@ -1,5 +1,9 @@
 /* Table Creation */
 
+CREATE DATABASE undercooked;
+
+USE undercooked;
+
 CREATE TABLE rooms (room_id int not null,
 restaurant_name varchar(50) not null,
 PRIMARY KEY (room_id));
