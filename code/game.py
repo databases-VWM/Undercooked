@@ -28,6 +28,8 @@ class GameInstance:
         self.login()
         self.logged_in = False
         self.userID = ""
+        self.room_name = ""
+        self.room_ID = None
 
     # Clears the screen
     def clear_screen(self):
@@ -62,7 +64,7 @@ class GameInstance:
     # Handles creation of new user
     def register(self):
         self.clear_screen()
-        title = tk.Label(self.root, text="Create your user!")
+        title = tk.Label(self.root, text="Create your user!\nInput your username")
         title.pack()
         username_input = tk.Entry(self.root)
         username_input.pack()
@@ -94,7 +96,6 @@ class GameInstance:
     def show_IP(self):
         ip_addr = get_local_ip_and_port()
         IP_popup = messagebox.showinfo(self.root, message=ip_addr)
-        IP_popup.pack()
 
     # Ends the program
     def quit_game(self):
@@ -114,28 +115,50 @@ class GameInstance:
 
     # GUI for joining a room
     def join_room_menu(self):
+        self.clear_screen()
         room_IP_button = tk.Entry(self.root)
         room_IP_button.pack()
         room_ID_button = tk.Entry(self.root)
         room_ID_button.pack()
-        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room())
+        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get(), room_IP_button.get()))
         join_room_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.main_menu)
         back_button.pack()
 
     # Creates the room in the database
     def create_room(self, room_name):
-        new_room_id = generate_room_ID()
+        new_room_id = generate_room_ID(connection)
+        self.room_ID = new_room_id
+        self.room_name = room_name
         create_new_room(connection, new_room_id, room_name)
         self.waiting_room()
 
+    # Logic for joining an established room
+    def join_room(self, room_ID, room_IP):
+        connect_to_room(connection, room_ID, room_IP)
+        self.waiting_room_guest()
 
-    def join_room(self):
-        pass
-    
-    #Contains IP address button 
-    # The actual waiting room before the game starts
-    def waiting_room(self):
+    # The actual waiting room before the game starts for the host
+    def waiting_room_host(self):
         self.clear_screen()
+        room_name_label = tk.Label(self.root, text=self.room_name)
+        room_name_label.pack()
+        room_ID_label = tk.Label(self.root, text="ID: " + self.room_ID)
+        room_ID_label.pack()
+        IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
+        IP_address_button.pack()
         start_button = tk.Button(self.root, text="Start Game")
         start_button.pack()
+
+    # This is where the guests wait
+    def waiting_room_guest(self):
+        self.clear_screen()
+        room_name_label = tk.Label(self.root, text=self.room_name)
+        room_name_label.pack()
+        room_ID_label = tk.Label(self.root, text="ID: " + self.room_ID)
+        room_ID_label.pack()
+        IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
+        IP_address_button.pack()
+        waiting_button = tk.Label(self.root, text="Waiting for host to start game")
+        waiting_button.pack()
+        #Show all other players in the room, room ID, and room name
