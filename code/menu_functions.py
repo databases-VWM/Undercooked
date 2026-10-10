@@ -6,7 +6,7 @@ import socket
 # Multiplayer Connection Functions
 #______________________________________________
 def get_local_ip_and_port():
-    with socket.socket(AF_INET, SOCK_DGRAM) as s:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.connect(('8.8.8.8', 53))
         s.getsockname()
 
