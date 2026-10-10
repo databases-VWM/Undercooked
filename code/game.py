@@ -22,6 +22,7 @@ class GameInstance:
         root.state("zoomed")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
+
         self.login()
         self.userID = ""
 
