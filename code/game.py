@@ -14,4 +14,5 @@ class GameInstance:
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
     def main_menu(self):
-        pass
+        self.clear_screen()
+        
