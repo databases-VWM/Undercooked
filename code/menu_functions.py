@@ -30,7 +30,7 @@ def check_user_ID_exists(connection, user_ID, flag):
 
     try:
         cursor.execute(
-            "SELECT 1 FROM users WHERE user_ID = %s LIMIT 1",
+            "SELECT 1 FROM users WHERE user_ID = %s,
             (user_ID,)
         )
 
@@ -72,17 +72,33 @@ def generate_room_ID(connection):
     finally:
         cursor.close()
 
+
 def connect_to_room(connection, room_ID, user_ID):
     cursor = connection.cursor()
 
     try:
+        # Check if the room exists
+        cursor.execute(
+            "SELECT 1 FROM rooms WHERE room_ID = %s",
+            (room_ID,)
+        )
+
+        if cursor.fetchone() is None:
+            print("Room does not exist.")
+            return False
+
+        # Room exists, so update the user's room_ID
         cursor.execute(
             "UPDATE users SET room_ID = %s WHERE user_ID = %s",
             (room_ID, user_ID)
         )
+
         connection.commit()
+        return True
+
     finally:
         cursor.close()
+
 
 def create_new_room(connection, room_ID, room_name):
     cursor = connection.cursor()
