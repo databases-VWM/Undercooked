@@ -20,6 +20,7 @@ class GameInstance:
         root.state("zoomed")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
+
         self.login()
 
     def clear_screen(self):

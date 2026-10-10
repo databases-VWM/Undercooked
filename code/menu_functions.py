@@ -21,15 +21,17 @@ def generate_player_ID(connection):
     finally:
         cursor.close()
 
-def check_player_ID_exists(connection, player_ID):
+
+def check_player_ID_exists(connection, player_ID, flag):
     cursor = connection.cursor()
+
     try:
         cursor.execute(
-            "SELECT 1 FROM users WHERE user_ID = %s",
+            "SELECT 1 FROM users WHERE user_ID = %s LIMIT 1",
             (player_ID,)
         )
-        if cursor.fetchone() is not None:
-            return True
-        return False
+
+        flag = cursor.fetchone() is not None
+
     finally:
         cursor.close()
