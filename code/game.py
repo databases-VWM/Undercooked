@@ -1,5 +1,6 @@
 import mysql.connector
 import tkinter as tk
+import functions
 
 from menu_functions import *
 
@@ -37,11 +38,13 @@ class GameInstance:
     def login(self):
         # GUI and Logic
         self.clear_screen()
-        tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below").pack()
-        entryText = tk.StringVar()
-        userID_entry = tk.Entry(self.root, textvariable=entryText).pack()
+        login_label = tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below")
+        login_label.pack()
+        userID_entry = tk.Entry(self.root)
+        userID_entry.pack()
         #Checks for the UserID. If it exists, go to main menu. Else, reopen login
-        tk.Button(self.root, text="Login", command=lambda: [check_player_ID_exists(connection, entryText.get(), self.logged_in), self.logged_in if self.main_menu else self.login]).pack()
+        login_button = tk.Button(self.root, text="Login", command=lambda: [check_player_ID_exists(connection, userID_entry.get(), self.logged_in), self.main_menu() if self.logged_in == True else self.login()])
+        login_button.pack()
         tk.Button(self.root, text="Register a New User", command=self.register).pack()
 
     #Screen to create a new user
