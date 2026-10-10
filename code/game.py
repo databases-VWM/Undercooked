@@ -1,6 +1,7 @@
 import mysql.connector
 import tkinter as tk
 
+from menu_functions import *
 connection = mysql.connector.connect(
     host="localhost",
     user="game",
@@ -8,6 +9,9 @@ connection = mysql.connector.connect(
     database="undercooked"
 )
 
+player_ID = generate_player_ID(connection)
+print("Generated player ID:", player_ID)
+    
 #Holds the game logic
 class GameInstance:
     def __init__(self, root):
