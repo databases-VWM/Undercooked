@@ -35,3 +35,15 @@ def check_player_ID_exists(connection, player_ID, flag):
 
     finally:
         cursor.close()
+
+def create_new_player(connection, player_ID, username):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "INSERT INTO users VALUES (%s, %s, null)",
+            (player_ID, username)
+        )
+        connection.commit()
+    finally:
+        cursor.close()
