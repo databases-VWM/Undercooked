@@ -11,8 +11,8 @@ connection = mysql.connector.connect(
     database="undercooked"
 )
 
-player_ID = generate_player_ID(connection)
-print("Generated player ID:", player_ID)
+user_ID = generate_user_ID(connection)
+print("Generated user ID:", user_ID)
 
 #Holds the game logic
 class GameInstance:
@@ -41,7 +41,7 @@ class GameInstance:
         entryText = tk.StringVar()
         userID_entry = tk.Entry(self.root, textvariable=entryText).pack()
         #Checks for the UserID. If it exists, go to main menu. Else, reopen login
-        tk.Button(self.root, text="Login", command=lambda: [check_player_ID_exists(connection, entryText.get(), self.logged_in), self.logged_in if self.main_menu else self.login]).pack()
+        tk.Button(self.root, text="Login", command=lambda: [check_user_ID_exists(connection, entryText.get(), self.logged_in), self.logged_in if self.main_menu else self.login]).pack()
         tk.Button(self.root, text="Register a New User", command=self.register).pack()
 
     #Screen to create a new user
