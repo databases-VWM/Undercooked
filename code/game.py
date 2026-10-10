@@ -27,9 +27,13 @@ class GameInstance:
             widget.destroy()
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
+    #Shows the login screen to allow the user to input their ID
     def login(self):
         self.clear_screen()
-        tk.Button(self.root, text="Login", command=)
+        title_label = tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below")
+        title_label.pack(anchor="n")
+        userID_login_button = tk.Button(self.root, text="Login", command="")
+        userID_login_button.pack()
 
     def register(self):
         pass
