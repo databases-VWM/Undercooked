@@ -9,7 +9,7 @@ def generate_player_ID(connection):
             
             # Check if the ID already exists in the database
             cursor.execute(
-                "SELECT 1 FROM users WHERE user_ID = %s LIMIT 1",
+                "SELECT 1 FROM users WHERE user_ID = %s",
                 (randomID,)
             )
 
@@ -18,5 +18,18 @@ def generate_player_ID(connection):
                 return randomID # We can use this randomID later
             print("ID already exists, generating a new one...")
 
+    finally:
+        cursor.close()
+
+def check_player_ID_exists(connection, player_ID):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "SELECT 1 FROM users WHERE user_ID = %s",
+            (player_ID,)
+        )
+        if cursor.fetchone() is not None:
+            return True
+        return False
     finally:
         cursor.close()

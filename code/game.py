@@ -11,7 +11,7 @@ connection = mysql.connector.connect(
 
 player_ID = generate_player_ID(connection)
 print("Generated player ID:", player_ID)
-    
+
 #Holds the game logic
 class GameInstance:
     def __init__(self, root):
