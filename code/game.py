@@ -8,7 +8,10 @@ class GameInstance:
         root.state("zoomed")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
-    def clearScreen(self):
+    def clear_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
         self.root.configure(bg=self.BACKGROUNDCOLOR)
+
+    def main_menu(self):
+        pass
