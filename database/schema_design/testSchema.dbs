@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="undercooked" database="PostgreSQL" id="57dadcf5-c504-4ae7-9215-77c1adca168d" >
+	<schema name="cookbooks_schema" >
+		<table name="cookbooks" prior="cookbo" >
+			<column name="cookbook_id" type="integer" mandatory="y" />
+			<column name="room_id" type="integer" mandatory="y" />
+			<column name="cookbook_name" type="text" mandatory="y" />
+			<column name="cookbook_purchased" type="boolean" mandatory="y" >
+				<defo><![CDATA[False]]></defo>
+			</column>
+			<index name="pk_cookbooks" unique="PRIMARY_KEY" >
+				<column name="cookbook_id" />
+			</index>
+			<fk name="fk_cookbooks_rooms" to_schema="room_schema" to_table="rooms" >
+				<fk_column name="room_id" pk="room_id" />
+			</fk>
+		</table>
+	</schema>
+	<schema name="customers_schema" >
+		<table name="customers" prior="customer" >
+			<column name="customer_id" type="integer" mandatory="y" />
+			<column name="room_id" type="integer" mandatory="y" />
+			<column name="recipe_id" type="integer" mandatory="y" />
+			<index name="pk_customers" unique="PRIMARY_KEY" >
+				<column name="customer_id" />
+			</index>
+			<fk name="fk_customers_rooms" to_schema="room_schema" to_table="rooms" >
+				<fk_column name="room_id" pk="room_id" />
+			</fk>
+			<fk name="fk_customers_recipes" to_schema="recipes_schema" to_table="recipes" >
+				<fk_column name="recipe_id" pk="recipe_id" />
+			</fk>
+		</table>
+	</schema>
+	<schema name="inventory_schema" >
+		<table name="inventory" prior="inventory_" >
+			<column name="type_id" type="integer" mandatory="y" />
+			<column name="item_id" type="integer" mandatory="y" />
+			<column name="quantity" type="integer" mandatory="y" />
+			<column name="room_id" type="integer" mandatory="y" />
+			<index name="pk_inventory" unique="PRIMARY_KEY" >
+				<column name="type_id" />
+				<column name="item_id" />
+			</index>
+			<fk name="fk_inventory_rooms" to_schema="room_schema" to_table="rooms" >
+				<fk_column name="room_id" pk="room_id" />
+			</fk>
+		</table>
+	</schema>
+	<schema name="recipes_schema" >
+		<table name="recipes" prior="recipe" >
+			<column name="recipe_id" type="integer" mandatory="y" />
+			<column name="room_id" type="integer" mandatory="y" />
+			<column name="recipe_name" type="text" mandatory="y" />
+			<column name="cookbook_id" type="integer" mandatory="y" />
+			<column name="recipe_unlocked" type="boolean" mandatory="y" >
+				<defo><![CDATA[False]]></defo>
+			</column>
+			<index name="pk_recipes" unique="PRIMARY_KEY" >
+				<column name="recipe_id" />
+			</index>
+			<fk name="fk_recipes_rooms" to_schema="room_schema" to_table="rooms" >
+				<fk_column name="room_id" pk="room_id" />
+			</fk>
+			<fk name="fk_recipes_cookbooks" to_schema="cookbooks_schema" to_table="cookbooks" >
+				<fk_column name="cookbook_id" pk="cookbook_id" />
+			</fk>
+		</table>
+	</schema>
+	<schema name="room_schema" >
+		<table name="rooms" prior="roo" >
+			<column name="room_id" type="integer" mandatory="y" />
+			<column name="restaurant_name" type="text" mandatory="y" />
+			<index name="pk_rooms" unique="PRIMARY_KEY" >
+				<column name="room_id" />
+			</index>
+		</table>
+	</schema>
+	<schema name="users_schema" >
+		<table name="users" prior="userstable" >
+			<column name="user_id" prior="userid" type="integer" mandatory="y" />
+			<column name="username" type="text" mandatory="y" />
+			<column name="room_id" type="integer" mandatory="y" />
+			<index name="pk_userstable" unique="PRIMARY_KEY" >
+				<column name="user_id" />
+			</index>
+			<fk name="fk_users_rooms" to_schema="room_schema" to_table="rooms" >
+				<fk_column name="room_id" pk="room_id" />
+			</fk>
+		</table>
+	</schema>
+	<diagram_group name="Default" id="51475aa1-d2f4-4f1e-8340-a59d50bfcba6" >
+		<diagram name="Default Diagram" id="5782e3a7-dd77-4729-bbb9-01cbd37b4e4b" show_relation="columns" >
+			<entity schema="cookbooks_schema" name="cookbooks" color="C1D8EE" x="722" y="627" />
+			<entity schema="customers_schema" name="customers" color="C1D8EE" x="1045" y="247" />
+			<entity schema="inventory_schema" name="inventory" color="C1D8EE" x="1064" y="494" />
+			<entity schema="recipes_schema" name="recipes" color="C1D8EE" x="323" y="608" />
+			<entity schema="room_schema" name="rooms" color="C1D8EE" x="722" y="418" />
+			<entity schema="users_schema" name="users" color="C1D8EE" x="285" y="228" />
+			<callout x="57" y="57" pointer="Round" >
+				<comment><![CDATA[- Right-click the diagram to create new tables. 
+- Double-click table headers to edit. 
+- Get a better understanding of the schema by creating multiple diagrams.
+- Save the design to the model file, and deploy from 'Schema / Create into the database'.]]></comment>
+			</callout>
+		</diagram>
+	</diagram_group>
+</project>
