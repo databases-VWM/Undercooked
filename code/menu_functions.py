@@ -1,5 +1,15 @@
 import random
 import mysql.connector
+import socket
+
+#______________________________________________
+# Multiplayer Connection Functions
+#______________________________________________
+def get_local_ip_and_port():
+    with socket.socket(AF_INET, SOCK_DGRAM) as s:
+        s.connect(('8.8.8.8', 53))
+        s.getsockname()
+
 
 #______________________________________________
 # User Registration Fuctions
