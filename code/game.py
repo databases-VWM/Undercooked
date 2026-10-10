@@ -1,4 +1,6 @@
 import mysql.connector
+import tkinter as tk
+
 from menu_functions import *
 connection = mysql.connector.connect(
     host="localhost",
@@ -18,11 +20,21 @@ class GameInstance:
         root.state("zoomed")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
+        self.login()
+
     def clear_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
+    def login(self):
+        self.clear_screen()
+        tk.Button(self.root, text="Login", command=)
+
+    def register(self):
+        pass
+
     def main_menu(self):
         self.clear_screen()
+
         
