@@ -25,7 +25,7 @@ def generate_user_ID(connection):
         cursor.close()
 
 
-def check_user_ID_exists(connection, user_ID, flag):
+def check_user_ID_exists(connection, user_ID):
     cursor = connection.cursor()
 
     try:
@@ -34,7 +34,8 @@ def check_user_ID_exists(connection, user_ID, flag):
             (user_ID,)
         )
 
-        flag = cursor.fetchone() is not None
+
+        return cursor.fetchone() is not None
 
     finally:
         cursor.close()
