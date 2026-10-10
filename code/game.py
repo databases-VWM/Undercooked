@@ -1,3 +1,12 @@
+import mysql.connector
+
+connection = mysql.connector.connect(
+    host="localhost",
+    user="game",
+    password="pancake_sandwich",
+    database="undercooked"
+)
+
 
 
 #Holds the game logic
