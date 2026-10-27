@@ -1,0 +1,10 @@
+{
+    "salmon": {
+        "name": "salmon",
+        "type": "fish",
+        "rare_ingredient": false,
+        "legendary_ingredient": false,
+        "score": 2,
+        "item_id": -1
+    }
+}

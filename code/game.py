@@ -131,7 +131,7 @@ class GameInstance:
         self.room_ID = new_room_id
         self.room_name = room_name
         create_new_room(connection, new_room_id, room_name)
-        self.waiting_room()
+        self.waiting_room_host()
 
     # Logic for joining an established room
     def join_room(self, room_ID, room_IP):
@@ -143,7 +143,7 @@ class GameInstance:
         self.clear_screen()
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
-        room_ID_label = tk.Label(self.root, text="ID: " + self.room_ID)
+        room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
@@ -155,7 +155,7 @@ class GameInstance:
         self.clear_screen()
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
-        room_ID_label = tk.Label(self.root, text="ID: " + self.room_ID)
+        room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()

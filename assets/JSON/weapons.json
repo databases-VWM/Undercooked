@@ -1,0 +1,14 @@
+{
+    "Debug Stick": {
+        "name": "Debug Stick",
+        "attack_dice": [[22, 103]],
+        "modifier": 67,
+        "item_id": -1
+    },
+    "My Rabbit": {
+        "name": "My Rabbit",
+        "attack_dice": [[2, 12]],
+        "modifier": -3,
+        "item_id": -2
+    }
+}

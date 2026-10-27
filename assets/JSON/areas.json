@@ -1,0 +1,22 @@
+{
+    "The Blasted Beach": {
+        "name": "The Blasted Beach",
+        "recommended_power": 22,
+        "bosses_list": [],
+        "enemies_list": [],
+        "fishing_list": [["salmon", 3], ["catfish", 2]],
+        "flora_list": [["funni mushroom", 5]],
+        "fauna_list": [],
+        "map_unlock": "default"
+    },
+    "Craw's Domain": {
+        "name": "Craw's Domain",
+        "recommended_power": 22,
+        "bosses_list": [],
+        "enemies_list": [["The Big Craw", 1]],
+        "fishing_list": [],
+        "flora_list": [],
+        "fauna_list": [],
+        "map_unlock": "default"
+    }
+}

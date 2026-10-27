@@ -1,0 +1,11 @@
+{
+    "The Big Craw": {
+        "name": "The Big Craw",
+        "health": 999,
+        "defense": 22,
+        "attack_dice": [[16, 6]],
+        "block_dice": [[4, 8]],
+        "dodge_dice": [[16, 5]],
+        "is_boss": false
+    }
+}
