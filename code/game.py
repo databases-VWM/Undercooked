@@ -39,6 +39,8 @@ class GameInstance:
 
     #Shows the login screen to allow the user to input their ID
     def login(self):
+        menuValue = tk.StringVar()
+        options = ["aaa", "bbb", "ccc"] #import area names from JSON
         # GUI and Logic
         self.clear_screen()
         login_label = tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below")
@@ -50,6 +52,11 @@ class GameInstance:
         login_button.pack()
         register_user_button = tk.Button(self.root, text="Register a New User", command=self.register)
         register_user_button.pack()
+        #testing purposes only!!!
+        options = tk.OptionMenu(self.root, menuValue, *options)
+        options.pack()
+        rpgTestButton = tk.Button(self.root, text="test RPG Side")
+        rpgTestButton.pack()
 
     # Handles the logic of the input button
     def login_logic(self, userID):
