@@ -25,7 +25,7 @@ def get_item_names(fname: str) -> list[str]:
     with open("../assets/JSON/" + fname, "r") as file_object:
         return list(json.load(file_object).keys())
 
-def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> list[...]:
+def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> list:
     """
     Returns a list containing the requested attribute for all given items names
 
