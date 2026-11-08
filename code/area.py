@@ -9,7 +9,7 @@ class Area:
 
         # Imported Properties
         self.name: str = fileData["name"]
-        self.recommend_power = fileData["recommended_power"]
+        self.recommended_power = fileData["recommended_power"]
         self.bosses_list: list[tuple[str, int]] = fileData["bosses_list"]
         self.enemies_list: list[tuple[str, int]] = fileData["enemies_list"]
         self.fishing_list: list[tuple[str, int]] = fileData["fishing_list"]
