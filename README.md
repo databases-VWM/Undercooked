@@ -12,4 +12,16 @@ Customers come into the restaurant and ask for orders from the database of unloc
 
 The game is lost when the restaurant either runs out of money or its reputation reaches zero.
 
+## Installation
+Clone the repo
+```
+git clone https://github.com/databases-VWM/Undercooked.git
+cd Undercooked
+```
+Install necessary non-default packages
+```
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
 ## Database Details
