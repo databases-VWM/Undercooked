@@ -39,8 +39,6 @@ class GameInstance:
 
     #Shows the login screen to allow the user to input their ID
     def login(self):
-        menuValue = tk.StringVar()
-        options = ["aaa", "bbb", "ccc"] #import area names from JSON
         # GUI and Logic
         self.clear_screen()
         login_label = tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below")
@@ -52,11 +50,6 @@ class GameInstance:
         login_button.pack()
         register_user_button = tk.Button(self.root, text="Register a New User", command=self.register)
         register_user_button.pack()
-        #testing purposes only!!!
-        options = tk.OptionMenu(self.root, menuValue, *options)
-        options.pack()
-        rpgTestButton = tk.Button(self.root, text="test RPG Side")
-        rpgTestButton.pack()
 
     # Handles the logic of the input button
     def login_logic(self, userID):
@@ -169,3 +162,27 @@ class GameInstance:
         waiting_button = tk.Label(self.root, text="Waiting for host to start game")
         waiting_button.pack()
         #Show all other players in the room, room ID, and room name
+
+    # This is the menu that first opens when the game starts
+    def restaurant_menu(self):
+        self.clear_screen()
+        todo_button = tk.Button(self.root, text="Restaurant Menu is a WIP")
+        todo_button.pack()
+        rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
+        rpg_switch_button.pack()
+
+    # This is the menu that opens to let the player choose which area they are going to
+    def wilderness_area_select(self):
+        selected_area = tk.StringVar()
+        unlocked_areas_list = []
+        select_checkbox = tk.BooleanVar()
+        self.clear_screen()
+
+        wilderness_title = tk.Label(self.root, text="Welcome to the Wilderness!\nSelect an Area!")
+        wilderness_title.pack()
+        areas_dropdown = tk.OptionMenu(self.root, selected_area, *unlocked_areas_list)
+        areas_dropdown.pack()
+        checkpoint_checkbox = tk.Checkbutton(self.root, text="Start From Checkpoint?", variable=select_checkbox, onvalue=True, offvalue=False)
+        checkpoint_checkbox.pack()
+
+

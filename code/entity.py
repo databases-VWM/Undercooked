@@ -2,7 +2,7 @@ import json
 
 # Allows for dynamic creation of an object from JSON from just its name
 class Entity:
-    def __init__(self, entity_name: str):
+    def __init__(self, entity_name: str, user_ID: int = 0):
         if entity_name != "Player":
             fileObject = open("./assets/JSON/enemies.json", "r")
             fileData = json.load(fileObject)[entity_name]
@@ -15,4 +15,12 @@ class Entity:
             self.block_dice: list[list[int]] = fileData["block_dice"]
             self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
             self.is_boss: bool = fileData["is_boss"]
+            self.checkpoints = []
+        else:
+            self.get_player_data_from_database()
+
+    # This functions fills in all the player data from the database
+    def get_player_data_from_database(self):
+        pass
+
         
