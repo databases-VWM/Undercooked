@@ -13,7 +13,7 @@ def sample_item(items: list[tuple[str, int]]) -> str:
     Usage:
     enemy = sample_item(enemies)
     """
-    return random.choices(items, weights=[x[1] for x in items], k=1)[0]
+    return random.choices(items, weights=[x[1] for x in items], k=1)[0][0]
 
 def get_item_names(fname: str) -> list[str]:
     """
