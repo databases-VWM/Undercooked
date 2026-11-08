@@ -2,6 +2,7 @@ import mysql.connector
 import tkinter as tk
 from functions import *
 from tkinter import messagebox
+from entity import *
 
 from menu_functions import *
 
@@ -30,6 +31,7 @@ class GameInstance:
         self.userID = ""
         self.room_name = ""
         self.room_ID = None
+        self.player: Entity
 
     # Clears the screen
     def clear_screen(self):
@@ -57,6 +59,8 @@ class GameInstance:
         self.userID = userID
 
         if self.logged_In == True:
+            #Creates player
+            self.player = Entity("Player", self.userID)
             self.main_menu()
         else:
             self.login()
@@ -147,7 +151,7 @@ class GameInstance:
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
-        start_button = tk.Button(self.root, text="Start Game")
+        start_button = tk.Button(self.root, text="Start Game", command=self.restaurant_menu)
         start_button.pack()
 
     # This is where the guests wait
@@ -173,9 +177,10 @@ class GameInstance:
 
     # This is the menu that opens to let the player choose which area they are going to
     def wilderness_area_select(self):
-        selected_area = tk.StringVar()
+        selected_area = tk.StringVar(self.root)
+        selected_area.set("")
         unlocked_areas_list = []
-        select_checkbox = tk.BooleanVar()
+        select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
 
         wilderness_title = tk.Label(self.root, text="Welcome to the Wilderness!\nSelect an Area!")
@@ -184,5 +189,29 @@ class GameInstance:
         areas_dropdown.pack()
         checkpoint_checkbox = tk.Checkbutton(self.root, text="Start From Checkpoint?", variable=select_checkbox, onvalue=True, offvalue=False)
         checkpoint_checkbox.pack()
+        go_to_wilderness = tk.Button(self.root, text="Go!", command= lambda: self.check_area_select(selected_area.get(), select_checkbox.get()))
+        go_to_wilderness.pack()
 
+    # Validates the information provided in wilderness_area_select and selects next menu based on it
+    def check_area_select(self, selected_area_name: str, checkpoint_bool: bool) -> None:
+        checkpoint_exists: bool = False
+        area_message = "You enter " + selected_area_name
+        # If no checkpoint selected (starting from beginning)
+        if checkpoint_bool == False:
+            messagebox.showinfo(self.root, message=area_message)
+        else:
+            for area_tuple in self.player.checkpoints:
+                #Successfully finds checkpointand exi
+                if area_tuple[0] == selected_area_name:
+                    checkpoint_exists = True
+                    area_message = area_message + " at node " + str(area_tuple[1])
+                    messagebox.showinfo(self.root, message=area_message)
+                    self.explore_nodes_menu()
+            messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
+            self.wilderness_area_select()
 
+            
+
+    def explore_nodes_menu(self):
+        self.clear_screen()
+        pass
