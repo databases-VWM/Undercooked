@@ -1,7 +1,7 @@
 import json
 import random
 
-from functions import sample_item
+from functions import *
 from entity import *
 
 # Allows for dynamic creation of an object from JSON from just its name
@@ -20,19 +20,23 @@ class Area:
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
             self.map_unlock: str = file_data["map_unlock"]
-            self.current_node = 0
+
+
+            # Flags for integration with game.py
+            self.current_node: int = 0
             self.progress: bool = True
+            self.node_type: str = " "
+            self.is_enemy: bool = False
+            self.is_elite: bool = False
+            self.enemy_name: str = ""
 
-            self.current_node = 1
-            self.node_type = " "
-            self.is_enemy = False
-            self.is_elite = False
+            # Constants for game balancing
+            self.ENEMY_CHANCE: float = 0.30
+            self.ELITE_THRESHOLD: int = 100
 
-            self.ENEMY_CHANCE = 0.30
-            self.ELITE_THRESHOLD = 100
-
-        
-    def generate_node(self):
+    # Handles generation of and setting flags for a standard node
+    def generate_node(self) -> None:
+        # Resets flags
         self.node_type = " "
         self.is_enemy = False
         self.is_elite = False
@@ -67,6 +71,9 @@ class Area:
             self.is_elite = True
         else:
             self.is_elite = False
+
+        # Generate actual enemy
+        self.enemy_name = sample_item(self.enemies_list)
         
 
 
