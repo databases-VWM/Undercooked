@@ -67,22 +67,17 @@ class Area:
             self.is_elite = False
         
 
-        
-
-
-        
-
 
 """
     def start_rpg(self):
-        self.current_node = 1
-        inventory = []
+        self.current_node: int = 1
+        inventory: list[tuple[str, int]] = []
 
         print(f"\nStarting RPG in: {self.name}")
         print("=" * 40)
 
         while True:
-            print(f"\nNode {current_node}")
+            print(f"\nNode {self.current_node}")
             print("-" * 40)
 
             # Step 1: Check for campsite/checkpoint nodes
@@ -128,7 +123,7 @@ class Area:
                     selected_item = sample_item(category_list)
 
                 # Step 4: Roll for an enemy encounter
-                if len(self.enemies_list) > 0 and random.random() < 0.30:
+                if self.enemies_list and random.random() < 0.30:
                     print("\nENEMY ENCOUNTER!!!!!!!!!!")
 
                     selected_enemy = sample_item(self.enemies_list)
