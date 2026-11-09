@@ -179,7 +179,7 @@ class GameInstance:
     def wilderness_area_select(self):
         selected_area = tk.StringVar(self.root)
         selected_area.set("Select an Area")
-        unlocked_areas_list = [""]
+        unlocked_areas_list = get_item_names("areas")
         select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
 
@@ -195,26 +195,32 @@ class GameInstance:
     # Validates the information provided in wilderness_area_select and selects next menu based on it
     def check_area_select(self, selected_area_name: str, checkpoint_bool: bool) -> None:
         checkpoint_exists: bool = False
+        everything_valid: bool = False
         area_message = "You enter " + selected_area_name
+
+        #Checks if area was selected. If not, rerun menu
         if selected_area_name == "Select an Area":
             messagebox.showinfo(self.root, message="Please select an area")
             self.wilderness_area_select()
-        # If no checkpoint selected (starting from beginning)
-        if checkpoint_bool == False:
-            messagebox.showinfo(self.root, message=area_message)
+        # If no checkpoint selected (starting from beginning) AND area selected, run next menu
+        elif checkpoint_bool == False:
+            everything_valid = True
         else:
             for area_tuple in self.player.checkpoints:
-                #Successfully finds checkpointand exi
+                #Successfully finds checkpoint
                 if area_tuple[0] == selected_area_name:
                     checkpoint_exists = True
                     area_message = area_message + " at node " + str(area_tuple[1])
-                    messagebox.showinfo(self.root, message=area_message)
-                    self.explore_nodes_menu()
-            messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
-            self.wilderness_area_select()
+                    everything_valid = True
+            # Fails to find checkpoint
+            if checkpoint_exists == False:
+                messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
+                self.wilderness_area_select()
+        # If checkpoint and area are good, continue
+        if everything_valid == True:
+            messagebox.showinfo(self.root, message=area_message)
+            self.explore_nodes_menu()
 
-            
-
+    
     def explore_nodes_menu(self):
         self.clear_screen()
-        pass

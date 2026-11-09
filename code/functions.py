@@ -18,11 +18,12 @@ def sample_item(items: list[tuple[str, int]]) -> str:
 def get_item_names(fname: str) -> list[str]:
     """
     Returns a list of all item names in a file
+    Appends .json
 
     Usage:
-    area_names = get_item_names('area.json')
+    area_names = get_item_names('areas')
     """
-    with open("../assets/JSON/" + fname, "r") as file_object:
+    with open("../assets/JSON/" + fname + ".json", "r") as file_object:
         return list(json.load(file_object).keys())
 
 def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> list:
