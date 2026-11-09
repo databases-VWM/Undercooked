@@ -4,6 +4,7 @@ from functions import *
 from tkinter import messagebox
 from entity import *
 from area import *
+from ingredient import *
 
 from menu_functions import *
 
@@ -33,6 +34,7 @@ class GameInstance:
         self.room_name = ""
         self.room_ID = None
         self.player: Entity
+        self.local_inventory: list[Ingredient]
 
     # Clears the screen
     def clear_screen(self):
@@ -198,7 +200,7 @@ class GameInstance:
         checkpoint_exists: bool = False
         everything_valid: bool = False
         area_message = "You enter " + selected_area_name
-        checkpoint_num: int = 1
+        checkpoint_num: int = 0
 
         #Checks if area was selected. If not, rerun menu
         if selected_area_name == "Select an Area":
@@ -222,14 +224,34 @@ class GameInstance:
         # If checkpoint and area are good, continue
         if everything_valid == True:
             messagebox.showinfo(self.root, message=area_message)
-            self.explore_nodes_menu(selected_area_name, checkpoint_num)
+            current_area = Area(selected_area_name)
+            # Sets checkpoint if there is one
+            if current_area.current_node != checkpoint_num:
+                current_area.current_node = checkpoint_num
+            # Calls the iterative node function
+            while current_area.progress == True:
+                self.explore_node(current_area)
 
-    #Function for handling GUI with nodes and rpg logic
-    def explore_nodes_menu(self, area_name, checkpoint_num):
+    #Function for handling each node
+    def explore_node(self, current_area: Area):
         self.clear_screen()
-        current_area = Area(area_name)
-        if current_area.current_node != checkpoint_num:
-            current_area.current_node = checkpoint_num
-        current_area.start_rpg()
+        current_area.current_node += 1
 
-
+        #Every time you load into a node, check for a campsite or checkpoint (5 and 10 respectively)
+        #Campsite logic
+        if current_area.current_node % 5:
+            campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
+            campsite_label.pack()
+            full_heal_button = tk.Button(self.root, text="Full Heal")
+            full_heal_button.pack()
+            return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health")
+            return_inventory_button.pack()
+            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant")
+            return_to_restaurant_button.pack()
+            #Checkpoint additional logic
+            if current_area.current_node % 10:
+                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint")
+                set_checkpoint_button.pack()
+        # Generate a normal node
+        else:
+            pass

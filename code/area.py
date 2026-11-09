@@ -20,7 +20,8 @@ class Area:
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
             self.map_unlock: str = file_data["map_unlock"]
-            self.current_node = 1
+            self.current_node = 0
+            self.progress: bool = True
 
     def start_rpg(self):
         self.current_node: int = 1
