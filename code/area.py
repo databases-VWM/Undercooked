@@ -2,7 +2,7 @@ import json
 import random
 
 from functions import sample_item
-from entity import entity
+from entity import *
 
 # Allows for dynamic creation of an object from JSON from just its name
 #Ingredients list arrays and enemies/bosses list arrays are in the format [[item_name, weight], [item_name, weight]]
@@ -81,7 +81,7 @@ class Area:
                     selected_enemy = sample_item(self.enemies_list)
                     enemy_name = selected_enemy[0]
 
-                    enemy = entity(enemy_name)
+                    enemy = Entity(enemy_name)
 
                     print(f"\nEnemy: {enemy.name}")
                     print(f"Health: {enemy.health}")
