@@ -178,8 +178,8 @@ class GameInstance:
     # This is the menu that opens to let the player choose which area they are going to
     def wilderness_area_select(self):
         selected_area = tk.StringVar(self.root)
-        selected_area.set("")
-        unlocked_areas_list = []
+        selected_area.set("Select an Area")
+        unlocked_areas_list = [""]
         select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
 
@@ -196,6 +196,9 @@ class GameInstance:
     def check_area_select(self, selected_area_name: str, checkpoint_bool: bool) -> None:
         checkpoint_exists: bool = False
         area_message = "You enter " + selected_area_name
+        if selected_area_name == "Select an Area":
+            messagebox.showinfo(self.root, message="Please select an area")
+            self.wilderness_area_select()
         # If no checkpoint selected (starting from beginning)
         if checkpoint_bool == False:
             messagebox.showinfo(self.root, message=area_message)
