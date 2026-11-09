@@ -7,5 +7,14 @@
         "block_dice": [[4, 8]],
         "dodge_dice": [[16, 5]],
         "is_boss": false
+    },
+    "Vincent's Procrastination": {
+        "name": "Vincent's Procrastination",
+        "health": 100,
+        "defense": 69,
+        "attack_dice": [[11, 11]],
+        "block_dice": [[1, 2]],
+        "dodge_dice": [[5,10]],
+        "is_boss": true
     }
 }
