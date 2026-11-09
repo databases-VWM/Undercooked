@@ -34,7 +34,8 @@ class GameInstance:
         self.room_name = ""
         self.room_ID = None
         self.player: Entity
-        self.local_inventory: list[Ingredient]
+        # list of tuples of (ingredient, quantity)
+        self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
 
     # Clears the screen
@@ -230,65 +231,120 @@ class GameInstance:
             if self.current_area.current_node != checkpoint_num:
                 self.current_area.current_node = checkpoint_num
             # Calls the iterative node function
-            while self.current_area.progress == True:
-                self.explore_node()
+            self.explore_node()
 
     #Function for handling each node
     def explore_node(self):
         self.clear_screen()
-        self.current_area.current_node += 1
-        node_type_message = ""
-        enemy_message = ""
-        node_enemy_name = ""
+        self.current_area.current_node = self.current_area.current_node + 1
+        print(self.current_area.current_node) #debugging
+        print(self.local_inventory) # debugging
+        # Kick back to the restaurant when done
+        if self.current_area.progress == False:
+            self.restaurant_menu()
+
+
 
         #Every time you load into a node, check for a campsite or checkpoint (5 and 10 respectively)
         #Campsite logic
-        if self.current_area.current_node % 5:
+        if self.current_area.current_node % 5 == 0:
             campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
             campsite_label.pack()
-            full_heal_button = tk.Button(self.root, text="Full Heal")
+            full_heal_button = tk.Button(self.root, text="Full Heal", command=self.explore_node)
             full_heal_button.pack()
             return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health")
             return_inventory_button.pack()
-            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant")
+            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=self.restaurant_menu)
             return_to_restaurant_button.pack()
             #Checkpoint additional logic
-            if self.current_area.current_node % 10:
+            if self.current_area.current_node % 10 == 0:
                 set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint")
                 set_checkpoint_button.pack()
         # Generate a normal node
         else:
             # Handles node generation and sets appropriate flags
             self.current_area.generate_node()
-            # Sets flavor message for popup to signify node type
-            # TODO: Maybe do random messages of each type to add a little more flavor
-            if self.current_area.node_type == "fishing":
-                node_type_message = "This looks like a great spot to go FISHING!"
-            elif self.current_area.node_type == "flora":
-                node_type_message = "It looks like you could harvest some delicious PLANTS around here"
-            elif self.current_area.node_type == "fauna":
-                node_type_message = "One might say this would be a great spot to go HUNTING"
-            messagebox.showinfo(self.root, message=node_type_message)
+            #Triggers text for the type of node
+            self.node_type_text()
 
-            #Check to see if there is an enemy
-            if self.current_area.is_enemy == True:
-                # Change flavor text for elite or not
-                if self.current_area.is_elite == True:
-                    enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!"
-                else:
-                    enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!"
-                messagebox.showinfo(self.root, message=enemy_message)
-                # Start combat
-                self.battle()
+    # Node type text
+    def node_type_text(self):
+        self.clear_screen()
+        # Sets flavor message for popup to signify node type
+        # TODO: Maybe do random messages of each type to add a little more flavor
+        if self.current_area.node_type == "fishing":
+            node_type_message = "This looks like a great spot to go FISHING!"
+        elif self.current_area.node_type == "flora":
+            node_type_message = "It looks like you could harvest some delicious PLANTS around here"
+        elif self.current_area.node_type == "fauna":
+            node_type_message = "One might say this would be a great spot to go HUNTING"
+        
+        gather_label = tk.Label(self.root, text=node_type_message)
+        gather_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.is_there_an_enemy)
+        ok_button.pack()
 
-            # Regardless of combat, harvest node if alive
-            # Check if player is dead
-            if self.player.health < 0:
-                messagebox.showinfo(self.root, message="You run back to the restaurant injured, dropping several ingredients along the way")
+    def is_there_an_enemy(self):
+        if self.current_area.is_enemy == True:
+            self.enemy_node_text()
+        else:
+            self.harvest_node_text()
+
+
+    def enemy_node_text(self):
+        self.clear_screen()
+        #Check to see if there is an enemy
+        if self.current_area.is_enemy == True:
+            # Change flavor text for elite or not
+            if self.current_area.is_elite == True:
+                enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!"
             else:
-                pass
+                enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!"
+        
+        text_label = tk.Label(self.root, text=enemy_message)
+        text_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.harvest_node_text)
+        ok_button.pack()
 
+        # Start combat
+        self.battle()
 
+    # Text for harvesting the node
+    def harvest_node_text(self):
+        self.clear_screen()
+        # If player falls, skip this function
+        if self.player.health <= 0:
+            self.fallen_text()
+
+        # Add ingredient to your inventory
+        node_ingredient = sample_item(self.current_area.chosen_list)
+        # Protects from weird edge cases
+        if node_ingredient is not None:
+            # Check whether the player already has this item
+            item_found = False
+
+            for i, (inventory_name, quantity) in enumerate(self.local_inventory):
+                if inventory_name == node_ingredient:
+                    self.local_inventory[i] = (inventory_name, quantity + 1)
+                    item_found = True
+                    break
+
+            # Add a new item if it isn't already in the inventory
+            if not item_found:
+                self.local_inventory.append((node_ingredient, 1))
+            
+        text_label = tk.Label(self.root, text="You harvest the resources at this node")
+        text_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
+        ok_button.pack()
+
+    # Text for if the character falls
+    def fallen_text(self):
+        self.clear_screen()
+        gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
+        gather_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
+        ok_button.pack()
 
     # This handles all the logic for the combat
     def battle(self):
@@ -298,8 +354,12 @@ class GameInstance:
         while continue_battle:
             self.battle_menu()
             print("continuing")
-            if (test == 5):
+            test += 1
+            if (test == 2):
                 continue_battle = False
+        
+        # Outcome checked here
+        self.harvest_node_text()
 
     # This displays the GUI for the combat
     def battle_menu(self):

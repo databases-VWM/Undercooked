@@ -13,10 +13,10 @@
         "name": "Craw's Domain",
         "recommended_power": 22,
         "bosses_list": [],
-        "enemies_list": [["The Big Craw", 5], [["Vincent's Procrastination", 1]]],
-        "fishing_list": [],
-        "flora_list": [],
-        "fauna_list": [],
+        "enemies_list": [["The Big Craw", 5], ["Vincent's Procrastination", 1]],
+        "fishing_list": [["salmon", 3], ["catfish", 2]],
+        "flora_list": [["funni mushroom", 5]],
+        "fauna_list": [["boar meat", 2], ["raw hummingbird", 1]],
         "map_unlock": "default"
     }
 }

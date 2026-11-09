@@ -18,6 +18,15 @@ class Entity:
             #This is just here for the sake of consistency
             self.checkpoints = []
         else:
+            # Testing defaults
+            self.name: str = "Me"
+            self.health: int = 100
+            self.defense: int = 0
+            self.attack_dice: list[list[int]]
+            self.block_dice: list[list[int]]
+            self.dodge_dice: list[list[int]]
+            self.is_boss: bool = False
+
             self.get_player_data_from_database()
 
     # This functions fills in all the player data from the database

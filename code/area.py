@@ -8,7 +8,7 @@ from entity import *
 #Ingredients list arrays and enemies/bosses list arrays are in the format [[item_name, weight], [item_name, weight]]
 class Area:
     def __init__(self, area_name: str):
-        with open("./assets/JSON/areas.json", "r") as file_object:
+        with open("../assets/JSON/areas.json", "r") as file_object:
             file_data = json.load(file_object)[area_name]
 
             # Imported Properties
@@ -19,19 +19,20 @@ class Area:
             self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
+            self.chosen_list = []
             self.map_unlock: str = file_data["map_unlock"]
 
 
             # Flags for integration with game.py
             self.current_node: int = 0
             self.progress: bool = True
-            self.node_type: str = " "
+            self.node_type: str = ""
             self.is_enemy: bool = False
             self.is_elite: bool = False
             self.enemy_name: str = ""
 
             # Constants for game balancing
-            self.ENEMY_CHANCE: float = 0.30
+            self.ENEMY_CHANCE: float = 0.10
             self.ELITE_THRESHOLD: int = 100
 
     # Handles generation of and setting flags for a standard node
@@ -56,9 +57,15 @@ class Area:
             print("ERROR: No resources are available in this area.")
 
         else:
-            selected_category = sample_item(available_categories)
-            category_name = selected_category[0]
-            self.node_type = category_name
+            self.node_type = sample_item(available_categories)
+
+        # Sets "chosen list" to the list that is equal to the chosen node type
+        if (self.node_type == "fishing"):
+            self.chosen_list = self.fishing_list
+        elif (self.node_type == "flora"):
+            self.chosen_list = self.flora_list
+        elif (self.node_type == "fauna"):
+            self.chosen_list = self.fauna_list
 
         # DETERMINE IF ENEMY
         if len(self.enemies_list) > 0 and random.random() < self.ENEMY_CHANCE:
