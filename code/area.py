@@ -127,7 +127,7 @@ class Area:
                         print(f"{item_name}: {quantity}")
 
             # Wait for the player to advance or exit
-            user_input = input("\nPress Enter to continue, or type 'exit' to quit: ")
+            user_input = input("\nPress Enter to continue, type 'exit' to quit: ")
 
             if user_input.lower() == "exit":
                 print("\nLeaving the area.")
