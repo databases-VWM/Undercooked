@@ -20,24 +20,25 @@ class Area:
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
             self.map_unlock: str = file_data["map_unlock"]
+            self.current_node = 1
 
     def start_rpg(self):
-        node_counter: int = 1
+        self.current_node: int = 1
         inventory: list[tuple[str, int]] = []
 
         print(f"\nStarting RPG in: {self.name}")
         print("=" * 40)
 
         while True:
-            print(f"\nNode {node_counter}")
+            print(f"\nNode {self.current_node}")
             print("-" * 40)
 
             # Step 1: Check for campsite/checkpoint nodes
-            if node_counter % 10 == 0:
+            if self.current_node % 10 == 0:
                 print("CHECKPOINT")
                 print("CAMPSITE")
 
-            elif node_counter % 5 == 0:
+            elif self.current_node % 5 == 0:
                 print("CAMPSITE")
 
             else:
@@ -133,4 +134,4 @@ class Area:
                 print("\nLeaving the area.")
                 break
 
-            node_counter += 1
+            self.current_node += 1
