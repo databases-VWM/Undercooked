@@ -23,6 +23,54 @@ class Area:
             self.current_node = 0
             self.progress: bool = True
 
+            self.current_node = 1
+            self.node_type = " "
+            self.is_enemy = False
+            self.is_elite = False
+
+            self.ENEMY_CHANCE = 0.30
+            self.ELITE_THRESHOLD = 100
+
+        
+    def generate_node(self):
+        self.node_type = " "
+        self.is_enemy = False
+        self.is_elite = False
+
+        # Determine node type
+        node_categories = [
+            ("fishing", len(self.fishing_list)),
+            ("flora", len(self.flora_list)),
+            ("fauna", len(self.fauna_list))
+        ]
+
+        # Remove categories with no available items
+        available_categories = [
+            category for category in node_categories if category[1] > 0 # Protects against edgecases
+        ]
+        if not available_categories:
+            print("ERROR: No resources are available in this area.")
+
+        else:
+            selected_category = sample_item(available_categories)
+            category_name = selected_category[0]
+            self.node_type = category_name
+
+        # DETERMINE IF ENEMY
+        if len(self.enemies_list) > 0 and random.random() < self.ENEMY_CHANCE:
+            self.is_enemy = True
+        else:
+            self.is_enemy = False
+        
+        # DETERMINE IF ELITE
+        if (random.random() * self.ELITE_THRESHOLD >= self.ELITE_THRESHOLD - self.current_node):
+            self.is_elite = True
+        else:
+            self.is_elite = False
+        
+
+
+"""
     def start_rpg(self):
         self.current_node: int = 1
         inventory: list[tuple[str, int]] = []
@@ -136,3 +184,5 @@ class Area:
                 break
 
             self.current_node += 1
+
+"""
