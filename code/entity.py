@@ -10,6 +10,7 @@ class Entity:
             # Imported Properties
             self.name: str = fileData["name"]
             self.health: int = fileData["health"]
+            self.max_health = self.health
             self.defense: int = fileData["defense"]
             self.attack_dice: list[list[int]] = fileData["attack_dice"]
             self.block_dice: list[list[int]] = fileData["block_dice"]

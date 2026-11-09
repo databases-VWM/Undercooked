@@ -233,26 +233,24 @@ class GameInstance:
             # Calls the iterative node function
             self.explore_node()
 
-    #Function for handling each node
+    # This function overall handles nodes. It acts like a loop
+    # This function specifically has the menu for campsites and checkpoints
+    # This series of functions is kind of like Assembly labels due to how TKinter works. 
     def explore_node(self):
         self.clear_screen()
         self.current_area.current_node = self.current_area.current_node + 1
-        print(self.current_area.current_node) #debugging
-        print(self.local_inventory) # debugging
         # Kick back to the restaurant when done
         if self.current_area.progress == False:
             self.restaurant_menu()
-
-
 
         #Every time you load into a node, check for a campsite or checkpoint (5 and 10 respectively)
         #Campsite logic
         if self.current_area.current_node % 5 == 0:
             campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
             campsite_label.pack()
-            full_heal_button = tk.Button(self.root, text="Full Heal", command=self.explore_node)
+            full_heal_button = tk.Button(self.root, text="Full Heal", command=self.full_heal_menu)
             full_heal_button.pack()
-            return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health")
+            return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health", command=self.half_and_half)
             return_inventory_button.pack()
             return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=self.restaurant_menu)
             return_to_restaurant_button.pack()
@@ -266,6 +264,26 @@ class GameInstance:
             self.current_area.generate_node()
             #Triggers text for the type of node
             self.node_type_text()
+
+    # Full heal from campfire
+    def full_heal_menu(self):
+        self.player.health = self.player.max_health
+        self.clear_screen()
+        text_label = tk.Label(self.root, text="You heal to full health")
+        text_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
+        ok_button.pack()
+
+    # Heal 25% health and return inventory to restaurant
+    # TODO: Send inventory back to restaurant
+    def half_and_half(self):
+        self.clear_screen()
+        self.local_inventory = []
+        self.player.health += round(self.player.max_health * .25)
+        text_label = tk.Label(self.root, text="You heal 25% of your health and send your inventory back to the restaurant")
+        text_label.pack()
+        ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
+        ok_button.pack()
 
     # Node type text
     def node_type_text(self):
@@ -308,6 +326,8 @@ class GameInstance:
 
         # Start combat
         self.battle()
+        #Regardless of outcome, go to harvest node to check for results
+        self.harvest_node_text()
 
     # Text for harvesting the node
     def harvest_node_text(self):
