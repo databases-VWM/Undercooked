@@ -2,7 +2,7 @@ import json
 import random
 
 from functions import sample_item
-from entity import entity
+from entity import Entity
 
 # Allows for dynamic creation of an object from JSON from just its name
 #Ingredients list arrays and enemies/bosses list arrays are in the format [[item_name, weight], [item_name, weight]]
@@ -20,24 +20,26 @@ class Area:
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
             self.map_unlock: str = file_data["map_unlock"]
+            self.current_node = 1
+        
 
     def start_rpg(self):
-        node_counter = 1
+        self.current_node = 1
         inventory = []
 
         print(f"\nStarting RPG in: {self.name}")
         print("=" * 40)
 
         while True:
-            print(f"\nNode {node_counter}")
+            print(f"\nNode {current_node}")
             print("-" * 40)
 
             # Step 1: Check for campsite/checkpoint nodes
-            if node_counter % 10 == 0:
+            if self.current_node % 10 == 0:
                 print("CHECKPOINT")
                 print("CAMPSITE")
 
-            elif node_counter % 5 == 0:
+            elif self.current_node % 5 == 0:
                 print("CAMPSITE")
 
             else:
@@ -75,7 +77,7 @@ class Area:
                     selected_item = sample_item(category_list)
 
                 # Step 4: Roll for an enemy encounter
-                if self.enemies_list and random.random() < 0.30:
+                if len(self.enemies_list) > 0 and random.random() < 0.30:
                     print("\nENEMY ENCOUNTER!!!!!!!!!!")
 
                     selected_enemy = sample_item(self.enemies_list)
@@ -133,4 +135,8 @@ class Area:
                 print("\nLeaving the area.")
                 break
 
-            node_counter += 1
+            self.current_node += 1
+
+test_area = Area("Craw's Domain")
+
+test_area.start_rpg()
