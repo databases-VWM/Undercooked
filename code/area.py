@@ -20,9 +20,60 @@ class Area:
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
             self.map_unlock: str = file_data["map_unlock"]
+
             self.current_node = 1
+            self.node_type = " "
+            self.is_enemy = False
+            self.is_elite = False
+
+            CONST self.enemy_chance = 0.30
+            CONST self.elite_threshold = 100
+
+        
+    def generate_node(self):
+        self.node_type = " "
+        self.is_enemy = False
+        self.is_elite = False
+
+        # Determine node type
+        node_categories = [
+            ("fishing", len(self.fishing_list)),
+            ("flora", len(self.flora_list)),
+            ("fauna", len(self.fauna_list))
+        ]
+
+        # Remove categories with no available items
+        available_categories = [
+            category for category in node_categories if category[1] > 0 # Protects against edgecases
+        ]
+        if not available_categories:
+            print("ERROR: No resources are available in this area.")
+
+        else:
+            selected_category = sample_item(available_categories)
+            category_name = selected_category[0]
+            self.node_type = category_name
+
+        # DETERMINE IF ENEMY
+        if len(self.enemies_list) > 0 and random.random() < self.enemy_chance:
+            self.is_enemy = True
+        else:
+            self.is_enemy = False
+        
+        # DETERMINE IF ELITE
+        if (random.random() * self.elite_threshold >= self.elite_threshold - self.current_node)
+            self.is_elite = True
+        else:
+            self.is_elite = False
         
 
+        
+
+
+        
+
+
+"""
     def start_rpg(self):
         self.current_node = 1
         inventory = []
@@ -137,6 +188,4 @@ class Area:
 
             self.current_node += 1
 
-test_area = Area("Craw's Domain")
-
-test_area.start_rpg()
+"""
