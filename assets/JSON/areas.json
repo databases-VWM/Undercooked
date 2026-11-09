@@ -13,7 +13,7 @@
         "name": "Craw's Domain",
         "recommended_power": 22,
         "bosses_list": [],
-        "enemies_list": [["The Big Craw", 1]],
+        "enemies_list": [["The Big Craw", 5], [["Vincent's Procrastination", 1]]],
         "fishing_list": [],
         "flora_list": [],
         "fauna_list": [],
