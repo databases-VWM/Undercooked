@@ -3,6 +3,7 @@ import tkinter as tk
 from functions import *
 from tkinter import messagebox
 from entity import *
+from area import *
 
 from menu_functions import *
 
@@ -197,6 +198,7 @@ class GameInstance:
         checkpoint_exists: bool = False
         everything_valid: bool = False
         area_message = "You enter " + selected_area_name
+        checkpoint_num: int = 1
 
         #Checks if area was selected. If not, rerun menu
         if selected_area_name == "Select an Area":
@@ -212,6 +214,7 @@ class GameInstance:
                     checkpoint_exists = True
                     area_message = area_message + " at node " + str(area_tuple[1])
                     everything_valid = True
+                    checkpoint_num = area_tuple[1]
             # Fails to find checkpoint
             if checkpoint_exists == False:
                 messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
@@ -219,8 +222,14 @@ class GameInstance:
         # If checkpoint and area are good, continue
         if everything_valid == True:
             messagebox.showinfo(self.root, message=area_message)
-            self.explore_nodes_menu()
+            self.explore_nodes_menu(selected_area_name, checkpoint_num)
 
-    
-    def explore_nodes_menu(self):
+    #Function for handling GUI with nodes and rpg logic
+    def explore_nodes_menu(self, area_name, checkpoint_num):
         self.clear_screen()
+        current_area = Area(area_name)
+        if current_area.current_node != checkpoint_num:
+            current_area.current_node = checkpoint_num
+        current_area.start_rpg()
+
+

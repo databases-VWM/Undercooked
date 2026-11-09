@@ -22,8 +22,8 @@ class Area:
             self.map_unlock: str = file_data["map_unlock"]
 
     def start_rpg(self):
-        node_counter = 1
-        inventory = []
+        node_counter: int = 1
+        inventory: list[tuple[str, int]] = []
 
         print(f"\nStarting RPG in: {self.name}")
         print("=" * 40)
