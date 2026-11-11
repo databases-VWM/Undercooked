@@ -1,184 +1,258 @@
-"""
-This is just a json loading test, formatted in a way that we may be able to turn it into the actual combat logic.
-"""
+import random
 
-import json
-from pathlib import Path
-
-JSON_FOLDER = Path(__file__).parent.parent / "assets" / "JSON"
-
-def load_json(filename):
-    file_path = JSON_FOLDER / filename
-
-    with open(file_path, "r") as file:
-        return json.load(file)
-
-def load_game_data():
-    enemies = load_json("enemies.json")
-    weapons = load_json("weapons.json")
-    armors = load_json("armors.json")
-
-    return enemies, weapons, armors
-
-class Player:
-    def __init__(self, name):
-        self.name = name
-        self.health = 100 # Temporary value, balance later
-        self.weapon = None
-        self.armor = None
-
-    def equip_weapon(self, weapon):
-        self.weapon = weapon
-        print("Equipped:", weapon["name"])
-
-    def unequip_weapon(self):
-        self.weapon = None
-        print("Unequipped weapon")
-
-    def equip_armor(self, armor):
-        self.armor = armor
-        print("Equipped:", armor["name"])
-    
-    def unequip_armor(self):
-        self.armor = None
-        print("Unequipped Armor")
-
-    
-
-    def show_equipment(self):
-        print("\n--- Current Equipment ---")
-
-        if self.weapon:
-            print("Weapon:", self.weapon["name"])
-            print("Attack Dice:", self.weapon["attack_dice"])
-            print("Modifier:", self.weapon["modifier"])
-        else:
-            print("Weapon: None")
-
-        if self.armor:
-            print("Armor:", self.armor["name"])
-            print("Defense:", self.armor["defense"])
-            print("Block Dice:", self.armor["block_dice"])
-            print("Dodge Dice:", self.armor["dodge_dice"])
-        else:
-            print("Armor: None")
-
-# Displaying enemies
-def show_enemies(enemies):
-    print("\n--- Enemies ---")
-
-    for name, enemy in enemies.items():
-        print(f"{name} | HP: {enemy['health']} | Defense: {enemy['defense']}")
-
-# Display weapons
-def show_weapons(weapons):
-    print("\n--- Available Weapons ---")
-
-    for name, weapon in weapons.items():
-        print(f"{name} | Modifier: {weapon['modifier']}")
+from entity import Entity
+from area import Area
+from functions import sample_item
 
 
-# Display armor
-def show_armors(armors):
-    print("\n--- Available Armor ---")
-
-    for name, armor in armors.items():
-        print(f"{name} | Defense: {armor['defense']}")
+# Combat balancing
+FLEE_CHANCE = 0.50
 
 
-# Select and equip a weapon/armor
-def select_weapon(player, weapons):
-    show_weapons(weapons)
+# Dice rolling functions
+def roll_dice(number_of_dice, sides):
+    if number_of_dice < 0:
+        raise ValueError("Number of dice cannot be negative.")
 
-    choice = input("\nEnter weapon name: ")
+    if sides < 1:
+        raise ValueError("Dice must have at least 1 side.")
 
-    if choice in weapons:
-        player.equip_weapon(weapons[choice])
-    else:
-        print("Invalid weapon")
+    rolls = []
 
-def select_armor(player, armors):
-    show_armors(armors)
+    for i in range(number_of_dice):
+        rolls.append(random.randint(1, sides))
 
-    choice = input("\nEnter armor name: ")
-
-    if choice in armors:
-        player.equip_armor(armors[choice])
-    else:
-        print("Invalid armor selection.")
-
-def select_enemy(enemies):
-    show_enemies(enemies)
-
-    choice = input("\nEnter enemy name: ")
-
-    if choice in enemies:
-        enemy = enemies[choice]
-
-        print("\n--- Enemy Selected ---")
-        print("Name:", enemy["name"])
-        print("Health:", enemy["health"])
-        print("Defense:", enemy["defense"])
-        print("Attack Dice:", enemy["attack_dice"])
-
-        return enemy
-
-    print("Invalid enemy selection.")
-    return None
+    return sum(rolls)
 
 
-def main():
-    try:
-        enemies, weapons, armors = load_game_data()
-    except FileNotFoundError as error:
-        print("Could not find JSON file:", error)
+def roll_dice_pool(dice_groups, flat_modifier=0):
+    total = 0
+    all_rolls = []
+
+    for number_of_dice, sides in dice_groups:
+
+        if number_of_dice < 0:
+            raise ValueError("Number of dice cannot be negative.")
+
+        if sides < 1:
+            raise ValueError("Dice must have at least 1 side.")
+
+        group_rolls = []
+
+        for _ in range(number_of_dice):
+            result = random.randint(1, sides)
+            group_rolls.append(result)
+
+        all_rolls.extend(group_rolls)
+        total += sum(group_rolls)
+
+    total += flat_modifier
+
+    return {
+        "rolls": all_rolls,
+        "modifier": flat_modifier,
+        "total": total
+    }
+
+
+# PLAYER ACTIONS
+
+def attack(player, enemy):
+    print("\nYou attack!")
+
+    attack_roll = roll_dice_pool(player.attack_dice)
+
+    print(f"Attack Roll: {attack_roll['rolls']}")
+    print(f"Total Roll: {attack_roll['total']}")
+
+    damage = max(0, attack_roll["total"] - enemy.defense)
+
+    enemy.health -= damage
+
+    print(f"Enemy Defense: {enemy.defense}")
+    print(f"Damage Dealt: {damage}")
+    print(f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
+
+
+def parry_counter(player, enemy):
+    print("\nYou attempt a parry and counter!")
+
+    # Counterattack
+    attack_roll = roll_dice_pool(player.attack_dice)
+
+    print(f"Attack Roll: {attack_roll['rolls']}")
+
+    # Apply enemy defense, then halve the resulting damage
+    damage = max(0, int((attack_roll["total"] - enemy.defense) * 0.5))
+
+    enemy.health -= damage
+
+    print(f"Counter Damage: {damage}")
+    print(f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
+
+    # Roll dodge dice for the incoming enemy attack
+    dodge_roll = roll_dice_pool(player.dodge_dice)
+
+    print(f"Your Dodge Roll: {dodge_roll['total']}")
+
+    return dodge_roll["total"]
+
+
+def defend(player):
+    print("\nYou prepare to defend!")
+
+    defense_roll = roll_dice_pool(player.block_dice)
+
+    print(f"Defense Roll: {defense_roll['rolls']}")
+    print(f"Total Defense: {defense_roll['total']}")
+
+    return defense_roll["total"]
+
+
+def flee(player, enemy):
+    print("\nYou attempt to flee!")
+
+    # Roll dodge dice
+    dodge_roll = roll_dice_pool(player.dodge_dice)
+
+    # Roll enemy attack dice
+    attack_roll = roll_dice_pool(enemy.attack_dice)
+
+    print(f"Your Dodge Roll: {dodge_roll['total']}")
+    print(f"Enemy Attack Roll: {attack_roll['total']}")
+
+    if dodge_roll["total"] > attack_roll["total"]:
+        print("You successfully escaped!")
+        return True
+
+    print("You failed to flee")
+    return False
+
+
+# ENEMY ACTION
+
+def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None):
+    print(f"\n{enemy.name} attacks!")
+
+    attack_roll = roll_dice_pool(enemy.attack_dice)
+
+    enemy_damage = attack_roll["total"]
+
+    print(f"Enemy Attack Roll: {attack_roll['rolls']}")
+    print(f"Enemy Attack Total: {enemy_damage}")
+
+    # Check whether the player's parry/dodge succeeded
+    if dodge_roll is not None and dodge_roll > enemy_damage:
+        print("You successfully dodged the attack!")
         return
-    except json.JSONDecodeError as error:
-        print("Invalid JSON file:", error)
+
+    # Calculate incoming damage
+    damage = max(0, enemy_damage - player.defense - block_bonus)
+
+    player.health -= damage
+
+    print(f"Your Defense: {player.defense}")
+    print(f"Block Bonus: {block_bonus}")
+    print(f"Damage Taken: {damage}")
+    print(f"Your Health: {max(0, player.health)}")
+
+
+# MAIN COMBAT FUNCTION
+
+def start_combat(player, area):
+
+    # Make sure the area has enemies
+    if not area.enemies_list:
+        print("There are no enemies in this area!")
         return
 
-    player = Player("Test Player")
+    # Randomly select an enemy from the area
+    enemy_name = sample_item(area.enemies_list)
+    enemy = Entity(enemy_name)
 
-    while True:
-        print("\n========== RPG COMBAT TEST ==========")
-        print("1. Select Enemy")
-        print("2. Equip Weapon")
-        print("3. Equip Armor")
-        print("4. Show Equipment")
-        print("5. Unequip Equipment")
-        print("6. Exit")
+    print("\n" + "=" * 40)
+    print("COMBAT STARTED")
+    print("=" * 40)
 
-        choice = input("\nSelect an option: ")
+    print(f"\nEnemy: {enemy.name}")
+    print(f"Enemy Health: {enemy.health}/{enemy.max_health}")
+    print(f"Enemy Defense: {enemy.defense}")
 
-        if choice == "1":
-            select_enemy(enemies)
+    print(f"\nPlayer: {player.name}")
+    print(f"Player Health: {player.health}")
+    print(f"Player Defense: {player.defense}")
 
-        elif choice == "2":
-            select_weapon(player, weapons)
+    # Main combat loop
+    while player.health > 0 and enemy.health > 0:
 
-        elif choice == "3":
-            select_armor(player, armors)
+        print("\n" + "=" * 40)
+        print("YOUR TURN")
+        print("=" * 40)
 
-        elif choice == "4":
-            player.show_equipment()
-        
-        elif choice == "5":
-            choice = input("Unequip weapon or armor? (1/2)")
-            if choice == "1":
-                player.unequip_weapon(player)
-            elif choice == "2":
-                player.unequip_armor(player)
-            else:
-                print("Invalid selection")
+        print(f"\n{player.name}: {player.health} HP")
+        print(f"{enemy.name}: {enemy.health} HP")
 
-        elif choice == "6":
-            print("Exiting combat test.")
+        print("\n1. Attack")
+        print("2. Parry/Counter")
+        print("3. Defend")
+        print("4. Flee")
+
+        choice = input("\nChoose your action: ").strip().lower()
+
+        # Reset turn-specific bonuses
+        block_bonus = 0
+        dodge_roll = None
+
+        if choice in ["1"]:
+            attack(player, enemy)
+
+        elif choice in ["2"]:
+            dodge_roll = parry_counter(player, enemy)
+
+        elif choice in ["3"]:
+            block_bonus = defend(player)
+
+        elif choice in ["4"]:
+            if flee():
+                print("\nPlayer escaped.")
+                return
+
+        else:
+            print("Invalid action. Try again.")
+            continue
+
+        # Check if enemy was defeated
+        if enemy.health <= 0:
             break
 
-        else:
-            print("Invalid selection.")
+        # Enemy's turn
+        enemy_attack(
+            player,
+            enemy,
+            block_bonus=block_bonus,
+            dodge_roll=dodge_roll
+        )
+
+        # Check if player was defeated
+        if player.health <= 0:
+            break
+
+    # Combat results
+    print("\n" + "=" * 40)
+
+    if enemy.health <= 0:
+        print(f"VICTORY! You defeated {enemy.name}!")
+
+    elif player.health <= 0:
+        print("DEFEAT! You have been defeated.")
+
+    print("=" * 40)
 
 
-# Run program
+# Standalone testing
 if __name__ == "__main__":
-    main()
+
+    test_player = Entity("Player")
+    test_area = Area("Craw's Domain")
+
+    start_combat(test_player, test_area)
