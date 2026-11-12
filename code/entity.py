@@ -4,7 +4,7 @@ import json
 class Entity:
     def __init__(self, entity_name: str, user_ID: int = 0):
         if entity_name != "Player":
-            fileObject = open("./assets/JSON/enemies.json", "r")
+            fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
             fileData = json.load(fileObject)[entity_name]
 
             # Imported Properties
@@ -23,10 +23,11 @@ class Entity:
             self.name: str = "Me"
             self.health: int = 100
             self.max_health: int = self.health
-            self.defense: int = 0
-            self.attack_dice: list[list[int]]
-            self.block_dice: list[list[int]]
-            self.dodge_dice: list[list[int]]
+            self.health: int = 1000
+            self.defense: int = 50
+            self.attack_dice: list[list[int]] = [[2,5], [10,10]] # Default for combat demo testing
+            self.block_dice: list[list[int]] = [[5,2]]
+            self.dodge_dice: list[list[int]] = [[3,3]]
             self.is_boss: bool = False
 
             self.get_player_data_from_database()
