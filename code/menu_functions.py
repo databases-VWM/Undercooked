@@ -12,7 +12,7 @@ def get_local_ip_and_port():
 
 
 #______________________________________________
-# User Registration Fuctions
+# User Registration Functions
 #______________________________________________
 def generate_user_ID(connection):
     cursor = connection.cursor()

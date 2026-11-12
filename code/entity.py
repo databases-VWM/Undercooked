@@ -22,6 +22,7 @@ class Entity:
             # Testing defaults
             self.name: str = "Me"
             self.health: int = 100
+            self.max_health: int = self.health
             self.defense: int = 0
             self.attack_dice: list[list[int]]
             self.block_dice: list[list[int]]
@@ -32,7 +33,7 @@ class Entity:
 
     # This functions fills in all the player data from the database
     def get_player_data_from_database(self):
-        # List of tuples ontaining this player's checkpoints. Tuple of area name, checkpoint node
+        # List of tuples containing this player's checkpoints. Tuple of area name, checkpoint node
         self.checkpoints: list[tuple[str, int]] = []
         
 
