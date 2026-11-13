@@ -122,3 +122,9 @@ def create_new_room(connection, room_ID, room_name):
         connection.commit()
     finally:
         cursor.close()
+
+# This looks for checkpoints and returns the node number if exists. If not, returns 0. 
+def look_for_checkpoint(area_name: str, checkpoints: dict[str, int]) -> int:
+    checkpoint_num = 0
+    if checkpoints[area_name] == None:
+        checkpoint_num

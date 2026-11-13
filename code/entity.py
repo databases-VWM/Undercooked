@@ -16,8 +16,6 @@ class Entity:
             self.block_dice: list[list[int]] = fileData["block_dice"]
             self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
             self.is_boss: bool = fileData["is_boss"]
-            #This is just here for the sake of consistency
-            self.checkpoints = []
         else:
             # Testing defaults
             self.name: str = "Me"
@@ -34,8 +32,7 @@ class Entity:
 
     # This functions fills in all the player data from the database
     def get_player_data_from_database(self):
-        # List of tuples containing this player's checkpoints. Tuple of area name, checkpoint node
-        self.checkpoints: list[tuple[str, int]] = []
+        pass
         
 
         
