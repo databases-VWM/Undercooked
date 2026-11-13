@@ -1,5 +1,6 @@
 import mysql.connector
 import tkinter as tk
+import sys
 from functions import *
 from tkinter import messagebox
 from entity import *
@@ -24,7 +25,7 @@ class GameInstance:
     def __init__(self, root):
         self.root = root
         self.BACKGROUNDCOLOR = "lightgray"
-        root.state("zoomed")
+        root.state("zoomed" if sys.platform == "win32" else "normal")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
 
@@ -104,7 +105,7 @@ class GameInstance:
 
     # Popup that shows the user's IP address and port
     def show_IP(self):
-        ip_addr = get_local_ip_and_port()
+        ip_addr = get_local_ip()
         IP_popup = messagebox.showinfo(self.root, message=ip_addr)
 
     # Ends the program
