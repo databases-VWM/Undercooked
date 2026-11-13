@@ -57,60 +57,60 @@ def roll_dice_pool(dice_groups, flat_modifier=0):
 
 # PLAYER ACTIONS
 
-def attack(player, enemy):
-    print("\nYou attack!")
+def attack(player, enemy, log_list=None):
+    log_print(log_list, "\nYou attack!")
 
     attack_roll = roll_dice_pool(player.attack_dice)
 
-    print(f"Attack Roll: {attack_roll['rolls']}")
-    print(f"Total Roll: {attack_roll['total']}")
+    log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
+    log_print(log_list, f"Total Roll: {attack_roll['total']}")
 
     damage = max(0, attack_roll["total"] - enemy.defense)
 
     enemy.health -= damage
 
-    print(f"Enemy Defense: {enemy.defense}")
-    print(f"Damage Dealt: {damage}")
-    print(f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
+    log_print(log_list, f"Enemy Defense: {enemy.defense}")
+    log_print(log_list, f"Damage Dealt: {damage}")
+    log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
 
-def parry_counter(player, enemy):
-    print("\nYou attempt a parry and counter!")
+def parry_counter(player, enemy, log_list=None):
+    log_print(log_list, "\nYou attempt a parry and counter!")
 
     # Counterattack
     attack_roll = roll_dice_pool(player.attack_dice)
 
-    print(f"Attack Roll: {attack_roll['rolls']}")
+    log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
 
     # Apply enemy defense, then halve the resulting damage
     damage = max(0, int((attack_roll["total"] - enemy.defense) * 0.5))
 
     enemy.health -= damage
 
-    print(f"Counter Damage: {damage}")
-    print(f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
+    log_print(log_list, f"Counter Damage: {damage}")
+    log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
     # Roll dodge dice for the incoming enemy attack
     dodge_roll = roll_dice_pool(player.dodge_dice)
 
-    print(f"Your Dodge Roll: {dodge_roll['total']}")
+    log_print(log_list, f"Your Dodge Roll: {dodge_roll['total']}")
 
     return dodge_roll["total"]
 
 
-def defend(player):
-    print("\nYou prepare to defend!")
+def defend(player, log_list=None):
+    log_print(log_list, "\nYou prepare to defend!")
 
     defense_roll = roll_dice_pool(player.block_dice)
 
-    print(f"Defense Roll: {defense_roll['rolls']}")
-    print(f"Total Defense: {defense_roll['total']}")
+    log_print(log_list, f"Defense Roll: {defense_roll['rolls']}")
+    log_print(log_list, f"Total Defense: {defense_roll['total']}")
 
     return defense_roll["total"]
 
 
-def flee(player, enemy):
-    print("\nYou attempt to flee!")
+def flee(player, enemy, log_list=None):
+    log_print(log_list, "\nYou attempt to flee!")
 
     # Roll dodge dice
     dodge_roll = roll_dice_pool(player.dodge_dice)
@@ -118,32 +118,32 @@ def flee(player, enemy):
     # Roll enemy attack dice
     attack_roll = roll_dice_pool(enemy.attack_dice)
 
-    print(f"Your Dodge Roll: {dodge_roll['total']}")
-    print(f"Enemy Attack Roll: {attack_roll['total']}")
+    log_print(log_list, f"Your Dodge Roll: {dodge_roll['total']}")
+    log_print(log_list, f"Enemy Attack Roll: {attack_roll['total']}")
 
     if dodge_roll["total"] > attack_roll["total"]:
-        print("You successfully escaped!")
+        log_print(log_list, "You successfully escaped!")
         return True
 
-    print("You failed to flee")
+    log_print(log_list, "You failed to flee")
     return False
 
 
 # ENEMY ACTION
 
-def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None):
-    print(f"\n{enemy.name} attacks!")
+def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None, log_list=None):
+    log_print(log_list, f"\n{enemy.name} attacks!")
 
     attack_roll = roll_dice_pool(enemy.attack_dice)
 
     enemy_damage = attack_roll["total"]
 
-    print(f"Enemy Attack Roll: {attack_roll['rolls']}")
-    print(f"Enemy Attack Total: {enemy_damage}")
+    log_print(log_list, f"Enemy Attack Roll: {attack_roll['rolls']}")
+    log_print(log_list, f"Enemy Attack Total: {enemy_damage}")
 
     # Check whether the player's parry/dodge succeeded
     if dodge_roll is not None and dodge_roll > enemy_damage:
-        print("You successfully dodged the attack!")
+        log_print(log_list, "You successfully dodged the attack!")
         return
 
     # Calculate incoming damage
@@ -151,15 +151,18 @@ def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None):
 
     player.health -= damage
 
-    print(f"Your Defense: {player.defense}")
-    print(f"Block Bonus: {block_bonus}")
-    print(f"Damage Taken: {damage}")
-    print(f"Your Health: {max(0, player.health)}")
+    log_print(log_list, f"Your Defense: {player.defense}")
+    log_print(log_list, f"Block Bonus: {block_bonus}")
+    log_print(log_list, f"Damage Taken: {damage}")
+    log_print(log_list, f"Your Health: {max(0, player.health)}")
 
+
+def log_print(log_list: list[str], message: str):
+    log_list.append(str(message))
 
 # MAIN COMBAT FUNCTION
 
-def start_combat(player, area):
+def start_combat(player: Entity, area: Area):
 
     # Make sure the area has enemies
     if not area.enemies_list:
