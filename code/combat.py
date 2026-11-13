@@ -57,7 +57,7 @@ def roll_dice_pool(dice_groups, flat_modifier=0):
 
 # PLAYER ACTIONS
 
-def attack(player, enemy):
+def combat_attack(player: Entity, enemy: Entity):
     print("\nYou attack!")
 
     attack_roll = roll_dice_pool(player.attack_dice)
@@ -74,7 +74,7 @@ def attack(player, enemy):
     print(f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
 
-def parry_counter(player, enemy):
+def combat_parry_counter(player: Entity, enemy: Entity):
     print("\nYou attempt a parry and counter!")
 
     # Counterattack
@@ -98,7 +98,7 @@ def parry_counter(player, enemy):
     return dodge_roll["total"]
 
 
-def defend(player):
+def combat_defend(player: Entity):
     print("\nYou prepare to defend!")
 
     defense_roll = roll_dice_pool(player.block_dice)
@@ -109,7 +109,7 @@ def defend(player):
     return defense_roll["total"]
 
 
-def flee(player, enemy):
+def combat_flee(player: Entity, enemy: Entity):
     print("\nYou attempt to flee!")
 
     # Roll dodge dice
@@ -131,7 +131,7 @@ def flee(player, enemy):
 
 # ENEMY ACTION
 
-def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None):
+def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge_roll=None):
     print(f"\n{enemy.name} attacks!")
 
     attack_roll = roll_dice_pool(enemy.attack_dice)
@@ -158,7 +158,7 @@ def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None):
 
 
 # MAIN COMBAT FUNCTION
-
+"""
 def start_combat(player, area):
 
     # Make sure the area has enemies
@@ -256,3 +256,4 @@ if __name__ == "__main__":
     test_area = Area("Craw's Domain")
 
     start_combat(test_player, test_area)
+"""
