@@ -129,3 +129,11 @@ def look_for_checkpoint(area_name: str, checkpoints: dict[str, int]) -> int:
     if checkpoints[area_name] != None:
         checkpoint_num = checkpoints[area_name]
     return checkpoint_num
+
+
+# Takes an array and concatenates it for TKinter to use
+def setup_for_stringvar(array) -> str:
+    concat_str: str = ""
+    for entry in array:
+        concat_str += (entry + "\n")
+    return concat_str

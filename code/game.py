@@ -6,7 +6,7 @@ from tkinter import messagebox
 from entity import *
 from area import *
 from ingredient import *
-
+from combat import *
 from menu_functions import *
 
 #MySQL default connection
@@ -35,10 +35,12 @@ class GameInstance:
         self.room_name = ""
         self.room_ID = None
         self.player: Entity
+        self.current_enemy: Entity
         # list of tuples of (ingredient, quantity)
         self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
         self.checkpoints: dict[str, int] = {}
+        self.combat_log: list[str] = []
 
     # Clears the screen
     def clear_screen(self):
@@ -391,24 +393,49 @@ class GameInstance:
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
         ok_button.pack()
 
-    # This handles all the logic for the combat
+    # This handles all the meta logic for the combat
     def battle(self):
-        continue_battle: bool = True
-        test = 0
+        continue_battle = True
+        # Actually create the enemy
+        self.current_enemy = Entity(self.current_area.enemy_name)
 
+        # Continues to loop through the GUI until combat has concluded
         while continue_battle:
-            self.battle_menu()
-            print("continuing")
-            test += 1
-            if (test == 2):
-                continue_battle = False
+            continue_battle = self.battle_menu()
         
         # Outcome checked here
         self.harvest_node_text()
 
     # This displays the GUI for the combat
-    def battle_menu(self):
+    def battle_menu(self) -> bool:
         self.clear_screen()
-        return
-
-
+        #TKinter variable setups
+        local_combat_log = tk.StringVar()
+        local_combat_log.set(setup_for_stringvar(self.combat_log))
+        
+        local_player_stats = tk.StringVar()
+        
+        local_enemy_stats = tk.StringVar()
+        
+        # Frames
+        stats_frame = tk.Frame(self.root)
+        stats_frame.pack(side="left")
+        combat_log_frame = tk.Frame(self.root)
+        combat_log_frame.pack(side="right")
+        combat_buttons_frame = tk.Frame(self.root)
+        combat_buttons_frame.pack(side="bottom")
+        
+        # Displays
+        player_stats_screen = tk.Label(stats_frame, textvariable=local_player_stats)
+        player_stats_screen.pack(fill="both")
+        enemy_stats_screen = tk.Label(stats_frame, textvariable=local_enemy_stats)
+        enemy_stats_screen.pack(fill="both")
+        combat_log_menu = tk.Label(combat_buttons_frame, textvariable=local_combat_log)
+        combat_log_menu.pack(fill="both")
+        
+        # Button Menu
+        attack_button = tk.Button(combat_log_menu, text="Attack", command=lambda: combat_attack(self.player, self.current_enemy))
+        attack_button.pack(fill="both")
+        
+        
+        return False
