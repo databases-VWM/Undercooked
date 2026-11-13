@@ -14,3 +14,35 @@ class Ingredient:
         self.score: int = fileData["score"]
         self.item_id: int = fileData["item_id"]
         self.type_id: int = 1
+
+
+
+
+# This is the function that sends the ingredients in the inventory, to the database shared inventory
+def inv_to_database(connection, room_id, inventory):
+    cursor = connection.cursor()
+
+    try:
+        for (item_name, quantity) in inventory:
+
+            # look up id
+            ingredient = Ingredient(item_name)
+            item_id = ingredient.item_id
+
+            # Insert the item into the inventory table
+            cursor.execute(
+                """
+                INSERT INTO inventory (room_id, item_id, quantity)
+                VALUES (?, ?, ?)
+                """,
+                (room_id, item_id, quantity)
+            )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        cursor.close()
