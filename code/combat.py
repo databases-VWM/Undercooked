@@ -216,7 +216,7 @@ def start_combat(player: Entity, area: Area):
             block_bonus = defend(player)
 
         elif choice in ["4"]:
-            if flee():
+            if flee(player, enemy):
                 print("\nPlayer escaped.")
                 return
 

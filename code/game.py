@@ -38,6 +38,7 @@ class GameInstance:
         # list of tuples of (ingredient, quantity)
         self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
+        self.checkpoints: dict[str, int] = {}
 
     # Clears the screen
     def clear_screen(self):
@@ -137,16 +138,24 @@ class GameInstance:
 
     # Creates the room in the database
     def create_room(self, room_name):
+        
         new_room_id = generate_room_ID(connection)
         self.room_ID = new_room_id
         self.room_name = room_name
         create_new_room(connection, new_room_id, room_name)
-        self.waiting_room_host()
+        if (connect_to_room(connection, new_room_id, user_ID)):
+            self.waiting_room_host()
+        else:
+            messagebox.showerror(message="Room not found")
+            self.main_menu()
 
     # Logic for joining an established room
     def join_room(self, room_ID, room_IP):
-        connect_to_room(connection, room_ID, room_IP)
-        self.waiting_room_guest()
+        if (connect_to_room(connection, room_ID, room_IP)):
+            self.waiting_room_guest()
+        else:
+            messagebox.showerror(message="Room not found")
+            self.main_menu()
 
     # The actual waiting room before the game starts for the host
     def waiting_room_host(self):
@@ -203,7 +212,10 @@ class GameInstance:
         checkpoint_exists: bool = False
         everything_valid: bool = False
         area_message = "You enter " + selected_area_name
-        checkpoint_num: int = 0
+        checkpoint_num: int = look_for_checkpoint(selected_area_name, self.checkpoints)
+        
+        if checkpoint_num != 0:
+            checkpoint_exists = True
 
         #Checks if area was selected. If not, rerun menu
         if selected_area_name == "Select an Area":
@@ -212,18 +224,13 @@ class GameInstance:
         # If no checkpoint selected (starting from beginning) AND area selected, run next menu
         elif checkpoint_bool == False:
             everything_valid = True
+        # If Area is valid and the user tries to start from a checkpoint, check to see if they have a checkpoint
         else:
-            for area_tuple in self.player.checkpoints:
-                #Successfully finds checkpoint
-                if area_tuple[0] == selected_area_name:
-                    checkpoint_exists = True
-                    area_message = area_message + " at node " + str(area_tuple[1])
-                    everything_valid = True
-                    checkpoint_num = area_tuple[1]
-            # Fails to find checkpoint
             if checkpoint_exists == False:
                 messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
                 self.wilderness_area_select()
+            else:
+                everything_valid = True
         # If checkpoint and area are good, continue
         if everything_valid == True:
             messagebox.showinfo(self.root, message=area_message)
@@ -257,7 +264,7 @@ class GameInstance:
             return_to_restaurant_button.pack()
             #Checkpoint additional logic
             if self.current_area.current_node % 10 == 0:
-                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint")
+                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint", command=self.set_checkpoint)
                 set_checkpoint_button.pack()
         # Generate a normal node
         else:
@@ -265,6 +272,21 @@ class GameInstance:
             self.current_area.generate_node()
             #Triggers text for the type of node
             self.node_type_text()
+    
+    # Sets a checkpoint for an area
+    def set_checkpoint(self):
+        checkpoint_message = "Your checkpoint has been set at node "
+        # Regardless of whether or not the checkpoint exists, it is added or updated
+        self.checkpoints[self.current_area.name] = self.current_area.current_node
+        messagebox.showinfo(self.root, message=checkpoint_message+str(self.current_area.current_node))
+        self.explore_node()
+    
+    # Removes a checkpoint
+    def remove_checkpoint(self):
+        checkpoint_message: str = "Your checkpoint has been removed in " + self.current_area.name
+        self.checkpoints.pop(self.current_area.name)
+        messagebox.showinfo(self.root, checkpoint_message)
+            
 
     # Full heal from campfire
     def full_heal_menu(self):
@@ -362,6 +384,8 @@ class GameInstance:
     # Text for if the character falls
     def fallen_text(self):
         self.clear_screen()
+        # Removes the checkpoint in the area
+        self.remove_checkpoint()
         gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
         gather_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
