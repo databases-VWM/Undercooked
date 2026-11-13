@@ -57,8 +57,8 @@ def roll_dice_pool(dice_groups, flat_modifier=0):
 
 # PLAYER ACTIONS
 
-def attack(player, enemy, log_list=None):
-    log_print(log_list, "\nYou attack!")
+def combat_attack(player: Entity, enemy: Entity, log_list: list[str]=[]):
+    print("\nYou attack!")
 
     attack_roll = roll_dice_pool(player.attack_dice)
 
@@ -74,8 +74,9 @@ def attack(player, enemy, log_list=None):
     log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
 
-def parry_counter(player, enemy, log_list=None):
-    log_print(log_list, "\nYou attempt a parry and counter!")
+
+def combat_parry_counter(player: Entity, enemy: Entity, log_list: list[str]=[]):
+    print("\nYou attempt a parry and counter!")
 
     # Counterattack
     attack_roll = roll_dice_pool(player.attack_dice)
@@ -98,8 +99,8 @@ def parry_counter(player, enemy, log_list=None):
     return dodge_roll["total"]
 
 
-def defend(player, log_list=None):
-    log_print(log_list, "\nYou prepare to defend!")
+def combat_defend(player: Entity, log_list: list[str]=[]):
+    print("\nYou prepare to defend!")
 
     defense_roll = roll_dice_pool(player.block_dice)
 
@@ -108,9 +109,8 @@ def defend(player, log_list=None):
 
     return defense_roll["total"]
 
-
-def flee(player, enemy, log_list=None):
-    log_print(log_list, "\nYou attempt to flee!")
+def combat_flee(player: Entity, enemy: Entity, log_list: list[str]=[]):
+    print("\nYou attempt to flee!")
 
     # Roll dodge dice
     dodge_roll = roll_dice_pool(player.dodge_dice)
@@ -130,9 +130,9 @@ def flee(player, enemy, log_list=None):
 
 
 # ENEMY ACTION
+def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge_roll=None, log_list: list[str]=[]):
+    print(f"\n{enemy.name} attacks!")
 
-def enemy_attack(player, enemy, block_bonus=0, dodge_roll=None, log_list=None):
-    log_print(log_list, f"\n{enemy.name} attacks!")
 
     attack_roll = roll_dice_pool(enemy.attack_dice)
 
@@ -161,8 +161,8 @@ def log_print(log_list: list[str], message: str):
     log_list.append(str(message))
 
 # MAIN COMBAT FUNCTION
-
-def start_combat(player: Entity, area: Area):
+"""
+def start_combat(player, area):
 
     # Make sure the area has enemies
     if not area.enemies_list:
@@ -259,3 +259,4 @@ if __name__ == "__main__":
     test_area = Area("Craw's Domain")
 
     start_combat(test_player, test_area)
+"""

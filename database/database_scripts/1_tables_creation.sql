@@ -42,4 +42,4 @@ room_id int not null,
 recipe_id int not null,
 PRIMARY KEY (customer_id, room_id),
 FOREIGN KEY (room_id) references rooms,
-FOREIGN KEY (recipe_id) references recipes)
+FOREIGN KEY (recipe_id) references recipes);
