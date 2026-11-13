@@ -264,7 +264,7 @@ class GameInstance:
             return_to_restaurant_button.pack()
             #Checkpoint additional logic
             if self.current_area.current_node % 10 == 0:
-                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint")
+                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint", command=self.set_checkpoint)
                 set_checkpoint_button.pack()
         # Generate a normal node
         else:
@@ -272,6 +272,21 @@ class GameInstance:
             self.current_area.generate_node()
             #Triggers text for the type of node
             self.node_type_text()
+    
+    # Sets a checkpoint for an area
+    def set_checkpoint(self):
+        checkpoint_message = "Your checkpoint has been set at node "
+        # Regardless of whether or not the checkpoint exists, it is added or updated
+        self.checkpoints[self.current_area.name] = self.current_area.current_node
+        messagebox.showinfo(self.root, message=checkpoint_message+str(self.current_area.current_node))
+        self.explore_node()
+    
+    # Removes a checkpoint
+    def remove_checkpoint(self):
+        checkpoint_message: str = "Your checkpoint has been removed in " + self.current_area.name
+        self.checkpoints.pop(self.current_area.name)
+        messagebox.showinfo(self.root, checkpoint_message)
+            
 
     # Full heal from campfire
     def full_heal_menu(self):
@@ -369,6 +384,8 @@ class GameInstance:
     # Text for if the character falls
     def fallen_text(self):
         self.clear_screen()
+        # Removes the checkpoint in the area
+        self.remove_checkpoint()
         gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
         gather_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)

@@ -32,7 +32,7 @@ class Area:
             self.enemy_name: str = ""
 
             # Constants for game balancing
-            self.ENEMY_CHANCE: float = 0.10
+            self.ENEMY_CHANCE: float = 0.30
             self.ELITE_THRESHOLD: int = 100
 
     # Handles generation of and setting flags for a standard node
