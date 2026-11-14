@@ -232,6 +232,7 @@ class GameInstance:
                 messagebox.showinfo(self.root, message="You don't have a checkpoint at that location!")
                 self.wilderness_area_select()
             else:
+                area_message += " at node " + str(checkpoint_num)
                 everything_valid = True
         # If checkpoint and area are good, continue
         if everything_valid == True:
@@ -246,9 +247,11 @@ class GameInstance:
     # This function overall handles nodes. It acts like a loop
     # This function specifically has the menu for campsites and checkpoints
     # This series of functions is kind of like Assembly labels due to how TKinter works. 
-    def explore_node(self):
+    def explore_node(self, checkpoint_bool = False):
         self.clear_screen()
-        self.current_area.current_node = self.current_area.current_node + 1
+        # Stays at same location when checkpoint is enabled
+        if checkpoint_bool == False:
+            self.current_area.current_node = self.current_area.current_node + 1
         # Kick back to the restaurant when done
         if self.current_area.progress == False:
             self.restaurant_menu()
@@ -281,7 +284,7 @@ class GameInstance:
         # Regardless of whether or not the checkpoint exists, it is added or updated
         self.checkpoints[self.current_area.name] = self.current_area.current_node
         messagebox.showinfo(self.root, message=checkpoint_message+str(self.current_area.current_node))
-        self.explore_node()
+        self.explore_node(True)
     
     # Removes a checkpoint
     def remove_checkpoint(self):
@@ -336,23 +339,18 @@ class GameInstance:
 
     def enemy_node_text(self):
         self.clear_screen()
-        #Check to see if there is an enemy
-        if self.current_area.is_enemy == True:
-            # Change flavor text for elite or not
-            if self.current_area.is_elite == True:
-                enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!"
-            else:
-                enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!"
+        # Change flavor text for elite or not
+        if self.current_area.is_elite == True:
+            enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!"
+        else:
+            enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!"
+        # Actually create the enemy
+        self.current_enemy = Entity(self.current_area.enemy_name)
         
         text_label = tk.Label(self.root, text=enemy_message)
         text_label.pack()
-        ok_button = tk.Button(self.root, text="Ok", command=self.harvest_node_text)
+        ok_button = tk.Button(self.root, text="Ok", command=self.battle_menu)
         ok_button.pack()
-
-        # Start combat
-        self.battle()
-        #Regardless of outcome, go to harvest node to check for results
-        self.harvest_node_text()
 
     # Text for harvesting the node
     def harvest_node_text(self):
@@ -393,35 +391,27 @@ class GameInstance:
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
         ok_button.pack()
 
-    # This handles all the meta logic for the combat
-    def battle(self):
-        continue_battle = True
-        # Actually create the enemy
-        self.current_enemy = Entity(self.current_area.enemy_name)
-
-        # Continues to loop through the GUI until combat has concluded
-        while continue_battle:
-            continue_battle = self.battle_menu()
-        
-        # Outcome checked here
-        self.harvest_node_text()
-
     # This displays the GUI for the combat
-    def battle_menu(self) -> bool:
+    def battle_menu(self):
         self.clear_screen()
+        if (self.player.health <= 0):
+            self.harvest_node_text()
+        
         #TKinter variable setups
         local_combat_log = tk.StringVar()
         local_combat_log.set(setup_for_stringvar(self.combat_log))
         
         local_player_stats = tk.StringVar()
+        local_player_stats.set(setup_for_stringvar(output_entity_stats(self.player)))
         
         local_enemy_stats = tk.StringVar()
+        local_enemy_stats.set(setup_for_stringvar(output_entity_stats(self.current_enemy)))
         
         # Frames
         stats_frame = tk.Frame(self.root)
-        stats_frame.pack(side="left")
+        stats_frame.pack(side="left", fill="both")
         combat_log_frame = tk.Frame(self.root)
-        combat_log_frame.pack(side="right")
+        combat_log_frame.pack(side="right", fill="both")
         combat_buttons_frame = tk.Frame(self.root)
         combat_buttons_frame.pack(side="bottom")
         
@@ -434,8 +424,24 @@ class GameInstance:
         combat_log_menu.pack(fill="both")
         
         # Button Menu
-        attack_button = tk.Button(combat_log_menu, text="Attack", command=lambda: combat_attack(self.player, self.current_enemy))
+        attack_button = tk.Button(combat_buttons_frame, text="Attack", command=lambda: [combat_attack(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
         attack_button.pack(fill="both")
         
+        parry_button = tk.Button(combat_buttons_frame, text="Parry", command=lambda: [combat_parry_counter(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
+        parry_button.pack(fill="both")
         
-        return False
+        guard_button = tk.Button(combat_buttons_frame, text="Guard", command=lambda: [combat_defend(self.player, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
+        guard_button.pack(fill="both")
+        
+        flee_button = tk.Button(combat_buttons_frame, text="Flee(Cowardly)", command=self.wrapper_flee)
+        flee_button.pack(fill="both")
+        
+    # Wrapper function for handling fleeing
+    def wrapper_flee(self):
+        successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
+        if successful_flee: 
+            self.restaurant_menu()
+        else: 
+            combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log)
+            self.battle_menu
+        

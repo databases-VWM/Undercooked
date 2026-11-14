@@ -1,11 +1,12 @@
 {
     "The Big Craw": {
         "name": "The Big Craw",
-        "health": 999,
-        "defense": 22,
+        "health": 21,
+        "defense": 2,
         "attack_dice": [[16, 6]],
         "block_dice": [[4, 8]],
         "dodge_dice": [[16, 5]],
+        "description": "",
         "is_boss": false
     },
     "Vincent's Procrastination": {
@@ -15,6 +16,7 @@
         "attack_dice": [[11, 11]],
         "block_dice": [[1, 2]],
         "dodge_dice": [[5,10]],
+        "description": "",
         "is_boss": true
     }
 }
