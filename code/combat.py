@@ -159,6 +159,8 @@ def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge
 
 def log_print(log_list: list[str], message: str):
     log_list.append(str(message))
+    if len(log_list) > 20:
+        log_list.pop(0)
 
 # MAIN COMBAT FUNCTION
 """

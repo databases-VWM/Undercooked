@@ -141,3 +141,20 @@ def setup_for_stringvar(array) -> str:
     for entry in array:
         concat_str += (entry + "\n")
     return concat_str
+
+
+
+#NOTE VINCENT IMPLEMENT THIS ON UR END
+def get_all_players(connection, room_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT name FROM users WHERE room_id = ?",
+            (room_id,)
+        )
+
+        return [row[0] for row in cursor.fetchall()]
+
+    finally:
+        cursor.close()
