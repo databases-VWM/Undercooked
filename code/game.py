@@ -10,12 +10,16 @@ from combat import *
 from menu_functions import *
 
 #MySQL default connection
-connection = mysql.connector.connect(
-    host="localhost",
-    user="game",
-    password="pancake_sandwich",
-    database="undercooked"
-)
+try:
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="game",
+        password="pancake_sandwich",
+        database="undercooked"
+    )
+except:
+    messagebox.showerror(message="Database not running. Exiting game now")
+    sys.exit(1)
 
 user_ID = generate_user_ID(connection)
 print("Generated user ID:", user_ID)
@@ -385,7 +389,10 @@ class GameInstance:
     def fallen_text(self):
         self.clear_screen()
         # Removes the checkpoint in the area
-        self.remove_checkpoint()
+        try:
+            self.remove_checkpoint()
+        except KeyError:
+            pass
         gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
         gather_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
@@ -424,10 +431,10 @@ class GameInstance:
         combat_log_menu.pack(fill="both")
         
         # Button Menu
-        attack_button = tk.Button(combat_buttons_frame, text="Attack", command=lambda: [combat_attack(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
+        attack_button = tk.Button(combat_buttons_frame, text="Attack", command=lambda: [combat_attack(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.is_enemy_slain()])
         attack_button.pack(fill="both")
         
-        parry_button = tk.Button(combat_buttons_frame, text="Parry", command=lambda: [combat_parry_counter(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
+        parry_button = tk.Button(combat_buttons_frame, text="Parry", command=lambda: [combat_parry_counter(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.is_enemy_slain()])
         parry_button.pack(fill="both")
         
         guard_button = tk.Button(combat_buttons_frame, text="Guard", command=lambda: [combat_defend(self.player, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
@@ -439,9 +446,20 @@ class GameInstance:
     # Wrapper function for handling fleeing
     def wrapper_flee(self):
         successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
-        if successful_flee: 
+        if successful_flee == True: 
             self.restaurant_menu()
         else: 
             combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log)
-            self.battle_menu
+            self.battle_menu()
         
+    # Checks if enemy is slain. If so, returns to harvest_node
+    def is_enemy_slain(self):
+        self.clear_screen()
+        enemy_defeated_text = f"You have slain the {self.current_enemy.name}"
+        if self.current_enemy.health <= 0:
+            enemy_slain_label = tk.Label(self.root, text=enemy_defeated_text)
+            enemy_slain_label.pack()
+            enemy_slain_ok = tk.Button(self.root, text="Ok!", command=self.harvest_node_text)
+            enemy_slain_ok.pack()
+        else: 
+            self.battle_menu()

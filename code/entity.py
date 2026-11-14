@@ -22,8 +22,7 @@ class Entity:
             self.name: str = "Me"
             self.health: int = 100
             self.max_health: int = self.health
-            self.health: int = 1000
-            self.defense: int = 50
+            self.defense: int = 10
             self.attack_dice: list[list[int]] = [[2,5], [10,10]] # Default for combat demo testing
             self.block_dice: list[list[int]] = [[5,2]]
             self.dodge_dice: list[list[int]] = [[3,3]]
