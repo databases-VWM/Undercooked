@@ -15,6 +15,7 @@ class Entity:
             self.attack_dice: list[list[int]] = fileData["attack_dice"]
             self.block_dice: list[list[int]] = fileData["block_dice"]
             self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
+            self.description: str = fileData["description"]
             self.is_boss: bool = fileData["is_boss"]
         else:
             # Testing defaults
@@ -26,6 +27,7 @@ class Entity:
             self.attack_dice: list[list[int]] = [[2,5], [10,10]] # Default for combat demo testing
             self.block_dice: list[list[int]] = [[5,2]]
             self.dodge_dice: list[list[int]] = [[3,3]]
+            self.description: str = "A mighty chef"
             self.is_boss: bool = False
 
             self.get_player_data_from_database()
@@ -35,4 +37,11 @@ class Entity:
         pass
         
 
+#Function that puts stats into an array to be outputted by another function
+def output_entity_stats(entity: Entity) -> list[str]:
+    entity_array: list[str] = []
+    entity_array.append(f"{entity.name}")
+    entity_array.append(f"{entity.health} / {entity.max_health} Health")
+    entity_array.append(f"\"{entity.description}\"")
+    return entity_array
         
