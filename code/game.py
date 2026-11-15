@@ -350,6 +350,9 @@ class GameInstance:
     # TODO: Send inventory back to restaurant
     def half_and_half(self):
         self.clear_screen()
+        # Sends off your inventory to the database
+        # Uncomment when Ingredients JSON is ready
+        #inv_to_database(connection, self.room_ID, self.local_inventory)
         self.local_inventory = []
         self.player.health += round(self.player.max_health * .25)
         text_label = tk.Label(self.root, text="You heal 25% of your health and send your inventory back to the restaurant")
@@ -431,7 +434,7 @@ class GameInstance:
         # Removes the checkpoint in the area
         if self.get_checkpoint() != 0:
             self.remove_checkpoint()
-        gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
+        gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping all of your ingredients along the way")
         gather_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
         ok_button.pack()
@@ -509,6 +512,11 @@ class GameInstance:
     def wrapper_flee(self):
         successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
         if successful_flee == True: 
+            # Drops half of your inventory
+            self.local_inventory = drop_random_ingredients(self.local_inventory)
+            # Uncomment when Ingredients JSON is ready
+            # inv_to_database(connection, self.room_ID, self.local_inventory)
+            messagebox.showinfo(message=f"As you flee, you dropped half of your collected ingredients in your hurry. However, you kept: {print_ingredients(self.local_inventory)}\n")
             self.restaurant_menu()
         else: 
             combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log)

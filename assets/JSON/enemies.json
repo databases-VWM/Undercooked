@@ -3,7 +3,7 @@
         "name": "The Big Craw",
         "health": 21,
         "defense": 2,
-        "attack_dice": [[16, 6]],
+        "attack_dice": [[2, 4]],
         "block_dice": [[4, 8]],
         "dodge_dice": [[16, 5]],
         "description": "",

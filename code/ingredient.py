@@ -1,9 +1,10 @@
 import json
+from functions import *
 
 # Allows for dynamic creation of an object from JSON from just its name
 class Ingredient:
     def __init__(self, ingredient_name: str):
-        fileObject = open("./assets/JSON/enemies.json", "r")
+        fileObject = open("../assets/JSON/ingredients.json", "r")
         fileData = json.load(fileObject)[ingredient_name]
 
         # Imported Properties
@@ -60,3 +61,48 @@ def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
     else:
         ingredients_str = "Nothing in Inventory"
     return ingredients_str
+
+# Drops half of your inventory and returns a concatenated string of all non-dropped items
+def drop_random_ingredients(ingredients: list[tuple[str, int]]) -> list[tuple[str, int]]:
+    #Pythonic way of summing all the quantities
+    print(ingredients) # Debugging
+    #Sums all items from their quantities
+    total_items: int = sum(x[1] for x in ingredients)
+    kept_ingredients: list[tuple[str, int]] = []
+        
+    # Drops half of your inventory
+    for drop_num in range(total_items // 2):
+        # Add ingredient to your kept inventory
+        node_ingredient = sample_item(ingredients)
+        # Protects from weird edge cases
+        if node_ingredient is not None:
+            # Check whether the player already has this item
+            item_found = False
+
+            for i, (inventory_name, quantity) in enumerate(kept_ingredients):
+                if inventory_name == node_ingredient:
+                    kept_ingredients[i] = (inventory_name, quantity + 1)
+                    item_found = True
+                    break
+
+            # Add a new item if it isn't already in the inventory
+            if not item_found:
+                kept_ingredients.append((node_ingredient, 1))
+        
+        # Removes ingredient from old inventory
+        if len(ingredients) > 1:
+            for i in range(len(ingredients) - 1):
+                if ingredients[i][0] == node_ingredient:
+                    item_quantity = ingredients[i][1]
+                    ingredients[i] = (node_ingredient, item_quantity-1)
+                    # Pops ingredients that have 0 quantity
+                    if ingredients[i][1] == 0:
+                        ingredients.pop(i)
+        else: 
+            ingredients = []
+    print(kept_ingredients) #debugging
+    print(ingredients) #debugging
+        
+        
+    # Returns the concatenated string of all remaining items
+    return kept_ingredients

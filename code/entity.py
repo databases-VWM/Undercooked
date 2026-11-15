@@ -29,7 +29,7 @@ class Entity:
             self.defense: int = 10
             self.attack_dice: list[list[int]] = [[2,5], [10,10]] # Default for combat demo testing
             self.block_dice: list[list[int]] = [[5,2]]
-            self.dodge_dice: list[list[int]] = [[3,3]]
+            self.dodge_dice: list[list[int]] = [[2,12]]
             self.description: str = "A mighty chef"
             self.is_boss: bool = False
 
