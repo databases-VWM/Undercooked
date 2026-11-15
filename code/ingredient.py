@@ -46,3 +46,16 @@ def inv_to_database(connection, room_id, inventory):
 
     finally:
         cursor.close()
+        
+def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
+    ingredients_str = "Inventory: \n"
+    if len(ingredients) > 0:
+        for inventory_num in range(len(ingredients)):
+            ingredients_str += ingredients[inventory_num][0]
+            ingredients_str += ": "
+            ingredients_str += str(ingredients[inventory_num][1])
+            if inventory_num != (len(ingredients) - 1):
+                ingredients_str += ", "
+    else:
+        ingredients_str = "Nothing in Inventory"
+    return ingredients_str

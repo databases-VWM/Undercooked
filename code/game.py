@@ -254,6 +254,8 @@ class GameInstance:
     # This series of functions is kind of like Assembly labels due to how TKinter works. 
     def explore_node(self, pause_zone = False):
         self.clear_screen()
+        # Resets the combat log
+        self.combat_log = []
         # Stays at same location when checkpoint is enabled
         if pause_zone == False:
             self.current_area.current_node = self.current_area.current_node + 1
@@ -284,13 +286,20 @@ class GameInstance:
             self.current_area.generate_node()
             #Triggers text for the type of node
             self.node_type_text()
-            
+    
+    # Displays the player's status, inventory, current node, and area checkpoint
     def check_player_status(self):
         self.clear_screen()
         player_status = tk.StringVar()
         player_status.set(setup_for_stringvar(output_entity_stats(self.player, True)))
+        
+        ingredients_inventory = tk.StringVar()
+        ingredients_inventory.set(print_ingredients(self.local_inventory)) # type: ignore
+        
         player_status_label = tk.Label(self.root, textvariable=player_status)
         player_status_label.pack()
+        ingredients_inventory_display = tk.Label(self.root, textvariable=ingredients_inventory)
+        ingredients_inventory_display.pack()
         current_zone = tk.Label(self.root, text=f"Current Node: {self.current_area.current_node}")
         current_zone.pack()
         current_area_checkpoint = tk.Label(self.root, text=f"Current Checkpoint: Node {self.get_checkpoint()}")

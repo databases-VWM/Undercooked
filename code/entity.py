@@ -9,6 +9,8 @@ class Entity:
 
             # Imported Properties
             self.name: str = fileData["name"]
+            self.weapon: str = ""
+            self.armor: str = ""
             self.health: int = fileData["health"]
             self.max_health = self.health
             self.defense: int = fileData["defense"]
@@ -20,6 +22,8 @@ class Entity:
         else:
             # Testing defaults
             self.name: str = "Me"
+            self.weapon: str = "These hands"
+            self.armor: str = "Traveler's Garbs"
             self.health: int = 100
             self.max_health: int = self.health
             self.defense: int = 10
@@ -67,8 +71,10 @@ def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
         attack_die_str = transform_dice_to_str(entity, "attack")
         guard_die_str = transform_dice_to_str(entity, "guard")
         dodge_die_str = transform_dice_to_str(entity, "dodge")
+        entity_array.append(f"Weapon: {entity.weapon}")
+        entity_array.append(f"Armor: {entity.armor}")
         entity_array.append(f"Defense: {entity.defense}")
-        entity_array.append(f"Attack: {attack_die_str}")
+        entity_array.append(f"Damage: {attack_die_str}")
         entity_array.append(f"Guard: {guard_die_str}")
         entity_array.append(f"Dodge: {dodge_die_str}")
     entity_array.append(f"\"{entity.description}\"")
