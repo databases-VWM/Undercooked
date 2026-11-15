@@ -127,6 +127,9 @@ def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge
     attack_roll = roll_dice_pool(enemy.attack_dice)
 
     enemy_damage = attack_roll["total"]
+    # Increases enemy's damage by the constant scalar if elite
+    if enemy.is_elite:
+        enemy_damage *= enemy.ELITE_ENEMY_DAMAGE_SCALAR
 
     log_print(log_list, f"Enemy Attack Roll: {attack_roll['rolls']}")
     log_print(log_list, f"Enemy Attack Total: {enemy_damage}")
@@ -138,6 +141,7 @@ def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge
 
     # Calculate incoming damage
     damage = max(0, enemy_damage - player.defense - block_bonus)
+
 
     player.health -= damage
 

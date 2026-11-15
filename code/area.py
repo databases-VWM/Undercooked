@@ -28,6 +28,7 @@ class Area:
             self.node_type: str = ""
             self.is_enemy: bool = False
             self.is_elite: bool = False
+            self.is_boss: bool = False
             self.enemy_name: str = ""
 
             # Constants for game balancing
@@ -40,6 +41,7 @@ class Area:
         self.node_type = " "
         self.is_enemy = False
         self.is_elite = False
+        self.is_boss = False
 
         # Determine node type
         node_categories = [
@@ -69,14 +71,15 @@ class Area:
         # DETERMINE IF ENEMY
         if len(self.enemies_list) > 0 and random.random() < self.ENEMY_CHANCE:
             self.is_enemy = True
+            # DETERMINE IF ELITE
+            if (random.random() * self.ELITE_THRESHOLD >= self.ELITE_THRESHOLD - self.current_node):
+                self.is_elite = True
+            else:
+                self.is_elite = False
         else:
             self.is_enemy = False
         
-        # DETERMINE IF ELITE
-        if (random.random() * self.ELITE_THRESHOLD >= self.ELITE_THRESHOLD - self.current_node):
-            self.is_elite = True
-        else:
-            self.is_elite = False
+
 
         # Generate actual enemy
         self.enemy_name = sample_item(self.enemies_list)

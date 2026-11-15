@@ -354,6 +354,9 @@ class GameInstance:
         #inv_to_database(connection, self.room_ID, self.local_inventory)
         self.local_inventory = []
         self.player.health += round(self.player.max_health * .25)
+        # Don't allow for going over max health
+        if self.player.health > self.player.max_health:
+            self.player.health = self.player.max_health
         text_label = tk.Label(self.root, text="You heal 25% of your health and send your inventory back to the restaurant")
         text_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
@@ -385,13 +388,24 @@ class GameInstance:
 
     def enemy_node_text(self):
         self.clear_screen()
+        self.current_enemy = Entity(self.current_area.enemy_name)
         # Change flavor text for elite or not
         if self.current_area.is_elite == True:
-            enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!"
+            enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!\n"
+            # Scaling up everything except for damage
+            self.current_enemy.max_health *= self.current_enemy.ELITE_ENEMY_HEALTH_SCALAR
+            self.current_enemy.health *= self.current_enemy.ELITE_ENEMY_HEALTH_SCALAR
+            self.current_enemy.defense *= self.current_enemy.ELITE_ENEMY_DEFENSE_SCALAR
+            # Sets Entity attribute for being elite as well
+            self.current_enemy.is_elite = True
         else:
-            enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!"
-        # Actually create the enemy
-        self.current_enemy = Entity(self.current_area.enemy_name)
+            enemy_message = "While observing the landscape, a " + self.current_area.enemy_name + " appears!\n"
+            # self.current_enemy
+        
+        # Triggers an additional message for a boss encounter. A boss can be elite
+        if self.current_enemy.is_boss == True:
+            enemy_message += "This foe appears to be especially mighty. It must be a BOSS!"
+            self.current_area.is_boss = True
         
         text_label = tk.Label(self.root, text=enemy_message)
         text_label.pack()
@@ -401,28 +415,25 @@ class GameInstance:
     # Text for harvesting the node
     def harvest_node_text(self):
         self.clear_screen()
+        node_ingredients: list[str] = []
         # If player falls, skip this function
         # if self.player.health <= 0:
         #     self.fallen_text()
 
         # Add ingredient to your inventory
-        node_ingredient = sample_item(self.current_area.chosen_list)
-        # Protects from weird edge cases
-        if node_ingredient is not None:
-            # Check whether the player already has this item
-            item_found = False
+        node_ingredients.append(harvest_item(self.current_area.chosen_list, self.local_inventory))
+        
+        # If enemy was elite, get a second roll
+        if self.current_area.is_elite:
+            node_ingredients.append(harvest_item(self.current_area.chosen_list, self.local_inventory))
 
-            for i, (inventory_name, quantity) in enumerate(self.local_inventory):
-                if inventory_name == node_ingredient:
-                    self.local_inventory[i] = (inventory_name, quantity + 1)
-                    item_found = True
-                    break
+        # If enemy was a boss, get an additional 2 rolls
+        if self.current_area.is_boss:
+            node_ingredients.append(harvest_item(self.current_area.chosen_list, self.local_inventory))
+            node_ingredients.append(harvest_item(self.current_area.chosen_list, self.local_inventory))
 
-            # Add a new item if it isn't already in the inventory
-            if not item_found:
-                self.local_inventory.append((node_ingredient, 1))
             
-        text_label = tk.Label(self.root, text=f"You harvest 1 {node_ingredient}")
+        text_label = tk.Label(self.root, text=f"You harvested: \n{setup_for_stringvar(node_ingredients)}")
         text_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
         ok_button.pack()

@@ -3,11 +3,15 @@ import json
 # Allows for dynamic creation of an object from JSON from just its name
 class Entity:
     def __init__(self, entity_name: str, user_ID: int = 0):
+
         if entity_name != "Player":
             fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
             fileData = json.load(fileObject)[entity_name]
 
             # Imported Properties
+            self.ELITE_ENEMY_HEALTH_SCALAR: int = 3
+            self.ELITE_ENEMY_DAMAGE_SCALAR: int = 2
+            self.ELITE_ENEMY_DEFENSE_SCALAR: int = 2
             self.name: str = fileData["name"]
             self.weapon: str = ""
             self.armor: str = ""
@@ -18,6 +22,7 @@ class Entity:
             self.block_dice: list[list[int]] = fileData["block_dice"]
             self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
             self.description: str = fileData["description"]
+            self.is_elite: bool = False
             self.is_boss: bool = fileData["is_boss"]
             self.power: int = 0
         else:
@@ -32,6 +37,7 @@ class Entity:
             self.block_dice: list[list[int]] = [[5,2]]
             self.dodge_dice: list[list[int]] = [[2,12]]
             self.description: str = "A mighty chef"
+            self.is_elite = False
             self.is_boss: bool = False
             self.power: int = 0
 
@@ -49,6 +55,7 @@ class Entity:
         temp_power += dice_avg(self.attack_dice) // 2
         temp_power += dice_avg(self.block_dice) // 3
         temp_power += dice_avg(self.dodge_dice) // 3
+        self.power = temp_power
         
 #Returns the average of a set of dice
 def dice_avg(dice_array: list[list[int]]) -> int:

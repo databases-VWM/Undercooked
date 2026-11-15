@@ -102,3 +102,21 @@ def drop_random_ingredients(ingredients: list[tuple[str, int]]) -> list[tuple[st
         
     # Returns the concatenated string of all remaining items
     return kept_ingredients
+
+def harvest_item(ingredients_drop_list: list[tuple[str, int]], inventory: list[tuple[str, int]]) -> str:
+    node_ingredient: str = sample_item(ingredients_drop_list)
+    # Protects from weird edge cases
+    if node_ingredient is not None:
+        # Check whether the player already has this item
+        item_found = False
+
+        for i, (inventory_name, quantity) in enumerate(inventory):
+            if inventory_name == node_ingredient:
+                inventory[i] = (inventory_name, quantity + 1)
+                item_found = True
+                break
+
+        # Add a new item if it isn't already in the inventory
+        if not item_found:
+            inventory.append((node_ingredient, 1))
+    return node_ingredient
