@@ -22,7 +22,6 @@ except:
     sys.exit(1)
 
 user_ID = generate_user_ID(connection)
-print("Generated user ID:", user_ID)
 
 #Holds the game logic
 class GameInstance:
@@ -50,6 +49,7 @@ class GameInstance:
     def clear_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
+            del widget
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
     #Shows the login screen to allow the user to input their ID
@@ -191,6 +191,7 @@ class GameInstance:
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
         self.clear_screen()
+        self.player.health = self.player.max_health
         todo_button = tk.Button(self.root, text="Restaurant Menu is a WIP")
         todo_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
@@ -251,10 +252,10 @@ class GameInstance:
     # This function overall handles nodes. It acts like a loop
     # This function specifically has the menu for campsites and checkpoints
     # This series of functions is kind of like Assembly labels due to how TKinter works. 
-    def explore_node(self, checkpoint_bool = False):
+    def explore_node(self, pause_zone = False):
         self.clear_screen()
         # Stays at same location when checkpoint is enabled
-        if checkpoint_bool == False:
+        if pause_zone == False:
             self.current_area.current_node = self.current_area.current_node + 1
         # Kick back to the restaurant when done
         if self.current_area.progress == False:
@@ -265,6 +266,8 @@ class GameInstance:
         if self.current_area.current_node % 5 == 0:
             campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
             campsite_label.pack()
+            check_status_button = tk.Button(self.root, text="Check Status", command=self.check_player_status)
+            check_status_button.pack()
             full_heal_button = tk.Button(self.root, text="Full Heal", command=self.full_heal_menu)
             full_heal_button.pack()
             return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health", command=self.half_and_half)
@@ -281,6 +284,19 @@ class GameInstance:
             self.current_area.generate_node()
             #Triggers text for the type of node
             self.node_type_text()
+            
+    def check_player_status(self):
+        self.clear_screen()
+        player_status = tk.StringVar()
+        player_status.set(setup_for_stringvar(output_entity_stats(self.player, True)))
+        player_status_label = tk.Label(self.root, textvariable=player_status)
+        player_status_label.pack()
+        current_zone = tk.Label(self.root, text=f"Current Node: {self.current_area.current_node}")
+        current_zone.pack()
+        current_area_checkpoint = tk.Label(self.root, text=f"Current Checkpoint: Node {self.get_checkpoint()}")
+        current_area_checkpoint.pack()
+        ok_button = tk.Button(self.root, text="Continue", command=lambda: self.explore_node(True))
+        ok_button.pack()
     
     # Sets a checkpoint for an area
     def set_checkpoint(self):
@@ -292,8 +308,11 @@ class GameInstance:
     
     # Removes a checkpoint
     def remove_checkpoint(self):
-        checkpoint_message: str = "Your checkpoint has been removed in " + self.current_area.name
-        self.checkpoints.pop(self.current_area.name)
+        try:
+            checkpoint_message: str = "Your checkpoint has been removed in " + self.current_area.name
+            self.checkpoints.pop(self.current_area.name)
+        except KeyError:
+            checkpoint_message = "You don't have a checkpoint in " + self.current_area.name
         messagebox.showinfo(self.root, checkpoint_message)
             
 
@@ -360,8 +379,8 @@ class GameInstance:
     def harvest_node_text(self):
         self.clear_screen()
         # If player falls, skip this function
-        if self.player.health <= 0:
-            self.fallen_text()
+        # if self.player.health <= 0:
+        #     self.fallen_text()
 
         # Add ingredient to your inventory
         node_ingredient = sample_item(self.current_area.chosen_list)
@@ -389,10 +408,8 @@ class GameInstance:
     def fallen_text(self):
         self.clear_screen()
         # Removes the checkpoint in the area
-        try:
+        if self.get_checkpoint() != 0:
             self.remove_checkpoint()
-        except KeyError:
-            pass
         gather_label = tk.Label(self.root, text="You run back to the restaurant injured, dropping several ingredients along the way")
         gather_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.restaurant_menu)
@@ -401,8 +418,8 @@ class GameInstance:
     # This displays the GUI for the combat
     def battle_menu(self):
         self.clear_screen()
-        if (self.player.health <= 0):
-            self.harvest_node_text()
+        # if (self.player.health <= 0):
+        #     self.harvest_node_text()
         
         #TKinter variable setups
         local_combat_log = tk.StringVar()
@@ -420,7 +437,8 @@ class GameInstance:
         combat_log_frame = tk.Frame(self.root)
         combat_log_frame.pack(side="right", fill="both")
         combat_buttons_frame = tk.Frame(self.root)
-        combat_buttons_frame.pack(side="bottom")
+        combat_buttons_frame.pack()
+        # combat_buttons_frame.pack(side="bottom")
         
         # Displays
         player_stats_screen = tk.Label(stats_frame, textvariable=local_player_stats)
@@ -431,18 +449,41 @@ class GameInstance:
         combat_log_menu.pack(fill="both")
         
         # Button Menu
-        attack_button = tk.Button(combat_buttons_frame, text="Attack", command=lambda: [combat_attack(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.is_enemy_slain()])
-        attack_button.pack(fill="both")
+        attack_button = tk.Button(combat_buttons_frame, text="Attack", command=self.wrapper_attack)
+        attack_button.pack(fill="both", side="left")
         
-        parry_button = tk.Button(combat_buttons_frame, text="Parry", command=lambda: [combat_parry_counter(self.player, self.current_enemy, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.is_enemy_slain()])
-        parry_button.pack(fill="both")
+        parry_button = tk.Button(combat_buttons_frame, text="Parry", command=self.wrapper_parry)
+        parry_button.pack(fill="both", side="left")
         
-        guard_button = tk.Button(combat_buttons_frame, text="Guard", command=lambda: [combat_defend(self.player, self.combat_log), combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log), self.battle_menu()])
-        guard_button.pack(fill="both")
+        guard_button = tk.Button(combat_buttons_frame, text="Guard", command=self.wrapper_guard)
+        guard_button.pack(fill="both", side="left")
         
         flee_button = tk.Button(combat_buttons_frame, text="Flee(Cowardly)", command=self.wrapper_flee)
-        flee_button.pack(fill="both")
+        flee_button.pack(fill="both", side="left")
+    
+    # Wrapper function for attack
+    def wrapper_attack(self):
+        self.clear_screen()
+        combat_attack(self.player, self.current_enemy, self.combat_log)
+        combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log)
+        self.is_player_alive()
+    
+    # Wrapper function for parry
+    def wrapper_parry(self):
+        self.clear_screen()
+        dodge_value = combat_parry_counter(self.player, self.current_enemy, self.combat_log)
+        combat_enemy_attack(self.player, self.current_enemy, 0, dodge_value, self.combat_log)
+        self.is_player_alive()
         
+    
+    # Wrapper function for guarding
+    def wrapper_guard(self):
+        self.clear_screen()
+        guard_value = combat_defend(self.player, self.combat_log)
+        combat_enemy_attack(self.player, self.current_enemy, guard_value, log_list=self.combat_log)
+        self.is_player_alive()
+        
+    
     # Wrapper function for handling fleeing
     def wrapper_flee(self):
         successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
@@ -450,7 +491,7 @@ class GameInstance:
             self.restaurant_menu()
         else: 
             combat_enemy_attack(self.player, self.current_enemy, log_list=self.combat_log)
-            self.battle_menu()
+            self.is_player_alive()
         
     # Checks if enemy is slain. If so, returns to harvest_node
     def is_enemy_slain(self):
@@ -463,3 +504,17 @@ class GameInstance:
             enemy_slain_ok.pack()
         else: 
             self.battle_menu()
+    
+    def is_player_alive(self):
+        if self.player.health > 0:
+            self.is_enemy_slain()
+        else:
+            self.fallen_text()
+        
+    def get_checkpoint(self) -> int:
+        checkpoint_num = 0
+        try:
+            checkpoint_num = self.checkpoints[self.current_area.name]
+        except KeyError:
+            checkpoint_num = 0
+        return checkpoint_num

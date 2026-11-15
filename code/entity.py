@@ -35,12 +35,42 @@ class Entity:
     def get_player_data_from_database(self):
         pass
         
-
+# Takes a category of dice and an entity and transforms that array into an appended string for display
+# Type = "attack", "guard", "dodge"
+def transform_dice_to_str(entity: Entity, type: str) -> str:
+    dice_list: list[list[int]]
+    die_str = ""
+    if type.lower() == "attack":
+        dice_list = entity.attack_dice
+    elif type.lower() == "guard":
+        dice_list = entity.block_dice
+    elif type.lower() == "dodge":
+        dice_list = entity.dodge_dice
+    
+    # Each die rolled
+    for die_num in range(len(dice_list)):
+        die_str += str(dice_list[die_num][0])
+        die_str += "d"
+        die_str += str(dice_list[die_num][1])
+        if die_num != (len(dice_list) - 1):
+            die_str += ", "
+    
+    return die_str
+        
+    
 #Function that puts stats into an array to be outputted by another function
-def output_entity_stats(entity: Entity) -> list[str]:
+def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
     entity_array: list[str] = []
-    entity_array.append(f"{entity.name}")
+    entity_array.append(f"{entity.name}'s stats:")
     entity_array.append(f"{entity.health} / {entity.max_health} Health")
+    if extended == True:
+        attack_die_str = transform_dice_to_str(entity, "attack")
+        guard_die_str = transform_dice_to_str(entity, "guard")
+        dodge_die_str = transform_dice_to_str(entity, "dodge")
+        entity_array.append(f"Defense: {entity.defense}")
+        entity_array.append(f"Attack: {attack_die_str}")
+        entity_array.append(f"Guard: {guard_die_str}")
+        entity_array.append(f"Dodge: {dodge_die_str}")
     entity_array.append(f"\"{entity.description}\"")
     return entity_array
         
