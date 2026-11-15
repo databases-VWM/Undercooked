@@ -65,7 +65,6 @@ def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
 # Drops half of your inventory and returns a concatenated string of all non-dropped items
 def drop_random_ingredients(ingredients: list[tuple[str, int]]) -> list[tuple[str, int]]:
     #Pythonic way of summing all the quantities
-    print(ingredients) # Debugging
     #Sums all items from their quantities
     total_items: int = sum(x[1] for x in ingredients)
     kept_ingredients: list[tuple[str, int]] = []
@@ -99,10 +98,7 @@ def drop_random_ingredients(ingredients: list[tuple[str, int]]) -> list[tuple[st
                     if ingredients[i][1] == 0:
                         ingredients.pop(i)
         else: 
-            ingredients = []
-    print(kept_ingredients) #debugging
-    print(ingredients) #debugging
-        
+            ingredients = []        
         
     # Returns the concatenated string of all remaining items
     return kept_ingredients

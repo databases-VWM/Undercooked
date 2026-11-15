@@ -13,8 +13,7 @@ class Area:
 
             # Imported Properties
             self.name: str = file_data["name"]
-            self.recommend_power = file_data["recommended_power"]
-            self.bosses_list: list[tuple[str, int]] = file_data["bosses_list"]
+            self.recommended_power = file_data["recommended_power"]
             self.enemies_list: list[tuple[str, int]] = file_data["enemies_list"]
             self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
@@ -88,7 +87,7 @@ def setup_ingredients_forecast(area_name: str) -> str:
         # Temporarily loads up a given area
         new_area = Area(area_name)
         total_ingredients_array: list[tuple[str, int]] = []
-        ingredients_forecast_str = "Ingredients Forecast:\n"
+        ingredients_forecast_str = f"Recommended Power: {new_area.recommended_power}\nIngredients Forecast:\n"
         
         for ingredient_tuple in new_area.flora_list:
             total_ingredients_array.append(ingredient_tuple)
@@ -98,7 +97,6 @@ def setup_ingredients_forecast(area_name: str) -> str:
             total_ingredients_array.append(ingredient_tuple)
         # Sort list by weights
         total_ingredients_array.sort(key= lambda x: x[1])
-        
         for ingredient_num in range(30):
             #Tries to add new ingredients to the forecast. If they don't exist, pass until loop ends
             try:

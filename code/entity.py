@@ -19,6 +19,7 @@ class Entity:
             self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
             self.description: str = fileData["description"]
             self.is_boss: bool = fileData["is_boss"]
+            self.power: int = 0
         else:
             # Testing defaults
             self.name: str = "Me"
@@ -32,12 +33,34 @@ class Entity:
             self.dodge_dice: list[list[int]] = [[2,12]]
             self.description: str = "A mighty chef"
             self.is_boss: bool = False
+            self.power: int = 0
 
             self.get_player_data_from_database()
 
     # This functions fills in all the player data from the database
     def get_player_data_from_database(self):
         pass
+    
+    # Power is a formulaic, general metric of how strong a player is
+    def calculate_power(self):
+        temp_power: int = 0
+        temp_power += self.max_health // 10
+        temp_power += self.defense
+        temp_power += dice_avg(self.attack_dice) // 2
+        temp_power += dice_avg(self.block_dice) // 3
+        temp_power += dice_avg(self.dodge_dice) // 3
+        
+#Returns the average of a set of dice
+def dice_avg(dice_array: list[list[int]]) -> int:
+    total_avg: int = 0
+    for i in range(len(dice_array)):
+        num_dice: int = dice_array[i][0]
+        num_sides: int = dice_array[i][1]
+        one_die_avg = (1 + num_sides) // 2
+        total_avg += one_die_avg* num_dice
+    
+    return total_avg
+        
         
 # Takes a category of dice and an entity and transforms that array into an appended string for display
 # Type = "attack", "guard", "dodge"
@@ -65,12 +88,15 @@ def transform_dice_to_str(entity: Entity, type: str) -> str:
 #Function that puts stats into an array to be outputted by another function
 def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
     entity_array: list[str] = []
+    # Update power
+    entity.calculate_power()
     entity_array.append(f"{entity.name}'s stats:")
     entity_array.append(f"{entity.health} / {entity.max_health} Health")
     if extended == True:
         attack_die_str = transform_dice_to_str(entity, "attack")
         guard_die_str = transform_dice_to_str(entity, "guard")
         dodge_die_str = transform_dice_to_str(entity, "dodge")
+        entity_array.append(f"Power: {entity.power}")
         entity_array.append(f"Weapon: {entity.weapon}")
         entity_array.append(f"Armor: {entity.armor}")
         entity_array.append(f"Defense: {entity.defense}")

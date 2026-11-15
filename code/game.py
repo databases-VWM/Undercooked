@@ -347,7 +347,6 @@ class GameInstance:
         ok_button.pack()
 
     # Heal 25% health and return inventory to restaurant
-    # TODO: Send inventory back to restaurant
     def half_and_half(self):
         self.clear_screen()
         # Sends off your inventory to the database
@@ -423,7 +422,7 @@ class GameInstance:
             if not item_found:
                 self.local_inventory.append((node_ingredient, 1))
             
-        text_label = tk.Label(self.root, text="You harvest the resources at this node")
+        text_label = tk.Label(self.root, text=f"You harvest 1 {node_ingredient}")
         text_label.pack()
         ok_button = tk.Button(self.root, text="Ok", command=self.explore_node)
         ok_button.pack()

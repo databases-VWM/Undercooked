@@ -2,7 +2,6 @@
     "The Blasted Beach": {
         "name": "The Blasted Beach",
         "recommended_power": 22,
-        "bosses_list": [],
         "enemies_list": [],
         "fishing_list": [["Salmon", 3], ["Catfish", 2]],
         "flora_list": [["Funni mushroom", 5]],
@@ -11,8 +10,7 @@
     },
     "Craw's Domain": {
         "name": "Craw's Domain",
-        "recommended_power": 22,
-        "bosses_list": [],
+        "recommended_power": 70,
         "enemies_list": [["The Big Craw", 5], ["Vincent's Procrastination", 1]],
         "fishing_list": [["Salmon", 3], ["Catfish", 2]],
         "flora_list": [["Funni Mushroom", 5]],
