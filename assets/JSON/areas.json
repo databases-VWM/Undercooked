@@ -4,8 +4,8 @@
         "recommended_power": 22,
         "bosses_list": [],
         "enemies_list": [],
-        "fishing_list": [["salmon", 3], ["catfish", 2]],
-        "flora_list": [["funni mushroom", 5]],
+        "fishing_list": [["Salmon", 3], ["Catfish", 2]],
+        "flora_list": [["Funni mushroom", 5]],
         "fauna_list": [],
         "map_unlock": "default"
     },
@@ -14,9 +14,9 @@
         "recommended_power": 22,
         "bosses_list": [],
         "enemies_list": [["The Big Craw", 5], ["Vincent's Procrastination", 1]],
-        "fishing_list": [["salmon", 3], ["catfish", 2]],
-        "flora_list": [["funni mushroom", 5]],
-        "fauna_list": [["boar meat", 2], ["raw hummingbird", 1]],
+        "fishing_list": [["Salmon", 3], ["Catfish", 2]],
+        "flora_list": [["Funni Mushroom", 5]],
+        "fauna_list": [["Boar Meat", 2], ["Raw Hummingbird", 1]],
         "map_unlock": "default"
     }
 }

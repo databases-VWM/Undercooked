@@ -204,16 +204,28 @@ class GameInstance:
         unlocked_areas_list = get_item_names("areas")
         select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
+        
+        ingredients_forecast = tk.StringVar()
+        ingredients_forecast.set(setup_ingredients_forecast(selected_area.get()))
+        # Sets up frame for the ingredient forecast
+        ingredients_forecast_frame = tk.Frame(self.root)
+        ingredients_forecast_frame.pack(side="right")
+        ingredients_forecast_box = tk.Label(ingredients_forecast_frame, textvariable=ingredients_forecast)
+        ingredients_forecast_box.pack(fill="both")
+        
 
         wilderness_title = tk.Label(self.root, text="Welcome to the Wilderness!\nSelect an Area!")
         wilderness_title.pack()
-        areas_dropdown = tk.OptionMenu(self.root, selected_area, *unlocked_areas_list)
+        areas_dropdown = tk.OptionMenu(self.root, selected_area, *unlocked_areas_list) 
+        """TODO at some point: command=ingredients_forecast.set(setup_ingredients_forecast(selected_area.get()))"""
         areas_dropdown.pack()
+        show_forecast_button = tk.Button(self.root, text="Show area ingredient forecast", command= lambda: ingredients_forecast.set(setup_ingredients_forecast(selected_area.get())))
+        show_forecast_button.pack()
         checkpoint_checkbox = tk.Checkbutton(self.root, text="Start From Checkpoint?", variable=select_checkbox, onvalue=True, offvalue=False)
         checkpoint_checkbox.pack()
         go_to_wilderness = tk.Button(self.root, text="Go!", command= lambda: self.check_area_select(selected_area.get(), select_checkbox.get()))
         go_to_wilderness.pack()
-
+        
     # Validates the information provided in wilderness_area_select and selects next menu based on it
     def check_area_select(self, selected_area_name: str, checkpoint_bool: bool) -> None:
         checkpoint_exists: bool = False

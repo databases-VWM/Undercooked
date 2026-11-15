@@ -47,6 +47,7 @@ def inv_to_database(connection, room_id, inventory):
     finally:
         cursor.close()
         
+# Puts the player's inventory of ingredients into a printable format for tk.Stringvar   
 def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
     ingredients_str = "Inventory: \n"
     if len(ingredients) > 0:

@@ -81,3 +81,41 @@ class Area:
 
         # Generate actual enemy
         self.enemy_name = sample_item(self.enemies_list)
+
+#Sets up string for the ingredient forecast for a given area
+def setup_ingredients_forecast(area_name: str) -> str:
+    try:
+        # Temporarily loads up a given area
+        new_area = Area(area_name)
+        total_ingredients_array: list[tuple[str, int]] = []
+        ingredients_forecast_str = "Ingredients Forecast:\n"
+        
+        for ingredient_tuple in new_area.flora_list:
+            total_ingredients_array.append(ingredient_tuple)
+        for ingredient_tuple in new_area.fauna_list:
+            total_ingredients_array.append(ingredient_tuple)
+        for ingredient_tuple in new_area.fishing_list:
+            total_ingredients_array.append(ingredient_tuple)
+        # Sort list by weights
+        total_ingredients_array.sort(key= lambda x: x[1])
+        
+        for ingredient_num in range(30):
+            #Tries to add new ingredients to the forecast. If they don't exist, pass until loop ends
+            try:
+                ingredients_forecast_str += total_ingredients_array[ingredient_num][0]
+                ingredients_forecast_str += "\n"
+            except IndexError:
+                pass
+        if len(total_ingredients_array) > 30:
+            ingredients_forecast_str += "... Plus more"
+    except KeyError:
+        ingredients_forecast_str = "No ingredients to display"
+    return ingredients_forecast_str
+    
+
+    
+    
+    
+    
+    
+    
