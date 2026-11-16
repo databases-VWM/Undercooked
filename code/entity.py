@@ -29,7 +29,9 @@ class Entity:
             # Testing defaults
             self.name: str = "Me"
             self.weapon: str = "These hands"
+            self.weapon_ID: int = 0
             self.armor: str = "Traveler's Garbs"
+            self.armor_ID: int = 0
             self.health: int = 100
             self.max_health: int = self.health
             self.defense: int = 10
