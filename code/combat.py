@@ -4,11 +4,6 @@ from entity import Entity
 from area import Area
 from functions import sample_item
 
-
-# Combat balancing
-FLEE_CHANCE = 0.50
-
-
 # Dice rolling functions
 def roll_dice(number_of_dice, sides):
     if number_of_dice < 0:
