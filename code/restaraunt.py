@@ -53,6 +53,35 @@ class Restaraunt:
         finally:
             cursor.close()
 
+    def add_item(self, items):
+        cursor = self.connection.cursor()
+
+        try:
+            for type_id, item_id, quantity in items:
+
+                cursor.execute(
+                    """
+                    INSERT INTO inventory (type_id, item_id, quantity, room_id)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (type_id, item_id, quantity, self.room_id)
+                )
+
+            self.connection.commit()
+
+            # Refresh local inventory
+            self.inventory = self.access_inventory()
+
+            return True
+
+        except Exception:
+            self.connection.rollback()
+            raise
+
+        finally:
+            cursor.close()
+
+
 
     # function that removes item
     def remove_item(self, items):
