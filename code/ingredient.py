@@ -34,7 +34,7 @@ def inv_to_database(connection, room_id, inventory):
             cursor.execute(
                 """
                 INSERT INTO inventory (room_id, item_id, quantity)
-                VALUES (?, ?, ?)
+                VALUES (%s, %s, %s)
                 """,
                 (room_id, item_id, quantity)
             )

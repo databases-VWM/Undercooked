@@ -1,6 +1,8 @@
 
 import mysql.connector
 from ingredient import Ingredient
+from weapon import Weapon
+from armor import Armor
 
 
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
@@ -39,15 +41,13 @@ class Restaraunt:
         try:
             cursor.execute(
                 """
-                SELECT type_id, item_id, quantity
+                SELECT type_id, item_id, item_name, quantity
                 FROM inventory
                 WHERE room_id = %s
                 """,
                 (self.room_id,)
             )
 
-            # Returns a list of tuples
-            # (type_id, item_id, quantity)
             return cursor.fetchall()
 
         finally:
@@ -148,3 +148,30 @@ class Restaraunt:
 
         finally:
             cursor.close()
+
+    def display_inventory(self):
+        # Refresh inventory from database
+        self.update_restauraunt()
+
+        display_list = []
+
+        for type_id, item_id, quantity in self.inventory:
+
+            if type_id == 1:
+                # Ingredient
+                item_name = Ingredient.get_name_by_id(item_id)
+
+            elif type_id == 2:
+                # Weapon
+                item_name = Weapon.get_name_by_id(item_id)
+
+            elif type_id == 3:
+                # Armor
+                item_name = Armor.get_name_by_id(item_id)
+
+            else:
+                item_name = "Unknown Item"
+
+            display_list.append((item_name, quantity))
+
+        return display_list

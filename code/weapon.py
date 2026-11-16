@@ -12,3 +12,4 @@ class Weapon:
         self.modifier: int = fileData["modifier"]
         self.item_id: int = fileData["item_id"]
         self.type_id: int = 2
+

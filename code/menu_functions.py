@@ -153,11 +153,53 @@ def get_all_players(connection, room_id):
 
     try:
         cursor.execute(
-            "SELECT name FROM users WHERE room_id = ?",
+            "SELECT name FROM users WHERE room_id = %s",
             (room_id,)
         )
 
         return [row[0] for row in cursor.fetchall()]
+
+    finally:
+        cursor.close()
+
+
+# Takes in a userid and returns the name
+def get_username(connection, user_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT username FROM users WHERE user_id = %s",
+            (user_id,)
+        )
+
+        result = cursor.fetchone()
+
+        if result is None:
+            return None
+
+        return result[0]
+
+    finally:
+        cursor.close()
+
+
+#given a room id, returns a bool wether or not they are logged in
+def is_logged_in(connection, user_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT in_use FROM users WHERE user_id = %s",
+            (user_id,)
+        )
+
+        result = cursor.fetchone()
+
+        if result is None:
+            return False
+
+        return bool(result[0])
 
     finally:
         cursor.close()
