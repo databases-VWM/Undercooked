@@ -39,6 +39,7 @@ class GameInstance:
         self.room_ID = None
         self.player: Entity
         self.current_enemy: Entity
+        self.is_host: bool = False
         # list of tuples of (ingredient, quantity)
         self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
@@ -97,6 +98,8 @@ class GameInstance:
 
     # Overall main menu
     def main_menu(self):
+        # Reset is_host
+        self.is_host = False
         self.clear_screen()
         undercooked_title = tk.Label(self.root, text="Welcome to Undercooked!!!")
         undercooked_title.pack()
@@ -120,6 +123,8 @@ class GameInstance:
 
     # GUI for creating a room
     def create_room_menu(self):
+        # Set is_host to true
+        self.is_host = True
         self.clear_screen()
         new_room_label = tk.Label(self.root, text="Enter the name of the room")
         new_room_label.pack()
