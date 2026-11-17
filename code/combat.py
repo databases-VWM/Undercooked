@@ -55,14 +55,14 @@ def roll_dice_pool(dice_groups, flat_modifier=0):
 def combat_attack(player: Entity, enemy: Entity, log_list: list[str]=[]):
     attack_roll = roll_dice_pool(player.attack_dice)
 
-    log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
-    log_print(log_list, f"Total Roll: {attack_roll['total']}")
+    #log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
+    #log_print(log_list, f"Total Roll: {attack_roll['total']}")
 
     damage = max(0, attack_roll["total"] - enemy.defense)
 
     enemy.health -= damage
 
-    log_print(log_list, f"Enemy Defense: {enemy.defense}")
+    #log_print(log_list, f"Enemy Defense: {enemy.defense}")
     log_print(log_list, f"Damage Dealt: {damage}")
     log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
@@ -72,7 +72,7 @@ def combat_parry_counter(player: Entity, enemy: Entity, log_list: list[str]=[]):
     # Counterattack
     attack_roll = roll_dice_pool(player.attack_dice)
 
-    log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
+    #log_print(log_list, f"Attack Roll: {attack_roll['rolls']}")
 
     # Apply enemy defense, then halve the resulting damage
     damage = max(0, int((attack_roll["total"] - enemy.defense) * 0.5))
@@ -80,7 +80,7 @@ def combat_parry_counter(player: Entity, enemy: Entity, log_list: list[str]=[]):
     enemy.health -= damage
 
     log_print(log_list, f"Counter Damage: {damage}")
-    log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
+    #log_print(log_list, f"Enemy Health: {max(0, enemy.health)}/{enemy.max_health}")
 
     # Roll dodge dice for the incoming enemy attack
     dodge_roll = roll_dice_pool(player.dodge_dice)
@@ -126,7 +126,7 @@ def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge
     if enemy.is_elite:
         enemy_damage *= enemy.ELITE_ENEMY_DAMAGE_SCALAR
 
-    log_print(log_list, f"Enemy Attack Roll: {attack_roll['rolls']}")
+    #log_print(log_list, f"Enemy Attack Roll: {attack_roll['rolls']}")
     log_print(log_list, f"Enemy Attack Total: {enemy_damage}")
 
     # Check whether the player's parry/dodge succeeded
@@ -140,8 +140,8 @@ def combat_enemy_attack(player: Entity, enemy: Entity, block_bonus: int=0, dodge
 
     player.health -= damage
 
-    log_print(log_list, f"Your Defense: {player.defense}")
-    log_print(log_list, f"Block Bonus: {block_bonus}")
+    #log_print(log_list, f"Your Defense: {player.defense}")
+    #log_print(log_list, f"Block Bonus: {block_bonus}")
     log_print(log_list, f"Damage Taken: {damage}")
     log_print(log_list, f"Your Health: {max(0, player.health)}")
 

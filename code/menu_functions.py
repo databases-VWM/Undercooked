@@ -50,13 +50,13 @@ def check_user_ID_exists(connection, user_ID):
     finally:
         cursor.close()
 
-def create_new_user(connection, user_ID, username):
+def create_new_user(connection, user_ID, username, password):
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "INSERT INTO users VALUES (%s, %s, null)",
-            (user_ID, username)
+            "INSERT INTO users VALUES (%s, %s, %s, null)",
+            (user_ID, username, password)
         )
         connection.commit()
     finally:

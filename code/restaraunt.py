@@ -1,4 +1,3 @@
-
 import mysql.connector
 from ingredient import Ingredient
 from weapon import Weapon
@@ -13,10 +12,14 @@ class Restaraunt:
         self.room_id = room_id
         self.connection = connection
 
+        self.money = 1000
+
+
         self.areas_unlocked = []
 
         # List of one-time purchases already made
         self.onetime_purchases = []
+        self.unlocked_recipies = []
 
         # List of tuples: (item_name, quantity)
         self.inventory = [] # NOTE this may be redundant
@@ -57,14 +60,14 @@ class Restaraunt:
         cursor = self.connection.cursor()
 
         try:
-            for type_id, item_id, quantity in items:
+            for type_id, item_id, item_name, quantity in items:
 
                 cursor.execute(
                     """
-                    INSERT INTO inventory (type_id, item_id, quantity, room_id)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
-                    (type_id, item_id, quantity, self.room_id)
+                    (type_id, item_id, item_name, quantity, self.room_id)
                 )
 
             self.connection.commit()
@@ -149,6 +152,7 @@ class Restaraunt:
         finally:
             cursor.close()
 
+# Rewrite to
     def display_inventory(self):
         # Refresh inventory from database
         self.update_restauraunt()

@@ -461,6 +461,7 @@ class GameInstance:
         #     self.harvest_node_text()
         
         #TKinter variable setups
+        self.combat_log = []
         local_combat_log = tk.StringVar()
         local_combat_log.set(setup_for_stringvar(self.combat_log))
         
