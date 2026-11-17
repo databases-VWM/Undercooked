@@ -1,6 +1,7 @@
 import random
 import mysql.connector
 import socket
+import bcrypt
 
 #______________________________________________
 # Multiplayer Connection Functions
@@ -34,17 +35,23 @@ def generate_user_ID(connection):
     finally:
         cursor.close()
 
-
-def check_user_ID_exists(connection, user_ID):
+# Wesley(3): I need you to modify this function. First, check for user_ID. If it exists, then run the hash check function below
+def check_login_info(connection, user_ID, password):
     cursor = connection.cursor()
 
     try:
         cursor.execute(
             "SELECT 1 FROM users WHERE user_ID = %s",
-            (user_ID,)
+            (user_ID, )
         )
 
-
+        """Hash check function. Just trust this code unless this breaks
+        if bcrypt.checkpw(password.encode("utf-8"), returned_password):
+            return true
+        else:
+            return false
+        """
+            
         return cursor.fetchone() is not None
 
     finally:
@@ -61,6 +68,15 @@ def create_new_user(connection, user_ID, username, password):
         connection.commit()
     finally:
         cursor.close()
+        
+# Wesley(1)
+def is_duplicate_connection(connection, user_ID):
+    pass
+
+# Wesley (2)
+def set_duplicate_connection(connection, set_bool: bool) -> None:
+    pass
+
 #______________________________________________
 # Room Management Functions
 #______________________________________________
@@ -164,7 +180,7 @@ def get_all_players(connection, room_id):
 
 
 # Takes in a userid and returns the name
-def get_username(connection, user_id):
+def get_username(connection, user_id) -> str:
     cursor = connection.cursor()
 
     try:
@@ -176,7 +192,7 @@ def get_username(connection, user_id):
         result = cursor.fetchone()
 
         if result is None:
-            return None
+            return ""
 
         return result[0]
 

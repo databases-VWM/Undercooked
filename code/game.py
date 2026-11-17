@@ -8,6 +8,7 @@ from area import *
 from ingredient import *
 from combat import *
 from menu_functions import *
+import bcrypt
 
 #MySQL default connection
 try:
@@ -21,7 +22,7 @@ except:
     messagebox.showerror(message="Database not running. Exiting game now")
     sys.exit(1)
 
-user_ID = generate_user_ID(connection)
+# user_ID = generate_user_ID(connection)
 
 #Holds the game logic
 class GameInstance:
@@ -53,31 +54,64 @@ class GameInstance:
             del widget
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
+    def database_select_screen(self):
+        pass
+        
+    def setup_database_connection(self):
+        pass
+
     #Shows the login screen to allow the user to input their ID
+    #Wesley: 
     def login(self):
         # GUI and Logic
         self.clear_screen()
-        login_label = tk.Label(self.root, text="Please input your User ID to log in!\nOr, create a new user below")
+        login_label = tk.Label(self.root, text="Please input your User ID and password to login!\nOr, create a new user below")
         login_label.pack()
         userID_entry = tk.Entry(self.root)
         userID_entry.pack()
+        password_entry = tk.Entry(self.root)
+        password_entry.pack()
         #Checks for the UserID. If it exists, go to main menu. Else, reopen login
-        login_button = tk.Button(self.root, text="Login", command=lambda: self.login_logic(userID_entry.get()))
+        login_button = tk.Button(self.root, text="Login", command=lambda: self.login_logic(userID_entry.get(), password_entry.get()))
         login_button.pack()
         register_user_button = tk.Button(self.root, text="Register a New User", command=self.register)
         register_user_button.pack()
 
     # Handles the logic of the input button
-    def login_logic(self, userID):
-        self.logged_In = check_user_ID_exists(connection, userID)
-        self.userID = userID
-
-        if self.logged_In == True:
-            #Creates player
-            self.player = Entity("Player", self.userID)
-            self.main_menu()
+    # Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
+    # is_duplicate_connection(userID: str) -> bool
+    def login_logic(self, userID: str, password: str):
+        # Encrypts password using brypt
+        encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        # Check for if username and password are correct
+        # Wesley(3): Check menu_functions.py for info
+        correct_login = check_login_info(connection, userID, encrypted_password)
+        if correct_login == True:
+            # Checks to see if the user already has a connection
+            if is_duplicate_connection(connection, userID) == False:
+                self.userID = userID
+                #Creates player
+                self.player = Entity("Player", int(self.userID))
+                # Sets player name from database
+                self.player.name = get_username(connection, self.userID)
+                self.main_menu()
+            else: 
+                self.duplicate_connection(userID, password)
         else:
+            messagebox.showerror(message=" Failed to login. Please check your username and password and try again")
             self.login()
+
+    # Checks for and handles duplicate connections
+    #Wesley(2): Write function that sets the in_use database attribute to either true or false and sets room_ID to NULL
+    # def set_duplicate_connection(connection, what_to_set_it_to: bool) -> None
+    def duplicate_connection(self, userID, password):
+        self.clear_screen()
+        duplicate_connection_label = tk.Label(self.root, text="You are already logged in somewhere else. Would you like to make a new connection?")
+        duplicate_connection_label.pack()
+        yes_connect_button = tk.Button(self.root, text="Yes", command= lambda: [set_duplicate_connection(connection, False), self.login_logic(userID, password)])
+        yes_connect_button.pack()
+        no_connect_button = tk.Button(self.root, text="No", command=self.login)
+        no_connect_button.pack()
 
     # Handles creation of new user
     def register(self):
@@ -86,15 +120,26 @@ class GameInstance:
         title.pack()
         username_input = tk.Entry(self.root)
         username_input.pack()
-        register_button = tk.Button(self.root, text="Register User!", command=lambda: self.register_user(username_input.get()))
+        password_entry = tk.Entry(self.root)
+        password_entry.pack()
+        register_button = tk.Button(self.root, text="Register User!", command=lambda: self.register_user(username_input.get(), password_entry.get()))
         register_button.pack()
 
     # Registers a new user
-    def register_user(self, username):
+    def register_user(self, username, password):
         new_user_ID = generate_user_ID(connection)
-        create_new_user(connection, new_user_ID, username)
-        self.main_menu()
-
+        encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+        self.userID = new_user_ID
+        create_new_user(connection, new_user_ID, username, encrypted_password)
+        self.show_user_ID()
+        
+    # Just displays the user's ID
+    def show_user_ID(self):
+        self.clear_screen()
+        user_id_label = tk.Label(self.root, text=f"This is your user ID! \nWrite this down so you can log back in!\n{self.userID}")
+        user_id_label.pack()
+        ok_button = tk.Button(self.root, text="Ok!", command=self.main_menu)
+        ok_button.pack()
 
     # Overall main menu
     def main_menu(self):
@@ -154,7 +199,7 @@ class GameInstance:
         self.room_ID = new_room_id
         self.room_name = room_name
         create_new_room(connection, new_room_id, room_name)
-        if (connect_to_room(connection, new_room_id, user_ID)):
+        if (connect_to_room(connection, new_room_id, self.userID)):
             self.waiting_room_host()
         else:
             messagebox.showerror(message="Room not found")
