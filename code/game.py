@@ -11,16 +11,7 @@ from menu_functions import *
 import bcrypt
 
 #MySQL default connection
-try:
-    connection = mysql.connector.connect(
-        host="localhost",
-        user="game",
-        password="pancake_sandwich",
-        database="undercooked"
-    )
-except:
-    messagebox.showerror(message="Database not running. Exiting game now")
-    sys.exit(1)
+
 
 # user_ID = generate_user_ID(connection)
 
@@ -32,8 +23,8 @@ class GameInstance:
         root.state("zoomed" if sys.platform == "win32" else "normal")
         root.configure(bg=self.BACKGROUNDCOLOR)
 
-
-        self.login()
+        # Starting screen
+        self.database_select_screen()
         self.logged_in = False
         self.userID = ""
         self.room_name = ""
@@ -46,6 +37,7 @@ class GameInstance:
         self.current_area: Area
         self.checkpoints: dict[str, int] = {}
         self.combat_log: list[str] = []
+        self.connection = None
 
     # Clears the screen
     def clear_screen(self):
@@ -54,11 +46,36 @@ class GameInstance:
             del widget
         self.root.configure(bg=self.BACKGROUNDCOLOR)
 
+    #This lets the player, at game start, choose which database they are connecting to
     def database_select_screen(self):
-        pass
+        self.clear_screen()
+        database_label = tk.Label(self.root, text="Please select which database you are playing on. If you are hosting, leave all these values as their defaults")
+        database_label.pack()
+        ip_addr_label = tk.Label(self.root, text="IP Address:")
+        ip_addr_label.pack()
+        ip_addr_entry = tk.Entry(self.root)
+        #Sets default text
+        ip_addr_entry.insert(0, "localhost")
+        ip_addr_entry.pack()
+        # port_label = tk.Label(self.root, text="Port:")
+        # port_label.pack()
+        # port_entry = tk.Entry(self.root)
+        # port_entry.insert(0, "3306")
+        # port_entry.pack()
+        continue_button = tk.Button(self.root, text="Continue", command= lambda: [self.setup_database_connection(ip_addr_entry.get()), self.login()])
+        continue_button.pack()
         
-    def setup_database_connection(self):
-        pass
+    def setup_database_connection(self, ip_addr):
+        try:
+            self.connection = mysql.connector.connect(
+                host=ip_addr,
+                user="game",
+                password="pancake_sandwich",
+                database="undercooked"
+            )
+        except:
+            messagebox.showerror(message="Database not running. Exiting game now")
+            sys.exit(1)
 
     #Shows the login screen to allow the user to input their ID
     #Wesley: 
@@ -85,18 +102,19 @@ class GameInstance:
         encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
         # Check for if username and password are correct
         # Wesley(3): Check menu_functions.py for info
-        correct_login = check_login_info(connection, userID, encrypted_password)
+        correct_login = check_login_info(self.connection, userID, encrypted_password)
         if correct_login == True:
             # Checks to see if the user already has a connection
-            if is_duplicate_connection(connection, userID) == False:
-                self.userID = userID
-                #Creates player
-                self.player = Entity("Player", int(self.userID))
-                # Sets player name from database
-                self.player.name = get_username(connection, self.userID)
-                self.main_menu()
-            else: 
-                self.duplicate_connection(userID, password)
+            # if is_duplicate_connection(self.connection, userID) == False:
+            #     self.userID = userID
+            #     #Creates player
+            #     self.player = Entity("Player", int(self.userID))
+            #     # Sets player name from database
+            #     self.player.name = get_username(self.connection, self.userID)
+            #     self.main_menu()
+            # else: 
+            #     self.duplicate_connection(userID, password)
+            self.main_menu() # This is only here for testing purposes
         else:
             messagebox.showerror(message=" Failed to login. Please check your username and password and try again")
             self.login()
@@ -108,7 +126,7 @@ class GameInstance:
         self.clear_screen()
         duplicate_connection_label = tk.Label(self.root, text="You are already logged in somewhere else. Would you like to make a new connection?")
         duplicate_connection_label.pack()
-        yes_connect_button = tk.Button(self.root, text="Yes", command= lambda: [set_duplicate_connection(connection, False), self.login_logic(userID, password)])
+        yes_connect_button = tk.Button(self.root, text="Yes", command= lambda: [set_duplicate_connection(self.connection, False), self.login_logic(userID, password)])
         yes_connect_button.pack()
         no_connect_button = tk.Button(self.root, text="No", command=self.login)
         no_connect_button.pack()
@@ -127,10 +145,10 @@ class GameInstance:
 
     # Registers a new user
     def register_user(self, username, password):
-        new_user_ID = generate_user_ID(connection)
+        new_user_ID = generate_user_ID(self.connection)
         encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
         self.userID = new_user_ID
-        create_new_user(connection, new_user_ID, username, encrypted_password)
+        create_new_user(self.connection, new_user_ID, username, encrypted_password)
         self.show_user_ID()
         
     # Just displays the user's ID
@@ -168,8 +186,6 @@ class GameInstance:
 
     # GUI for creating a room
     def create_room_menu(self):
-        # Set is_host to true
-        self.is_host = True
         self.clear_screen()
         new_room_label = tk.Label(self.root, text="Enter the name of the room")
         new_room_label.pack()
@@ -194,12 +210,14 @@ class GameInstance:
 
     # Creates the room in the database
     def create_room(self, room_name):
-        
-        new_room_id = generate_room_ID(connection)
+        # Set is_host to true
+        self.is_host = True
+        new_room_id = generate_room_ID(self.connection)
         self.room_ID = new_room_id
         self.room_name = room_name
-        create_new_room(connection, new_room_id, room_name)
-        if (connect_to_room(connection, new_room_id, self.userID)):
+        create_new_room(self.connection, new_room_id, room_name)
+        # Wesley (4): This function doesn't update the room ID in the users table. Unsure why
+        if (connect_to_room(self.connection, new_room_id, self.userID)):
             self.waiting_room_host()
         else:
             messagebox.showerror(message="Room not found")
@@ -207,27 +225,46 @@ class GameInstance:
 
     # Logic for joining an established room
     def join_room(self, room_ID, room_IP):
-        if (connect_to_room(connection, room_ID, room_IP)):
+        if (connect_to_room(self.connection, room_ID, room_IP)):
             self.waiting_room_guest()
         else:
             messagebox.showerror(message="Room not found")
             self.main_menu()
 
     # The actual waiting room before the game starts for the host
+    #Wesley (5): Write a function that increments the day for the room named increment_day
     def waiting_room_host(self):
         self.clear_screen()
+        # Retrieves names of all players
+        current_players_list = tk.StringVar()
+        current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
+
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
         room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
-        start_button = tk.Button(self.root, text="Start Game", command=self.restaurant_menu)
+        players_list = tk.Label(self.root, textvariable=current_players_list)
+        players_list.pack()
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_guest)
+        update_players_list_button.pack()
+        start_button = tk.Button(self.root, text="Start Game", command=self.start_day)
         start_button.pack()
+    
+    # Starts the game (database setup from the host)
+    def start_day(self):
+        increment_day(self.connection, self.room_ID)
+        self.has_game_started()
 
     # This is where the guests wait
+    # Wesley (6): Write a function called check_day that returns the current day for the given room
     def waiting_room_guest(self):
         self.clear_screen()
+        # Retrieves names of all players
+        current_players_list = tk.StringVar()
+        current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
+        
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
         room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
@@ -236,11 +273,28 @@ class GameInstance:
         IP_address_button.pack()
         waiting_button = tk.Label(self.root, text="Waiting for host to start game")
         waiting_button.pack()
+        players_list = tk.Label(self.root, textvariable=current_players_list)
+        players_list.pack()
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_guest)
+        update_players_list_button.pack()
+        join_game_button = tk.Button(self.root, text="Join Game", command=self.has_game_started)
+        join_game_button.pack()
         #Show all other players in the room, room ID, and room name
+    
+    #Function for determining if players can actually join the game
+    def has_game_started(self):
+        day_num: int = check_Day(self.connection, self.room_ID)
+        if day_num > 0:
+            messagebox.showinfo("You have successfully joined the game!")
+            self.restaurant_menu()
+        else:
+            messagebox.showerror("The game hasn't started yet. You will be able to join when the host starts the game")
+            self.waiting_room_guest()
 
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
         self.clear_screen()
+        self.player = Entity(get_username(self.connection, self.userID), True)
         self.player.health = self.player.max_health
         todo_button = tk.Button(self.root, text="Restaurant Menu is a WIP")
         todo_button.pack()

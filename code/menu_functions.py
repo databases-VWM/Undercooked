@@ -62,7 +62,7 @@ def create_new_user(connection, user_ID, username, password):
 
     try:
         cursor.execute(
-            "INSERT INTO users VALUES (%s, %s, %s, null)",
+            "INSERT INTO users VALUES (%s, %s, %s, False, null)",
             (user_ID, username, password)
         )
         connection.commit()
@@ -74,8 +74,9 @@ def is_duplicate_connection(connection, user_ID):
     pass
 
 # Wesley (2)
-def set_duplicate_connection(connection, set_bool: bool) -> None:
-    pass
+# THis should return none. I'm just setting it to this for the sake of my testing while this function isn't written
+def set_duplicate_connection(connection, set_bool: bool) -> bool:
+    return True 
 
 #______________________________________________
 # Room Management Functions
@@ -132,7 +133,7 @@ def create_new_room(connection, room_ID, room_name):
 
     try:
         cursor.execute(
-            "INSERT INTO rooms VALUES (%s, %s)",
+            "INSERT INTO rooms VALUES (%s, %s, 1000, 0, NULL)",
             (room_ID, room_name)
         )
         connection.commit()
@@ -164,7 +165,7 @@ def setup_for_stringvar(array) -> str:
 
 
 #NOTE VINCENT IMPLEMENT THIS ON UR END
-def get_all_players(connection, room_id):
+def get_all_players(connection, room_id) -> list[str]:
     cursor = connection.cursor()
 
     try:
@@ -219,3 +220,11 @@ def is_logged_in(connection, user_id):
 
     finally:
         cursor.close()
+        
+# Wesley (5)
+def increment_day(connection, room_ID) -> None:
+    pass
+
+# Wesley (6)
+def check_Day(connection, room_ID) -> int:
+    pass

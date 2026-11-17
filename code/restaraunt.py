@@ -13,6 +13,7 @@ class Restaraunt:
         self.connection = connection
 
         self.money = 1000
+        self.day = 0
 
 
         self.areas_unlocked = []

@@ -2,9 +2,9 @@ import json
 
 # Allows for dynamic creation of an object from JSON from just its name
 class Entity:
-    def __init__(self, entity_name: str, user_ID: int = 0):
+    def __init__(self, entity_name: str, player: bool = False):
 
-        if entity_name != "Player":
+        if player != True:
             fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
             fileData = json.load(fileObject)[entity_name]
 
@@ -27,7 +27,7 @@ class Entity:
             self.power: int = 0
         else:
             # Testing defaults
-            self.name: str = "Me"
+            self.name: str = entity_name
             self.weapon: str = "These hands"
             self.weapon_ID: int = 0
             self.armor: str = "Traveler's Garbs"
@@ -44,6 +44,7 @@ class Entity:
             self.power: int = 0
 
             self.get_player_data_from_database()
+            self.calculate_power()
 
     # This functions fills in all the player data from the database
     def get_player_data_from_database(self):
