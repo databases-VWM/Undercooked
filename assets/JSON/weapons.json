@@ -3,12 +3,14 @@
         "name": "Debug Stick",
         "attack_dice": [[22, 103]],
         "modifier": 67,
+        "price": 1000,
         "item_id": -1
     },
     "My Rabbit": {
         "name": "My Rabbit",
         "attack_dice": [[2, 12]],
         "modifier": -3,
+        "price": 50,
         "item_id": -2
     }
 }

@@ -9,6 +9,10 @@ from ingredient import *
 from combat import *
 from menu_functions import *
 import bcrypt
+import json
+from weapon import *
+from armor import * 
+from cookbook import *
 
 #MySQL default connection
 
@@ -97,11 +101,9 @@ class GameInstance:
     # DONE Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
     # is_duplicate_connection(connection, userID: str) -> bool
     def login_logic(self, userID: str, password: str):
-        # Encrypts password using brypt
-        encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
         # Check for if username and password are correct
         # Wesley(3): Check menu_functions.py for info
-        correct_login = check_login_info(self.connection, userID, encrypted_password)
+        correct_login = check_login_info(self.connection, userID, password)
         if correct_login == True:
             # Checks to see if the user already has a connection
             if is_logged_in(self.connection, userID) == False:
@@ -198,11 +200,11 @@ class GameInstance:
     # GUI for joining a room
     def join_room_menu(self):
         self.clear_screen()
-        room_IP_button = tk.Entry(self.root)
-        room_IP_button.pack()
+        # room_IP_button = tk.Entry(self.root)
+        # room_IP_button.pack()
         room_ID_button = tk.Entry(self.root)
         room_ID_button.pack()
-        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get(), room_IP_button.get()))
+        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get()))
         join_room_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.main_menu)
         back_button.pack()
@@ -215,7 +217,6 @@ class GameInstance:
         self.room_ID = new_room_id
         self.room_name = room_name
         create_new_room(self.connection, new_room_id, room_name)
-        # Wesley (4): This function doesn't update the room ID in the users table. Unsure why
         if (connect_to_room(self.connection, new_room_id, self.userID)):
             self.waiting_room_host()
         else:
@@ -223,32 +224,31 @@ class GameInstance:
             self.main_menu()
 
     # Logic for joining an established room
-    def join_room(self, room_ID, room_IP):
-        if (connect_to_room(self.connection, room_ID, room_IP)):
+    def join_room(self, room_ID):
+        if (connect_to_room(self.connection, room_ID, self.userID)):
             self.waiting_room_guest()
         else:
             messagebox.showerror(message="Room not found")
             self.main_menu()
 
     # The actual waiting room before the game starts for the host
-    #Wesley (5): Write a function that increments the day for the room named increment_day
-    #NOTE WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
-    #def increment_day(connection, room_ID) -> None:
     def waiting_room_host(self):
         self.clear_screen()
+        # Sets logged in status
+        set_log_in(self.connection, True, self.userID)
         # Retrieves names of all players
         current_players_list = tk.StringVar()
         current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
 
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
-        room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
+        room_ID_label = tk.Label(self.root, text="Room ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
         players_list = tk.Label(self.root, textvariable=current_players_list)
         players_list.pack()
-        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_guest)
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_host)
         update_players_list_button.pack()
         start_button = tk.Button(self.root, text="Start Game", command=self.start_day)
         start_button.pack()
@@ -262,6 +262,10 @@ class GameInstance:
     # Wesley (6): Write a function called check_day that returns the current day for the given room
     def waiting_room_guest(self):
         self.clear_screen()
+        
+        # Sets logged in status
+        set_log_in(self.connection, True, self.userID)
+        
         # Retrieves names of all players
         current_players_list = tk.StringVar()
         current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
@@ -297,8 +301,12 @@ class GameInstance:
         self.clear_screen()
         self.player = Entity(get_username(self.connection, self.userID), True)
         self.player.health = self.player.max_health
-        todo_button = tk.Button(self.root, text="Restaurant Menu is a WIP")
-        todo_button.pack()
+        cook_button = tk.Button(self.root, text="Cook", command=self.cook_menu)
+        cook_button.pack()
+        equipment_button = tk.Button(self.root, text="Equipment", command=self.equipment_menu)
+        equipment_button.pack()
+        shop_button = tk.Button(self.root, text="Shop", command=self.shop_menu)
+        shop_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
         rpg_switch_button.pack()
 
@@ -439,8 +447,7 @@ class GameInstance:
             self.checkpoints.pop(self.current_area.name)
         except KeyError:
             checkpoint_message = "You don't have a checkpoint in " + self.current_area.name
-        messagebox.showinfo(self.root, checkpoint_message)
-            
+        messagebox.showinfo(self.root, checkpoint_message)   
 
     # Full heal from campfire
     def full_heal_menu(self):
@@ -489,7 +496,6 @@ class GameInstance:
             self.enemy_node_text()
         else:
             self.harvest_node_text()
-
 
     def enemy_node_text(self):
         self.clear_screen()
@@ -615,7 +621,6 @@ class GameInstance:
         combat_enemy_attack(self.player, self.current_enemy, 0, dodge_value, self.combat_log)
         self.is_player_alive()
         
-    
     # Wrapper function for guarding
     def wrapper_guard(self):
         self.clear_screen()
@@ -623,7 +628,6 @@ class GameInstance:
         combat_enemy_attack(self.player, self.current_enemy, guard_value, log_list=self.combat_log)
         self.is_player_alive()
         
-    
     # Wrapper function for handling fleeing
     def wrapper_flee(self):
         successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
@@ -663,3 +667,55 @@ class GameInstance:
         except KeyError:
             checkpoint_num = 0
         return checkpoint_num
+    
+    def cook_menu(self):
+        pass
+    
+    def equipment_menu(self):
+        pass
+    
+    #Overarching menu for the shop
+    def shop_menu(self):
+        self.clear_screen()
+        weapons_shop_button = tk.Button(self.root, text="Weapons", command=self.weapons_shop)
+        weapons_shop_button.pack()
+        armors_shop_button = tk.Button(self.root, text="Armor", command=self.armors_shop)
+        armors_shop_button.pack()
+        cookbooks_shop_button = tk.Button(self.root, text="Cookbooks", command=self.cookbooks_shop)
+        cookbooks_shop_button.pack()
+        quit_shop_button = tk.Button(self.root, text="Back", command=self.restaurant_menu)
+        quit_shop_button.pack()
+        
+    # Displays all weapons available for sale
+    def weapons_shop(self):
+        self.clear_screen()
+        weapons_display = tk.Listbox(self.root, selectmode="single")
+        weapons_display.pack()
+        weapons_array: list[str] = get_item_names("../assets/JSON/weapons.json")
+        weapons_display.insert(0, *weapons_array)
+        
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_weapon(weapons_display.get(weapons_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+            
+    # Shows information about the currently selected weapon
+    def display_weapon(self, current_weapon: str):
+        self.clear_screen()
+        displayed_weapon: Weapon = Weapon(current_weapon)
+        weapon_info_display = tk.Label(self.root, text=f"{displayed_weapon.name}:\nAttack Roll: {displayed_weapon.attack_dice}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}")
+        weapon_info_display.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=self.weapon_purchase_wrapper)
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.weapons_shop)
+        back_button.pack()
+        
+    # Database logic for purchasing the weapon
+    def weapon_purchase_wrapper(self):
+        pass
+        
+    def armors_shop(self):
+        pass
+    
+    def cookbooks_shop(self):
+        pass

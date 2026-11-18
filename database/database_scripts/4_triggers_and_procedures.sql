@@ -1,6 +1,6 @@
 -- Procedure that updates the day by 1 for a given room
 
-DROP PROCEDURE IF EXISTS increment_day
+DROP PROCEDURE IF EXISTS increment_day;
 
 DELIMITER //
 

@@ -5,10 +5,10 @@ from armor import Armor
 
 
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
-# All we would need to to is call update_restauraunt before anything to make it up to date
-class Restaraunt:
-    def __init__(self, restaraunt_name, room_id: int, connection):
-        self.restaraunt_name = restaraunt_name
+# All we would need to to is call update_restaurant before anything to make it up to date
+class Restaurant:
+    def __init__(self, restaurant_name, room_id: int, connection):
+        self.restaurant_name = restaurant_name
         self.room_id = room_id
         self.connection = connection
 
@@ -20,14 +20,14 @@ class Restaraunt:
 
         # List of one-time purchases already made
         self.onetime_purchases = []
-        self.unlocked_recipies = []
+        self.unlocked_recipes = []
 
         # List of tuples: (item_name, quantity)
         self.inventory = [] # NOTE this may be redundant
 
-        self.update_restauraunt()
+        self.update_restaurant()
 
-    def update_restauraunt(self):
+    def update_restaurant(self):
         # Retrieves all relevant information to update the restaurant class
         # should check the shop for booleans for unlocks and add them to onetime_purchases
 
@@ -156,7 +156,7 @@ class Restaraunt:
 # Rewrite to
     def display_inventory(self):
         # Refresh inventory from database
-        self.update_restauraunt()
+        self.update_restaurant()
 
         display_list = []
 

@@ -12,5 +12,6 @@ class Armor:
         self.defense: int = fileData["defense"]
         self.block_dice: list[list[int]] = fileData["block_dice"]
         self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
+        self.price: int = fileData["price"]
         self.item_id: int = fileData["item_id"]
         self.type_id: int = 3

@@ -4,6 +4,6 @@ USE undercooked;
 
 CREATE USER 'game'@'%'  IDENTIFIED BY 'pancake_sandwich';
 
-GRANT SELECT, INSERT, CREATE VIEW, DELETE, SHOW VIEW, UPDATE ON undercooked.* TO 'game'@'%';
+GRANT SELECT, INSERT, CREATE VIEW, DELETE, SHOW VIEW, EXECUTE, UPDATE ON undercooked.* TO 'game'@'%';
 
 FLUSH PRIVILEGES;

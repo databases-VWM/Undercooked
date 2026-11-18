@@ -5,6 +5,7 @@
         "defense": 99,
         "block_dice": [[16, 4]],
         "dodge_dice": [[6, 7]],
+        "price": 100000,
         "item_id": -1
     }
 }
