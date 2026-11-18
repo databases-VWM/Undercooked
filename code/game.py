@@ -302,6 +302,7 @@ class GameInstance:
         else:
             messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
+            
 
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
@@ -681,7 +682,56 @@ class GameInstance:
     def cook_menu(self):
         pass
     
+    # Allows for equipping weapons and armor
     def equipment_menu(self):
+        self.clear_screen()
+        equipment_label = tk.Label(self.root, text="Equip yourself!")
+        equipment_label.pack()
+        weapon_equip = tk.Button(self.root, text="Weapons", command=self.weapon_select_menu)
+        weapon_equip.pack()
+        armor_equip = tk.Button(self.root, text="Armor", command=self.armor_select_menu)
+        armor_equip.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.restaurant_menu)
+        back_button.pack()
+        
+    # Menu for equipping a weapon
+    def weapon_select_menu(self):
+        inspected_weapon: Weapon
+        weapon_stats = tk.StringVar()
+        weapon_stats.set("No weapon selected to inspect")
+        
+        self.clear_screen()
+        # Setting up frames
+        left_frame = tk.Frame(self.root)
+        left_frame.pack(side="left", fill="both")
+        middle_frame = tk.Frame(self.root)
+        middle_frame.pack(side="left", fill="both")
+        right_frame = tk.Frame(self.root)
+        right_frame.pack(side="left", fill="both")
+        bottom_frame = tk.Frame(self.root)
+        bottom_frame.pack(fill="x")
+        
+        # Setting up menus
+        weapons_inventory_label = tk.Label(left_frame, text="Weapons Inventory")
+        weapons_inventory_label.pack()
+        weapons_inventory = tk.Listbox(left_frame, selectmode="single")
+        #NOTE: Wesley, write a query that pulls all weapons from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
+        inventory_weapons_list: list[str] = [] #Insert function here. Make sure it returns an array of strings
+        weapons_inventory.insert(0, *inventory_weapons_list)
+        
+        selected_weapon_compare = tk.Label(middle_frame, textvariable=weapon_stats)
+        selected_weapon_compare.pack(fill="both")
+        
+        # Sets what weapon's stats to show in the inspector menu
+        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: weapon_stats.set(""))
+        inspect_weapon_button.pack()
+        
+        back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
+        back_button.pack()
+        
+    
+    # Menu for equipping armor
+    def armor_select_menu(self):
         pass
     
     # Displays the status of the restaurant
