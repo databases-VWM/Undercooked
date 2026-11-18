@@ -2,6 +2,7 @@ import random
 import mysql.connector
 import socket
 import bcrypt
+import time
 
 #______________________________________________
 # Multiplayer Connection Functions
@@ -68,10 +69,6 @@ def create_new_user(connection, user_ID, username, password):
         connection.commit()
     finally:
         cursor.close()
-        
-# Wesley(1)
-def is_duplicate_connection(connection, user_ID):
-    pass
 
 # Wesley (2)
 # THis should return none. I'm just setting it to this for the sake of my testing while this function isn't written
@@ -228,3 +225,4 @@ def increment_day(connection, room_ID) -> None:
 # Wesley (6)
 def check_Day(connection, room_ID) -> int:
     pass
+
