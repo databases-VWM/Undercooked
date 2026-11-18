@@ -23,7 +23,7 @@ def generate_user_ID(connection):
             
             # Check if the ID already exists in the database
             cursor.execute(
-                "SELECT 1 FROM users WHERE user_ID = %s",
+                "SELECT 1 FROM users WHERE user_id = %s",
                 (randomID,)
             )
 
@@ -43,7 +43,7 @@ def check_login_info(connection, user_ID, password):
 
     try:
         cursor.execute(
-            "SELECT password FROM users WHERE user_ID = %s",
+            "SELECT password FROM users WHERE user_id = %s",
             (user_ID,)
         )
 
@@ -128,7 +128,7 @@ def generate_room_ID(connection):
             
             # Check if the ID already exists in the database
             cursor.execute(
-                "SELECT 1 FROM rooms WHERE room_ID = %s",
+                "SELECT 1 FROM rooms WHERE room_id = %s",
                 (randomID,)
             )
 
@@ -242,13 +242,13 @@ def get_username(connection, user_id) -> str:
         
 # Wesley (5)
 # WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
-def increment_day(connection, room_ID) -> None:
+def increment_day(connection, room_id) -> None:
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "increment_day(%s)",
-            (room_ID,)
+            "CALL increment_day(%s)",
+            (room_id,)
         )
     finally:
         cursor.close()
@@ -272,4 +272,34 @@ def check_Day(connection, room_ID) -> int:
     
     finally:
         cursor.close()
+
+def set_time(connection, time, room_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE rooms SET day_time = %s WHERE room_id = %s",
+            (time, room_id)
+        )
     
+    finally:
+        cursor.close()
+
+def set_time(connection, room_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT day_time FROM rooms WHERE room_id = %s",
+            (room_id,)
+        )
+
+        result = cursor.fetchone()
+
+        if result is None:
+            return ""
+        
+        return result[0]
+
+    finally:
+        cursor.close()
