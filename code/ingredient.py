@@ -35,8 +35,10 @@ def inv_to_database(connection, room_id, inventory):
                 """
                 INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
                 VALUES (1, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                quantity = quantity + %s
                 """,
-                (item_id, item_name, quantity, room_id)
+                (item_id, item_name, quantity, room_id, quantity)
             )
 
         connection.commit()
