@@ -39,9 +39,6 @@ def generate_user_ID(connection):
     finally:
         cursor.close()
 
-# Wesley(3): I need you to modify this function. First, check for user_ID. If it exists, then run the hash check function below
-
-
 def check_login_info(connection, user_ID, unhashed_password: str):
     cursor = connection.cursor()
 
@@ -85,8 +82,6 @@ def create_new_user(connection, user_ID, username, hashed_password):
     finally:
         cursor.close()
 
-# Wesley(1)
-#given a room id, returns a bool wether or not they are logged in
 def is_logged_in(connection, user_id):
     cursor = connection.cursor()
 
@@ -107,7 +102,6 @@ def is_logged_in(connection, user_id):
         cursor.close()
 
 
-# Wesley (2)
 def set_log_in(connection, condition: bool, user_id):
     cursor = connection.cursor()
 
@@ -118,7 +112,6 @@ def set_log_in(connection, condition: bool, user_id):
         )
     finally:
         cursor.close()
-
 
 
 #______________________________________________
@@ -250,6 +243,13 @@ def increment_day(connection, room_id) -> None:
             "CALL increment_day(%s)",
             (room_id,)
         )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
     finally:
         cursor.close()
 
