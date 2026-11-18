@@ -3,7 +3,7 @@ import json
 # Allows for dynamic creation of an object from JSON from just its name
 class Armor:
     def __init__(self, armor_name: str):
-        fileObject = open("./assets/JSON/armors.json", "r")
+        fileObject = open("../assets/JSON/armors.json", "r")
         fileData = json.load(fileObject)[armor_name]
 
         # Imported Properties

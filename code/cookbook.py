@@ -3,7 +3,7 @@ import json
 # Allows for dynamic creation of an object from JSON from just its name
 class Cookbook:
     def __init__(self, cookbook_name: str):
-        fileObject = open("./assets/JSON/cookbooks.json", "r")
+        fileObject = open("../assets/JSON/cookbooks.json", "r")
         fileData = json.load(fileObject)[cookbook_name]
         
         self.name = fileData["name"]

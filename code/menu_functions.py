@@ -239,8 +239,6 @@ def get_username(connection, user_id) -> str:
         cursor.close()
 
         
-# Wesley (5)
-# WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
 def increment_day(connection, room_id) -> None:
     cursor = connection.cursor()
 
@@ -253,7 +251,7 @@ def increment_day(connection, room_id) -> None:
         cursor.close()
 
 # Wesley (6)
-def check_Day(connection, room_ID) -> int:
+def check_day(connection, room_ID) -> int:
     cursor = connection.cursor()
 
     try:

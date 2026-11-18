@@ -44,6 +44,8 @@ class GameInstance:
         self.combat_log: list[str] = []
         self.connection = None
         self.restaurant_obj: Restaurant
+        self.weapon: Weapon = Weapon("Frying Pan")
+        self.armor: Armor = Armor("Chef's Garbs")
 
     # Clears the screen
     def clear_screen(self):
@@ -290,14 +292,15 @@ class GameInstance:
     
     #Function for determining if players can actually join the game
     def has_game_started(self):
-        day_num: int = check_Day(self.connection, self.room_ID)
+        day_num: int = check_day(self.connection, self.room_ID)
         if day_num > 0:
-            messagebox.showinfo("You have successfully joined the game!")
+            increment_day(self.connection, self.room_ID)
+            messagebox.showinfo(message="You have successfully joined the game!")
             # Creates restaurant object
             self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
             self.restaurant_menu()
         else:
-            messagebox.showerror("The game hasn't started yet. You will be able to join when the host starts the game")
+            messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
 
     # This is the menu that first opens when the game starts
@@ -312,6 +315,8 @@ class GameInstance:
         equipment_button.pack()
         shop_button = tk.Button(self.root, text="Shop", command=self.shop_menu)
         shop_button.pack()
+        status_button = tk.Button(self.root, text="Check Restaurant Status", command=self.restaurant_status)
+        status_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
         rpg_switch_button.pack()
 
@@ -679,6 +684,28 @@ class GameInstance:
     def equipment_menu(self):
         pass
     
+    # Displays the status of the restaurant
+    def restaurant_status(self):
+        self.clear_screen()
+        restaurant_name_label = tk.Label(self.root, text=f"{self.restaurant_obj.restaurant_name}")
+        restaurant_name_label.pack()
+        restaurant_money_label = tk.Label(self.root, text=f"Money: {self.restaurant_obj.money}")
+        restaurant_money_label.pack()
+        day_label = tk.Label(self.root, text=f"Day: {self.restaurant_obj.day}")
+        day_label.pack()
+        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: {print_ingredients(self.restaurant_obj.inventory)}")
+        ingredient_inventory_label.pack()
+        player_status_label = tk.Label(self.root, text="Your character's stats:\n")
+        player_status_label.pack()
+        player_status = tk.StringVar()
+        player_status.set(setup_for_stringvar(output_entity_stats(self.player, True)))
+        weapon_info_display = tk.Label(self.root, text=f"Equipment:\n\n{self.weapon.name}:\nAttack Roll: {transform_dice_to_str(self.weapon.attack_dice)}\n Average Damage: {dice_avg(self.weapon.attack_dice)}\nAttack Modifier: {self.weapon.modifier}\nPrice: {self.weapon.price}")
+        weapon_info_display.pack()
+        armor_info_display = tk.Label(self.root, text=f"{self.armor.name}:\n Type: {self.armor.type}\nDefense: {self.armor.defense}\n Block Dice: {transform_dice_to_str(self.armor.block_dice)}\nDodge Dice: {transform_dice_to_str(self.armor.dodge_dice)}\nPrice: {self.armor.price}")
+        armor_info_display.pack()
+        continue_button = tk.Button(self.root, text="Back to work!", command=self.restaurant_menu)
+        continue_button.pack()
+
     #Overarching menu for the shop
     def shop_menu(self):
         self.clear_screen()
@@ -696,7 +723,7 @@ class GameInstance:
         self.clear_screen()
         weapons_display = tk.Listbox(self.root, selectmode="single")
         weapons_display.pack()
-        weapons_array: list[str] = get_item_names("../assets/JSON/weapons.json")
+        weapons_array: list[str] = get_item_names("weapons")
         weapons_display.insert(0, *weapons_array)
         
         show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_weapon(weapons_display.get(weapons_display.curselection())))
@@ -710,6 +737,8 @@ class GameInstance:
         displayed_weapon: Weapon = Weapon(current_weapon)
         weapon_info_display = tk.Label(self.root, text=f"{displayed_weapon.name}:\nAttack Roll: {transform_dice_to_str(displayed_weapon.attack_dice)}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}")
         weapon_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
         purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.weapon_purchase_wrapper(displayed_weapon))
         purchase_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.weapons_shop)
@@ -717,20 +746,25 @@ class GameInstance:
         
     # Database logic for purchasing the weapon
     def weapon_purchase_wrapper(self, new_weapon: Weapon):
+        # Check for money
         self.clear_screen()
-        #NOTE: Wesley, write a function that takes in the connection, weapon object, and room_id and pushes to shop queue table
-        # Make it generic so it can be used for armor and weapons
-        weapon_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_weapon.name} for {new_weapon.price}!")
-        weapon_purchase_confirmation.pack()
-        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
-        ok_button.pack()
+        if self.restaurant_obj.money >= new_weapon.price:
+            self.restaurant_obj.money -= new_weapon.price
+            #NOTE: Wesley, write a function that takes in the connection, weapon object, and room_id and pushes to shop queue table
+            # Make it generic so it can be used for armor and weapons
+            weapon_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_weapon.name} for {new_weapon.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            weapon_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else:
+            self.youre_broke()
         
     # Same as above but for armor
     def armors_shop(self):
         self.clear_screen()
         armors_display = tk.Listbox(self.root, selectmode="single")
         armors_display.pack()
-        armors_array: list[str] = get_item_names("../assets/JSON/armors.json")
+        armors_array: list[str] = get_item_names("armors")
         armors_array.insert(0, *armors_array)
     
         show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_armor(armors_display.get(armors_display.curselection())))
@@ -743,6 +777,8 @@ class GameInstance:
         displayed_armor: Armor = Armor(current_armor)
         armor_info_display = tk.Label(self.root, text=f"{displayed_armor.name}:\n Type: {displayed_armor.type}\nDefense: {displayed_armor.defense}\n Block Dice: {transform_dice_to_str(displayed_armor.block_dice)}\nDodge Dice: {transform_dice_to_str(displayed_armor.dodge_dice)}\nPrice: {displayed_armor.price}")
         armor_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
         purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.armor_purchase_wrapper(displayed_armor))
         purchase_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.armors_shop)
@@ -750,18 +786,22 @@ class GameInstance:
         
     def armor_purchase_wrapper(self, new_armor: Armor):
         self.clear_screen()
-        #NOTE: Wesley, put the same function here
-        armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!")
-        armor_purchase_confirmation.pack()
-        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
-        ok_button.pack()
+        if self.restaurant_obj.money >= new_armor.price:
+            self.restaurant_obj.money -= new_armor.price
+            #NOTE: Wesley, put the same function here
+            armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            armor_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else:
+            self.youre_broke()
     
     # This one is a bit different
     def cookbooks_shop(self):
         self.clear_screen()
         cookbooks_display = tk.Listbox(self.root, selectmode="single")
         cookbooks_display.pack()
-        local_cookbooks_array: list[str] = get_item_names("../assets/JSON/cookbooks.json")
+        local_cookbooks_array: list[str] = get_item_names("cookbooks")
         #Removes already purchased cookbooks from display
         for purchased_cookbook in self.restaurant_obj.onetime_purchases:
             local_cookbooks_array.remove(purchased_cookbook)
@@ -778,6 +818,8 @@ class GameInstance:
         displayed_cookbook: Cookbook = Cookbook(cookbook_name)
         cookbook_info_display = tk.Label(self.root, text=f"{displayed_cookbook.name}:\nFor Area: {displayed_cookbook.area}\nPrice: {displayed_cookbook.price}")
         cookbook_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
         purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.cookbook_purchase_wrapper(displayed_cookbook))
         purchase_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.cookbooks_shop)
@@ -785,11 +827,21 @@ class GameInstance:
         
     def cookbook_purchase_wrapper(self, cookbook_obj: Cookbook):
         self.clear_screen()
-        # Adds cookbook to restaurant
-        self.restaurant_obj.onetime_purchases.append(cookbook_obj.name)
-        #NOTE: Wesley, write a function to push the new cookbook purchase up to the database (shop queue table) AND then one of Max's advanced SQL bits should update the cookbooks table
-        # I just updated the Cookbooks table to remove the bool for if purchased. If an entry is in the table, it's purchased
-        cookbook_purchase_confirmation = tk.Label(self.root, text=f"You bought {cookbook_obj.name} for {cookbook_obj.price}!")
-        cookbook_purchase_confirmation.pack()
-        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
-        ok_button.pack()
+        if self.restaurant_obj.money >= cookbook_obj.price:
+            self.restaurant_obj.money -= cookbook_obj.price
+            # Adds cookbook to restaurant
+            self.restaurant_obj.onetime_purchases.append(cookbook_obj.name)
+            #NOTE: Wesley, write a function to push the new cookbook purchase up to the database (shop queue table) AND then one of Max's advanced SQL bits should update the cookbooks table
+            # I just updated the Cookbooks table to remove the bool for if purchased. If an entry is in the table, it's purchased
+            cookbook_purchase_confirmation = tk.Label(self.root, text=f"You bought {cookbook_obj.name} for {cookbook_obj.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            cookbook_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else: 
+            self.youre_broke()
+        
+    # Displays when the user doesn't have enough money to buy something
+    def youre_broke(self):
+        self.clear_screen()
+        messagebox.showerror(message="You don't have enough money to purchase that")
+        self.shop_menu()

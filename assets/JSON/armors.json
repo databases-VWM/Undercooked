@@ -7,5 +7,14 @@
         "dodge_dice": [[6, 7]],
         "price": 100000,
         "item_id": -1
+    },
+    "Chef's Garbs": {
+        "name": "Chef's Garbs",
+        "type": "light",
+        "defense": 0,
+        "block_dice": [[1, 6]],
+        "dodge_dice": [[3, 4]],
+        "price": 50,
+        "item_id": 1
     }
 }
