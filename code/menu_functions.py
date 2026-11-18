@@ -36,26 +36,38 @@ def generate_user_ID(connection):
         cursor.close()
 
 # Wesley(3): I need you to modify this function. First, check for user_ID. If it exists, then run the hash check function below
+
+
 def check_login_info(connection, user_ID, password):
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT 1 FROM users WHERE user_ID = %s",
-            (user_ID, )
+            "SELECT password FROM users WHERE user_ID = %s",
+            (user_ID,)
         )
 
-        """Hash check function. Just trust this code unless this breaks
-        if bcrypt.checkpw(password.encode("utf-8"), returned_password):
-            return true
+        result = cursor.fetchone()
+
+        # User ID does not exist
+        if result is None:
+            return False
+
+        # Check the provided password against the stored hash
+        returned_password = result[0]
+
+        if bcrypt.checkpw(
+            password.encode("utf-8"),
+            returned_password
+        ):
+            return True
         else:
-            return false
-        """
-            
-        return cursor.fetchone() is not None
+            return False
 
     finally:
         cursor.close()
+
+
 
 def create_new_user(connection, user_ID, username, password):
     cursor = connection.cursor()
@@ -68,15 +80,42 @@ def create_new_user(connection, user_ID, username, password):
         connection.commit()
     finally:
         cursor.close()
-        
+
 # Wesley(1)
-def is_duplicate_connection(connection, user_ID):
-    pass
+#given a room id, returns a bool wether or not they are logged in
+def is_logged_in(connection, user_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT in_use FROM users WHERE user_id = %s",
+            (user_id,)
+        )
+
+        result = cursor.fetchone()
+
+        if result is None:
+            return False
+
+        return bool(result[0])
+
+    finally:
+        cursor.close()
+
 
 # Wesley (2)
-# THis should return none. I'm just setting it to this for the sake of my testing while this function isn't written
-def set_duplicate_connection(connection, set_bool: bool) -> bool:
-    return True 
+def set_log_in(connection, condition: bool, user_id):
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE users SET in_use = %s WHERE user_id = %s",
+            (condition, user_id)
+        )
+    finally:
+        cursor.close()
+
+
 
 #______________________________________________
 # Room Management Functions
@@ -107,7 +146,7 @@ def connect_to_room(connection, room_ID, user_ID):
     try:
         # Check if the room exists
         cursor.execute(
-            "SELECT 1 FROM rooms WHERE room_ID = %s",
+            "SELECT 1 FROM rooms WHERE room_id = %s",
             (room_ID,)
         )
 
@@ -117,7 +156,7 @@ def connect_to_room(connection, room_ID, user_ID):
 
         # Room exists, so update the user's room_ID
         cursor.execute(
-            "UPDATE users SET room_ID = %s WHERE user_ID = %s",
+            "UPDATE users SET room_id = %s WHERE user_id = %s",
             (room_ID, user_ID)
         )
 
@@ -200,31 +239,37 @@ def get_username(connection, user_id) -> str:
     finally:
         cursor.close()
 
-
-#given a room id, returns a bool wether or not they are logged in
-def is_logged_in(connection, user_id):
+        
+# Wesley (5)
+# WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
+def increment_day(connection, room_ID) -> None:
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT in_use FROM users WHERE user_id = %s",
-            (user_id,)
+            "increment_day(%s)",
+            (room_ID,)
+        )
+    finally:
+        cursor.close()
+
+# Wesley (6)
+def check_Day(connection, room_ID) -> int:
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT game_day FROM rooms WHERE room_id = %s",
+            (room_ID,)
         )
 
         result = cursor.fetchone()
 
         if result is None:
-            return False
-
-        return bool(result[0])
-
+            return ""
+        
+        return result[0]
+    
     finally:
         cursor.close()
-        
-# Wesley (5)
-def increment_day(connection, room_ID) -> None:
-    pass
-
-# Wesley (6)
-def check_Day(connection, room_ID) -> int:
-    pass
+    
