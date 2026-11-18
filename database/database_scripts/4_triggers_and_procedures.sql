@@ -1,20 +1,12 @@
--- Merges quantities and eliminates duplicate items when inserting new item to inventory
-DROP TRIGGER IF EXISTS add_inventory_item;
-delimiter //
+-- Procedure that updates the day by 1 for a given room
 
-CREATE TRIGGER add_inventory_item
-BEFORE INSERT 
-ON inventory 
-FOR EACH ROW
+DROP PROCEDURE IF EXISTS increment_day
+
+DELIMITER //
+
+CREATE PROCEDURE increment_day(IN input_room_id int)
 BEGIN
--- If item already exists in table for your room
-IF NEW.item_id = item_id AND NEW.type_id = type_id AND NEW.room_id = room_id
-THEN 
-SET NEW.quantity = quantity + NEW.quantity;
-DELETE FROM inventory WHERE NEW.item_id = item_id AND NEW.type_id = type_id AND NEW.room_id = room_id;
+    UPDATE users SET day = day + 1 WHERE room_id = input_room_id;
+END //
 
-END IF;
-
-END//
-
-delimiter ;
+DELIMITER ;

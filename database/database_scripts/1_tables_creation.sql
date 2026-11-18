@@ -13,7 +13,7 @@ PRIMARY KEY (room_id));
 
 CREATE TABLE users (user_id int not null,
 username varchar(15) not null,
-password varchar(20) not null,
+password varchar(255) not null,
 in_use bool not null,
 room_id int,
 PRIMARY KEY (user_id),
@@ -38,8 +38,7 @@ CREATE TABLE customers (customer_id int not null,
 room_id int not null,
 recipe_id int not null,
 PRIMARY KEY (customer_id, room_id),
-FOREIGN KEY (room_id) references rooms,
-FOREIGN KEY (recipe_id) references recipes);
+FOREIGN KEY (room_id) references rooms);
 
 CREATE TABLE shop_queue (type_id int not null,
 item_id int not null,
@@ -48,5 +47,4 @@ ordered bool not null,
 quantity int not null,
 room_id int not null,
 PRIMARY KEY (type_id, item_id, room_id),
-FOREIGN KEY (room_id)
-)
+FOREIGN KEY (room_id) REFERENCES rooms);

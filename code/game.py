@@ -104,16 +104,16 @@ class GameInstance:
         correct_login = check_login_info(self.connection, userID, encrypted_password)
         if correct_login == True:
             # Checks to see if the user already has a connection
-            # if is_duplicate_connection(self.connection, userID) == False:
-            #     self.userID = userID
-            #     #Creates player
-            #     self.player = Entity("Player", int(self.userID))
-            #     # Sets player name from database
-            #     self.player.name = get_username(self.connection, self.userID)
-            #     self.main_menu()
-            # else: 
-            #     self.duplicate_connection(userID, password)
-            self.main_menu() # This is only here for testing purposes
+            if is_logged_in(self.connection, userID) == False:
+                self.userID = userID
+                #Creates player
+                self.player = Entity("Player", True)
+                # Sets player name from database
+                self.player.name = get_username(self.connection, self.userID)
+                self.main_menu()
+            else: 
+                self.duplicate_connection(userID, password)
+            # self.main_menu() # This is only here for testing purposes
         else:
             messagebox.showerror(message=" Failed to login. Please check your username and password and try again")
             self.login()
