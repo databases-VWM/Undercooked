@@ -125,7 +125,7 @@ class GameInstance:
         self.clear_screen()
         duplicate_connection_label = tk.Label(self.root, text="You are already logged in somewhere else. Would you like to make a new connection?")
         duplicate_connection_label.pack()
-        yes_connect_button = tk.Button(self.root, text="Yes", command= lambda: [set_duplicate_connection(self.connection, False), self.login_logic(userID, password)])
+        yes_connect_button = tk.Button(self.root, text="Yes", command= lambda: [set_log_in(self.connection, False, userID), self.login_logic(userID, password)])
         yes_connect_button.pack()
         no_connect_button = tk.Button(self.root, text="No", command=self.login)
         no_connect_button.pack()

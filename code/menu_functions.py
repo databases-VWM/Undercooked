@@ -267,7 +267,7 @@ def check_Day(connection, room_ID) -> int:
         result = cursor.fetchone()
 
         if result is None:
-            return ""
+            return 0
         
         return result[0]
     

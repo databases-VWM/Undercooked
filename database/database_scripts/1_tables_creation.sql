@@ -8,7 +8,7 @@ CREATE TABLE rooms (room_id int not null,
 restaurant_name varchar(50) not null,
 current_money int not null,
 game_day int not null,
-day_time time,
+day_time int,
 PRIMARY KEY (room_id));
 
 CREATE TABLE users (user_id int not null,

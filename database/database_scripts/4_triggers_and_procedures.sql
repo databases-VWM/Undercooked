@@ -6,7 +6,9 @@ DELIMITER //
 
 CREATE PROCEDURE increment_day(IN input_room_id int)
 BEGIN
-    UPDATE users SET day = day + 1 WHERE room_id = input_room_id;
+    UPDATE rooms 
+    SET rooms.game_day = rooms.game_day + 1 
+    WHERE room_id = input_room_id;
 END //
 
 DELIMITER ;
