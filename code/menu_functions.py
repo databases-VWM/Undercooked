@@ -4,6 +4,9 @@ import socket
 import bcrypt
 import time
 
+#NOTE: General note for all database functions:
+# Make commit statements and rollback statements and appropriate conditions
+
 #______________________________________________
 # Multiplayer Connection Functions
 #______________________________________________
