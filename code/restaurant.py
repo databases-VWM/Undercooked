@@ -7,7 +7,7 @@ from armor import Armor
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
 # All we would need to to is call update_restaurant before anything to make it up to date
 class Restaurant:
-    def __init__(self, restaurant_name, room_id: int, connection):
+    def __init__(self, restaurant_name, room_id, connection):
         self.restaurant_name = restaurant_name
         self.room_id = room_id
         self.connection = connection
@@ -18,12 +18,12 @@ class Restaurant:
 
         self.areas_unlocked = []
 
-        # List of one-time purchases already made
-        self.onetime_purchases = []
+        # List of one-time purchases already made. Stores the by id
+        self.onetime_purchases: list[str] = []
         self.unlocked_recipes = []
 
         # List of tuples: (item_name, quantity)
-        self.inventory = [] # NOTE this may be redundant
+        self.inventory: list[tuple[str, int]] = [] # NOTE this may be redundant
 
         self.update_restaurant()
 
@@ -154,29 +154,29 @@ class Restaurant:
             cursor.close()
 
 # Rewrite to
-    def display_inventory(self):
-        # Refresh inventory from database
-        self.update_restaurant()
+    # def display_inventory(self):
+    #     # Refresh inventory from database
+    #     self.update_restaurant()
 
-        display_list = []
+    #     display_list = []
 
-        for type_id, item_id, quantity in self.inventory:
+    #     for type_id, item_id, quantity in self.inventory:
 
-            if type_id == 1:
-                # Ingredient
-                item_name = Ingredient.get_name_by_id(item_id)
+    #         if type_id == 1:
+    #             # Ingredient
+    #             item_name = Ingredient.get_name_by_id(item_id)
 
-            elif type_id == 2:
-                # Weapon
-                item_name = Weapon.get_name_by_id(item_id)
+    #         elif type_id == 2:
+    #             # Weapon
+    #             item_name = Weapon.get_name_by_id(item_id)
 
-            elif type_id == 3:
-                # Armor
-                item_name = Armor.get_name_by_id(item_id)
+    #         elif type_id == 3:
+    #             # Armor
+    #             item_name = Armor.get_name_by_id(item_id)
 
-            else:
-                item_name = "Unknown Item"
+    #         else:
+    #             item_name = "Unknown Item"
 
-            display_list.append((item_name, quantity))
+    #         display_list.append((item_name, quantity))
 
-        return display_list
+    #     return display_list

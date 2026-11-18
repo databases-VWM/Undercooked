@@ -13,6 +13,7 @@ import json
 from weapon import *
 from armor import * 
 from cookbook import *
+from restaurant import *
 
 #MySQL default connection
 
@@ -42,6 +43,7 @@ class GameInstance:
         self.checkpoints: dict[str, int] = {}
         self.combat_log: list[str] = []
         self.connection = None
+        self.restaurant_obj: Restaurant
 
     # Clears the screen
     def clear_screen(self):
@@ -291,6 +293,8 @@ class GameInstance:
         day_num: int = check_Day(self.connection, self.room_ID)
         if day_num > 0:
             messagebox.showinfo("You have successfully joined the game!")
+            # Creates restaurant object
+            self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
             self.restaurant_menu()
         else:
             messagebox.showerror("The game hasn't started yet. You will be able to join when the host starts the game")
@@ -298,6 +302,7 @@ class GameInstance:
 
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
+        self.restaurant_obj.update_restaurant()
         self.clear_screen()
         self.player = Entity(get_username(self.connection, self.userID), True)
         self.player.health = self.player.max_health
@@ -703,19 +708,88 @@ class GameInstance:
     def display_weapon(self, current_weapon: str):
         self.clear_screen()
         displayed_weapon: Weapon = Weapon(current_weapon)
-        weapon_info_display = tk.Label(self.root, text=f"{displayed_weapon.name}:\nAttack Roll: {displayed_weapon.attack_dice}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}")
+        weapon_info_display = tk.Label(self.root, text=f"{displayed_weapon.name}:\nAttack Roll: {transform_dice_to_str(displayed_weapon.attack_dice)}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}")
         weapon_info_display.pack()
-        purchase_button = tk.Button(self.root, text="Purchase", command=self.weapon_purchase_wrapper)
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.weapon_purchase_wrapper(displayed_weapon))
         purchase_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.weapons_shop)
         back_button.pack()
         
     # Database logic for purchasing the weapon
-    def weapon_purchase_wrapper(self):
-        pass
+    def weapon_purchase_wrapper(self, new_weapon: Weapon):
+        self.clear_screen()
+        #NOTE: Wesley, write a function that takes in the connection, weapon object, and room_id and pushes to shop queue table
+        # Make it generic so it can be used for armor and weapons
+        weapon_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_weapon.name} for {new_weapon.price}!")
+        weapon_purchase_confirmation.pack()
+        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+        ok_button.pack()
         
+    # Same as above but for armor
     def armors_shop(self):
-        pass
+        self.clear_screen()
+        armors_display = tk.Listbox(self.root, selectmode="single")
+        armors_display.pack()
+        armors_array: list[str] = get_item_names("../assets/JSON/armors.json")
+        armors_array.insert(0, *armors_array)
     
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_armor(armors_display.get(armors_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+    
+    def display_armor(self, current_armor: str):
+        self.clear_screen()
+        displayed_armor: Armor = Armor(current_armor)
+        armor_info_display = tk.Label(self.root, text=f"{displayed_armor.name}:\n Type: {displayed_armor.type}\nDefense: {displayed_armor.defense}\n Block Dice: {transform_dice_to_str(displayed_armor.block_dice)}\nDodge Dice: {transform_dice_to_str(displayed_armor.dodge_dice)}\nPrice: {displayed_armor.price}")
+        armor_info_display.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.armor_purchase_wrapper(displayed_armor))
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.armors_shop)
+        back_button.pack()
+        
+    def armor_purchase_wrapper(self, new_armor: Armor):
+        self.clear_screen()
+        #NOTE: Wesley, put the same function here
+        armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!")
+        armor_purchase_confirmation.pack()
+        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+        ok_button.pack()
+    
+    # This one is a bit different
     def cookbooks_shop(self):
-        pass
+        self.clear_screen()
+        cookbooks_display = tk.Listbox(self.root, selectmode="single")
+        cookbooks_display.pack()
+        local_cookbooks_array: list[str] = get_item_names("../assets/JSON/cookbooks.json")
+        #Removes already purchased cookbooks from display
+        for purchased_cookbook in self.restaurant_obj.onetime_purchases:
+            local_cookbooks_array.remove(purchased_cookbook)
+            
+        cookbooks_display.insert(0, *local_cookbooks_array)
+        
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_cookbook(cookbooks_display.get(cookbooks_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+        
+    def display_cookbook(self, cookbook_name: str):
+        self.clear_screen()
+        displayed_cookbook: Cookbook = Cookbook(cookbook_name)
+        cookbook_info_display = tk.Label(self.root, text=f"{displayed_cookbook.name}:\nFor Area: {displayed_cookbook.area}\nPrice: {displayed_cookbook.price}")
+        cookbook_info_display.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.cookbook_purchase_wrapper(displayed_cookbook))
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.cookbooks_shop)
+        back_button.pack()
+        
+    def cookbook_purchase_wrapper(self, cookbook_obj: Cookbook):
+        self.clear_screen()
+        # Adds cookbook to restaurant
+        self.restaurant_obj.onetime_purchases.append(cookbook_obj.name)
+        #NOTE: Wesley, write a function to push the new cookbook purchase up to the database (shop queue table) AND then one of Max's advanced SQL bits should update the cookbooks table
+        # I just updated the Cookbooks table to remove the bool for if purchased. If an entry is in the table, it's purchased
+        cookbook_purchase_confirmation = tk.Label(self.root, text=f"You bought {cookbook_obj.name} for {cookbook_obj.price}!")
+        cookbook_purchase_confirmation.pack()
+        ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+        ok_button.pack()
