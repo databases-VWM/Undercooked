@@ -94,8 +94,8 @@ class GameInstance:
         register_user_button.pack()
 
     # Handles the logic of the input button
-    # Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
-    # is_duplicate_connection(userID: str) -> bool
+    # DONE Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
+    # is_duplicate_connection(connection, userID: str) -> bool
     def login_logic(self, userID: str, password: str):
         # Encrypts password using brypt
         encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
@@ -120,7 +120,7 @@ class GameInstance:
 
     # Checks for and handles duplicate connections
     #Wesley(2): Write function that sets the in_use database attribute to either true or false and sets room_ID to NULL
-    # def set_duplicate_connection(connection, what_to_set_it_to: bool) -> None
+    # def set_log_in(connection, what_to_set_it_to: bool, user_id) -> None
     def duplicate_connection(self, userID, password):
         self.clear_screen()
         duplicate_connection_label = tk.Label(self.root, text="You are already logged in somewhere else. Would you like to make a new connection?")
@@ -232,6 +232,8 @@ class GameInstance:
 
     # The actual waiting room before the game starts for the host
     #Wesley (5): Write a function that increments the day for the room named increment_day
+    #NOTE WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
+    #def increment_day(connection, room_ID) -> None:
     def waiting_room_host(self):
         self.clear_screen()
         # Retrieves names of all players
