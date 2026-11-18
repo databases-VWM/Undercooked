@@ -5,39 +5,71 @@ from armor import Armor
 
 
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
-# All we would need to to is call update_restauraunt before anything to make it up to date
-class Restaraunt:
-    def __init__(self, restaraunt_name, room_id: int, connection):
-        self.restaraunt_name = restaraunt_name
+# All we would need to to is call update_restaurant before anything to make it up to date
+class Restaurant:
+    def __init__(self, restaurant_name, room_id, connection):
+        self.restaurant_name = restaurant_name
         self.room_id = room_id
         self.connection = connection
 
         self.money = 1000
         self.day = 0
-
+        self.time = 0
 
         self.areas_unlocked = []
 
-        # List of one-time purchases already made
-        self.onetime_purchases = []
-        self.unlocked_recipies = []
+        # List of one-time purchases already made. Stores the by id
+        self.onetime_purchases: list[str] = []
+        self.unlocked_recipes = []
 
         # List of tuples: (item_name, quantity)
-        self.inventory = [] # NOTE this may be redundant
+        self.inventory: list[tuple[str, int]] = [] # NOTE this may be redundant
 
-        self.update_restauraunt()
+        self.update_restaurant()
 
-    def update_restauraunt(self):
-        # Retrieves all relevant information to update the restaurant class
-        # should check the shop for booleans for unlocks and add them to onetime_purchases
+def update_restaurant(self):
+    cursor = self.connection.cursor()
 
-        # Will finish implementation later
+    try:
+        cursor.execute(
+            """
+            SELECT current_money, game_day, day_time
+            FROM rooms
+            WHERE room_id = %s
+            """,
+            (self.room_id,)
+        )
 
-        # Retrieve inventory
-        self.inventory = self.access_inventory()
+        result = cursor.fetchone()
 
-        # Continue retrieving other restaurant information here
-        # when those database tables are implemented.
+        if result is None:
+            raise ValueError(f"No restaurant found with room_id {self.room_id}")
+
+        self.money = result[0]
+        self.day = result[1]
+        self.time = result[2]
+
+        # cookbook names that are unlocked
+        cursor.execute(
+            """
+            SELECT cookbook_name
+            FROM cookbooks
+            WHERE room_id = %s
+            """,
+            (self.room_id,)
+        )
+
+        self.onetime_purchases = [
+            row[0] for row in cursor.fetchall()
+        ]
+
+    finally:
+        cursor.close()
+
+    # Retrieve inventory
+    self.inventory = self.access_inventory()
+
+
 
     def access_inventory(self):
         cursor = self.connection.cursor()
@@ -153,30 +185,13 @@ class Restaraunt:
         finally:
             cursor.close()
 
-# Rewrite to
-    def display_inventory(self):
-        # Refresh inventory from database
-        self.update_restauraunt()
+def display_inventory(self):
+    # Refresh inventory from database
+    self.inventory = self.access_inventory()
 
-        display_list = []
+    display_list = []
 
-        for type_id, item_id, quantity in self.inventory:
+    for type_id, item_id, item_name, quantity in self.inventory:
+        display_list.append((item_name, quantity))
 
-            if type_id == 1:
-                # Ingredient
-                item_name = Ingredient.get_name_by_id(item_id)
-
-            elif type_id == 2:
-                # Weapon
-                item_name = Weapon.get_name_by_id(item_id)
-
-            elif type_id == 3:
-                # Armor
-                item_name = Armor.get_name_by_id(item_id)
-
-            else:
-                item_name = "Unknown Item"
-
-            display_list.append((item_name, quantity))
-
-        return display_list
+    return display_list

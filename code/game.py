@@ -9,6 +9,11 @@ from ingredient import *
 from combat import *
 from menu_functions import *
 import bcrypt
+import json
+from weapon import *
+from armor import * 
+from cookbook import *
+from restaurant import *
 
 #MySQL default connection
 
@@ -38,6 +43,9 @@ class GameInstance:
         self.checkpoints: dict[str, int] = {}
         self.combat_log: list[str] = []
         self.connection = None
+        self.restaurant_obj: Restaurant
+        self.weapon: Weapon = Weapon("Frying Pan")
+        self.armor: Armor = Armor("Chef's Garbs")
 
     # Clears the screen
     def clear_screen(self):
@@ -97,11 +105,9 @@ class GameInstance:
     # DONE Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
     # is_duplicate_connection(connection, userID: str) -> bool
     def login_logic(self, userID: str, password: str):
-        # Encrypts password using brypt
-        encrypted_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
         # Check for if username and password are correct
         # Wesley(3): Check menu_functions.py for info
-        correct_login = check_login_info(self.connection, userID, encrypted_password)
+        correct_login = check_login_info(self.connection, userID, password)
         if correct_login == True:
             # Checks to see if the user already has a connection
             if is_logged_in(self.connection, userID) == False:
@@ -198,11 +204,11 @@ class GameInstance:
     # GUI for joining a room
     def join_room_menu(self):
         self.clear_screen()
-        room_IP_button = tk.Entry(self.root)
-        room_IP_button.pack()
+        # room_IP_button = tk.Entry(self.root)
+        # room_IP_button.pack()
         room_ID_button = tk.Entry(self.root)
         room_ID_button.pack()
-        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get(), room_IP_button.get()))
+        join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get()))
         join_room_button.pack()
         back_button = tk.Button(self.root, text="Back", command=self.main_menu)
         back_button.pack()
@@ -215,7 +221,6 @@ class GameInstance:
         self.room_ID = new_room_id
         self.room_name = room_name
         create_new_room(self.connection, new_room_id, room_name)
-        # Wesley (4): This function doesn't update the room ID in the users table. Unsure why
         if (connect_to_room(self.connection, new_room_id, self.userID)):
             self.waiting_room_host()
         else:
@@ -223,32 +228,31 @@ class GameInstance:
             self.main_menu()
 
     # Logic for joining an established room
-    def join_room(self, room_ID, room_IP):
-        if (connect_to_room(self.connection, room_ID, room_IP)):
+    def join_room(self, room_ID):
+        if (connect_to_room(self.connection, room_ID, self.userID)):
             self.waiting_room_guest()
         else:
             messagebox.showerror(message="Room not found")
             self.main_menu()
 
     # The actual waiting room before the game starts for the host
-    #Wesley (5): Write a function that increments the day for the room named increment_day
-    #NOTE WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
-    #def increment_day(connection, room_ID) -> None:
     def waiting_room_host(self):
         self.clear_screen()
+        # Sets logged in status
+        set_log_in(self.connection, True, self.userID)
         # Retrieves names of all players
         current_players_list = tk.StringVar()
         current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
 
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
-        room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
+        room_ID_label = tk.Label(self.root, text="Room ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
         players_list = tk.Label(self.root, textvariable=current_players_list)
         players_list.pack()
-        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_guest)
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_host)
         update_players_list_button.pack()
         start_button = tk.Button(self.root, text="Start Game", command=self.start_day)
         start_button.pack()
@@ -262,6 +266,10 @@ class GameInstance:
     # Wesley (6): Write a function called check_day that returns the current day for the given room
     def waiting_room_guest(self):
         self.clear_screen()
+        
+        # Sets logged in status
+        set_log_in(self.connection, True, self.userID)
+        
         # Retrieves names of all players
         current_players_list = tk.StringVar()
         current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID)))
@@ -284,21 +292,32 @@ class GameInstance:
     
     #Function for determining if players can actually join the game
     def has_game_started(self):
-        day_num: int = check_Day(self.connection, self.room_ID)
+        day_num: int = check_day(self.connection, self.room_ID)
         if day_num > 0:
-            messagebox.showinfo("You have successfully joined the game!")
+            increment_day(self.connection, self.room_ID)
+            messagebox.showinfo(message="You have successfully joined the game!")
+            # Creates restaurant object
+            self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
             self.restaurant_menu()
         else:
-            messagebox.showerror("The game hasn't started yet. You will be able to join when the host starts the game")
+            messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
+            
 
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
+        self.restaurant_obj.update_restaurant()
         self.clear_screen()
         self.player = Entity(get_username(self.connection, self.userID), True)
         self.player.health = self.player.max_health
-        todo_button = tk.Button(self.root, text="Restaurant Menu is a WIP")
-        todo_button.pack()
+        cook_button = tk.Button(self.root, text="Cook", command=self.cook_menu)
+        cook_button.pack()
+        equipment_button = tk.Button(self.root, text="Equipment", command=self.equipment_menu)
+        equipment_button.pack()
+        shop_button = tk.Button(self.root, text="Shop", command=self.shop_menu)
+        shop_button.pack()
+        status_button = tk.Button(self.root, text="Check Restaurant Status", command=self.restaurant_status)
+        status_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
         rpg_switch_button.pack()
 
@@ -439,8 +458,7 @@ class GameInstance:
             self.checkpoints.pop(self.current_area.name)
         except KeyError:
             checkpoint_message = "You don't have a checkpoint in " + self.current_area.name
-        messagebox.showinfo(self.root, checkpoint_message)
-            
+        messagebox.showinfo(self.root, checkpoint_message)   
 
     # Full heal from campfire
     def full_heal_menu(self):
@@ -489,7 +507,6 @@ class GameInstance:
             self.enemy_node_text()
         else:
             self.harvest_node_text()
-
 
     def enemy_node_text(self):
         self.clear_screen()
@@ -615,7 +632,6 @@ class GameInstance:
         combat_enemy_attack(self.player, self.current_enemy, 0, dodge_value, self.combat_log)
         self.is_player_alive()
         
-    
     # Wrapper function for guarding
     def wrapper_guard(self):
         self.clear_screen()
@@ -623,7 +639,6 @@ class GameInstance:
         combat_enemy_attack(self.player, self.current_enemy, guard_value, log_list=self.combat_log)
         self.is_player_alive()
         
-    
     # Wrapper function for handling fleeing
     def wrapper_flee(self):
         successful_flee: bool = combat_flee(self.player, self.current_enemy, self.combat_log)
@@ -663,3 +678,220 @@ class GameInstance:
         except KeyError:
             checkpoint_num = 0
         return checkpoint_num
+    
+    def cook_menu(self):
+        pass
+    
+    # Allows for equipping weapons and armor
+    def equipment_menu(self):
+        self.clear_screen()
+        equipment_label = tk.Label(self.root, text="Equip yourself!")
+        equipment_label.pack()
+        weapon_equip = tk.Button(self.root, text="Weapons", command=self.weapon_select_menu)
+        weapon_equip.pack()
+        armor_equip = tk.Button(self.root, text="Armor", command=self.armor_select_menu)
+        armor_equip.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.restaurant_menu)
+        back_button.pack()
+        
+    # Menu for equipping a weapon
+    def weapon_select_menu(self):
+        inspected_weapon: Weapon
+        weapon_stats = tk.StringVar()
+        weapon_stats.set("No weapon selected to inspect")
+        
+        self.clear_screen()
+        # Setting up frames
+        left_frame = tk.Frame(self.root)
+        left_frame.pack(side="left", fill="both")
+        middle_frame = tk.Frame(self.root)
+        middle_frame.pack(side="left", fill="both")
+        right_frame = tk.Frame(self.root)
+        right_frame.pack(side="left", fill="both")
+        bottom_frame = tk.Frame(self.root)
+        bottom_frame.pack(fill="x")
+        
+        # Setting up menus
+        weapons_inventory_label = tk.Label(left_frame, text="Weapons Inventory")
+        weapons_inventory_label.pack()
+        weapons_inventory = tk.Listbox(left_frame, selectmode="single")
+        #NOTE: Wesley, write a query that pulls all weapons from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
+        inventory_weapons_list: list[str] = [] #Insert function here. Make sure it returns an array of strings
+        weapons_inventory.insert(0, *inventory_weapons_list)
+        
+        selected_weapon_compare = tk.Label(middle_frame, textvariable=weapon_stats)
+        selected_weapon_compare.pack(fill="both")
+        
+        # Sets what weapon's stats to show in the inspector menu
+        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: weapon_stats.set(""))
+        inspect_weapon_button.pack()
+        
+        back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
+        back_button.pack()
+        
+    
+    # Menu for equipping armor
+    def armor_select_menu(self):
+        pass
+    
+    # Displays the status of the restaurant
+    def restaurant_status(self):
+        self.clear_screen()
+        restaurant_name_label = tk.Label(self.root, text=f"{self.restaurant_obj.restaurant_name}")
+        restaurant_name_label.pack()
+        restaurant_money_label = tk.Label(self.root, text=f"Money: {self.restaurant_obj.money}")
+        restaurant_money_label.pack()
+        day_label = tk.Label(self.root, text=f"Day: {self.restaurant_obj.day}")
+        day_label.pack()
+        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: {print_ingredients(self.restaurant_obj.inventory)}")
+        ingredient_inventory_label.pack()
+        player_status_label = tk.Label(self.root, text="Your character's stats:\n")
+        player_status_label.pack()
+        player_status = tk.StringVar()
+        player_status.set(setup_for_stringvar(output_entity_stats(self.player, True)))
+        weapon_info_display = tk.Label(self.root, text=f"Equipment:\n\n{self.weapon.name}:\nAttack Roll: {transform_dice_to_str(self.weapon.attack_dice)}\n Average Damage: {dice_avg(self.weapon.attack_dice)}\nAttack Modifier: {self.weapon.modifier}\nPrice: {self.weapon.price}")
+        weapon_info_display.pack()
+        armor_info_display = tk.Label(self.root, text=f"{self.armor.name}:\n Type: {self.armor.type}\nDefense: {self.armor.defense}\n Block Dice: {transform_dice_to_str(self.armor.block_dice)}\nDodge Dice: {transform_dice_to_str(self.armor.dodge_dice)}\nPrice: {self.armor.price}")
+        armor_info_display.pack()
+        continue_button = tk.Button(self.root, text="Back to work!", command=self.restaurant_menu)
+        continue_button.pack()
+
+    #Overarching menu for the shop
+    def shop_menu(self):
+        self.clear_screen()
+        weapons_shop_button = tk.Button(self.root, text="Weapons", command=self.weapons_shop)
+        weapons_shop_button.pack()
+        armors_shop_button = tk.Button(self.root, text="Armor", command=self.armors_shop)
+        armors_shop_button.pack()
+        cookbooks_shop_button = tk.Button(self.root, text="Cookbooks", command=self.cookbooks_shop)
+        cookbooks_shop_button.pack()
+        quit_shop_button = tk.Button(self.root, text="Back", command=self.restaurant_menu)
+        quit_shop_button.pack()
+        
+    # Displays all weapons available for sale
+    def weapons_shop(self):
+        self.clear_screen()
+        weapons_display = tk.Listbox(self.root, selectmode="single")
+        weapons_display.pack()
+        weapons_array: list[str] = get_item_names("weapons")
+        weapons_display.insert(0, *weapons_array)
+        
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_weapon(weapons_display.get(weapons_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+            
+    # Shows information about the currently selected weapon
+    def display_weapon(self, current_weapon: str):
+        self.clear_screen()
+        displayed_weapon: Weapon = Weapon(current_weapon)
+        weapon_info_display = tk.Label(self.root, text=f"{displayed_weapon.name}:\nAttack Roll: {transform_dice_to_str(displayed_weapon.attack_dice)}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}")
+        weapon_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.weapon_purchase_wrapper(displayed_weapon))
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.weapons_shop)
+        back_button.pack()
+        
+    # Database logic for purchasing the weapon
+    def weapon_purchase_wrapper(self, new_weapon: Weapon):
+        # Check for money
+        self.clear_screen()
+        if self.restaurant_obj.money >= new_weapon.price:
+            self.restaurant_obj.money -= new_weapon.price
+            #NOTE: Wesley, write a function that takes in the connection, weapon object, and room_id and pushes to shop queue table
+            # Make it generic so it can be used for armor and weapons
+            weapon_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_weapon.name} for {new_weapon.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            weapon_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else:
+            self.youre_broke()
+        
+    # Same as above but for armor
+    def armors_shop(self):
+        self.clear_screen()
+        armors_display = tk.Listbox(self.root, selectmode="single")
+        armors_display.pack()
+        armors_array: list[str] = get_item_names("armors")
+        armors_array.insert(0, *armors_array)
+    
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_armor(armors_display.get(armors_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+    
+    def display_armor(self, current_armor: str):
+        self.clear_screen()
+        displayed_armor: Armor = Armor(current_armor)
+        armor_info_display = tk.Label(self.root, text=f"{displayed_armor.name}:\n Type: {displayed_armor.type}\nDefense: {displayed_armor.defense}\n Block Dice: {transform_dice_to_str(displayed_armor.block_dice)}\nDodge Dice: {transform_dice_to_str(displayed_armor.dodge_dice)}\nPrice: {displayed_armor.price}")
+        armor_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.armor_purchase_wrapper(displayed_armor))
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.armors_shop)
+        back_button.pack()
+        
+    def armor_purchase_wrapper(self, new_armor: Armor):
+        self.clear_screen()
+        if self.restaurant_obj.money >= new_armor.price:
+            self.restaurant_obj.money -= new_armor.price
+            #NOTE: Wesley, put the same function here
+            armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            armor_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else:
+            self.youre_broke()
+    
+    # This one is a bit different
+    def cookbooks_shop(self):
+        self.clear_screen()
+        cookbooks_display = tk.Listbox(self.root, selectmode="single")
+        cookbooks_display.pack()
+        local_cookbooks_array: list[str] = get_item_names("cookbooks")
+        #Removes already purchased cookbooks from display
+        for purchased_cookbook in self.restaurant_obj.onetime_purchases:
+            local_cookbooks_array.remove(purchased_cookbook)
+            
+        cookbooks_display.insert(0, *local_cookbooks_array)
+        
+        show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_cookbook(cookbooks_display.get(cookbooks_display.curselection())))
+        show_info_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.shop_menu)
+        back_button.pack()
+        
+    def display_cookbook(self, cookbook_name: str):
+        self.clear_screen()
+        displayed_cookbook: Cookbook = Cookbook(cookbook_name)
+        cookbook_info_display = tk.Label(self.root, text=f"{displayed_cookbook.name}:\nFor Area: {displayed_cookbook.area}\nPrice: {displayed_cookbook.price}")
+        cookbook_info_display.pack()
+        show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")
+        show_money_label.pack()
+        purchase_button = tk.Button(self.root, text="Purchase", command=lambda: self.cookbook_purchase_wrapper(displayed_cookbook))
+        purchase_button.pack()
+        back_button = tk.Button(self.root, text="Back", command=self.cookbooks_shop)
+        back_button.pack()
+        
+    def cookbook_purchase_wrapper(self, cookbook_obj: Cookbook):
+        self.clear_screen()
+        if self.restaurant_obj.money >= cookbook_obj.price:
+            self.restaurant_obj.money -= cookbook_obj.price
+            # Adds cookbook to restaurant
+            self.restaurant_obj.onetime_purchases.append(cookbook_obj.name)
+            #NOTE: Wesley, write a function to push the new cookbook purchase up to the database (shop queue table) AND then one of Max's advanced SQL bits should update the cookbooks table
+            # I just updated the Cookbooks table to remove the bool for if purchased. If an entry is in the table, it's purchased
+            cookbook_purchase_confirmation = tk.Label(self.root, text=f"You bought {cookbook_obj.name} for {cookbook_obj.price}!\nYou have {self.restaurant_obj.money} money remaining")
+            cookbook_purchase_confirmation.pack()
+            ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
+            ok_button.pack()
+        else: 
+            self.youre_broke()
+        
+    # Displays when the user doesn't have enough money to buy something
+    def youre_broke(self):
+        self.clear_screen()
+        messagebox.showerror(message="You don't have enough money to purchase that")
+        self.shop_menu()

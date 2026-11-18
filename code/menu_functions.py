@@ -4,6 +4,9 @@ import socket
 import bcrypt
 import time
 
+#NOTE: General note for all database functions:
+# Make commit statements and rollback statements and appropriate conditions
+
 #______________________________________________
 # Multiplayer Connection Functions
 #______________________________________________
@@ -36,10 +39,7 @@ def generate_user_ID(connection):
     finally:
         cursor.close()
 
-# Wesley(3): I need you to modify this function. First, check for user_ID. If it exists, then run the hash check function below
-
-
-def check_login_info(connection, user_ID, password):
+def check_login_info(connection, user_ID, unhashed_password: str):
     cursor = connection.cursor()
 
     try:
@@ -58,8 +58,8 @@ def check_login_info(connection, user_ID, password):
         returned_password = result[0]
 
         if bcrypt.checkpw(
-            password.encode("utf-8"),
-            returned_password
+            unhashed_password.encode("utf-8"),
+            returned_password.encode("utf-8")
         ):
             return True
         else:
@@ -70,20 +70,18 @@ def check_login_info(connection, user_ID, password):
 
 
 
-def create_new_user(connection, user_ID, username, password):
+def create_new_user(connection, user_ID, username, hashed_password):
     cursor = connection.cursor()
 
     try:
         cursor.execute(
             "INSERT INTO users VALUES (%s, %s, %s, False, null)",
-            (user_ID, username, password)
+            (user_ID, username, hashed_password)
         )
         connection.commit()
     finally:
         cursor.close()
 
-# Wesley(1)
-#given a room id, returns a bool wether or not they are logged in
 def is_logged_in(connection, user_id):
     cursor = connection.cursor()
 
@@ -104,7 +102,6 @@ def is_logged_in(connection, user_id):
         cursor.close()
 
 
-# Wesley (2)
 def set_log_in(connection, condition: bool, user_id):
     cursor = connection.cursor()
 
@@ -115,7 +112,6 @@ def set_log_in(connection, condition: bool, user_id):
         )
     finally:
         cursor.close()
-
 
 
 #______________________________________________
@@ -203,14 +199,12 @@ def setup_for_stringvar(array) -> str:
     return concat_str
 
 
-
-#NOTE VINCENT IMPLEMENT THIS ON UR END
 def get_all_players(connection, room_id) -> list[str]:
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT name FROM users WHERE room_id = %s",
+            "SELECT username FROM users WHERE room_id = %s",
             (room_id,)
         )
 
@@ -241,8 +235,6 @@ def get_username(connection, user_id) -> str:
         cursor.close()
 
         
-# Wesley (5)
-# WE CAN MAKE THIS A PROCEDURE!!! Passing in room_id
 def increment_day(connection, room_id) -> None:
     cursor = connection.cursor()
 
@@ -251,11 +243,18 @@ def increment_day(connection, room_id) -> None:
             "CALL increment_day(%s)",
             (room_id,)
         )
+
+        connection.commit()
+
+    except Exception:
+        connection.rollback()
+        raise
+
     finally:
         cursor.close()
 
 # Wesley (6)
-def check_Day(connection, room_ID) -> int:
+def check_day(connection, room_ID) -> int:
     cursor = connection.cursor()
 
     try:
@@ -286,7 +285,7 @@ def set_time(connection, time, room_id):
     finally:
         cursor.close()
 
-def set_time(connection, room_id):
+def get_time(connection, room_id):
     cursor = connection.cursor()
 
     try:
