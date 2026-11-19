@@ -10,9 +10,6 @@ class Ingredient:
         # Imported Properties
         self.name: str = fileData["name"]
         self.type: str = fileData["type"]
-        self.rare_ingredient: bool = fileData["rare_ingredient"]
-        self.legendary_ingredient: bool = fileData["legendary_ingredient"]
-        self.score: int = fileData["score"]
         self.item_id: int = fileData["item_id"]
         self.type_id: int = 1
 

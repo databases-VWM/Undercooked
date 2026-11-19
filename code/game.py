@@ -316,6 +316,12 @@ class GameInstance:
         status_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
         rpg_switch_button.pack()
+        if self.is_host == False:
+            quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
+            quit_button.pack()
+        else:
+            end_game_button = tk.Button(self.root, text="End Game", command=self.end_game)
+            end_game_button.pack()
 
     # This is the menu that opens to let the player choose which area they are going to
     def wilderness_area_select(self):
@@ -722,6 +728,7 @@ class GameInstance:
         
     # Menu for equipping a weapon
     def weapon_select_menu(self):
+        inventory_weapons_list: list[str] =  []
         weapon_stats = tk.StringVar()
         weapon_stats.set("No weapon selected to inspect")
         
@@ -744,9 +751,10 @@ class GameInstance:
         weapons_inventory_label = tk.Label(left_frame, text="Weapons Inventory")
         weapons_inventory_label.pack()
         weapons_inventory = tk.Listbox(left_frame, selectmode="single")
+        weapons_inventory.pack()
         # Should retrieve all weapon tuples and then filter them down into a list of their names for display
         database_inventory_tuples = self.restaurant_obj.access_database_inventory_filter_type_id(2)
-        inventory_weapons_list: list[str] =  []
+        
         for inventory_tuple in database_inventory_tuples:
             inventory_weapons_list.append(inventory_tuple[2])
             
@@ -770,7 +778,7 @@ class GameInstance:
         
     # Handles the logic for equipping the weapon
     def equip_weapon(self, weapon_name: str):
-        # Adds now uneqipped weapon to the inventory
+        # Adds now unequipped weapon to the inventory
         self.restaurant_obj.add_item([(self.weapon.type_id, self.weapon.item_id, self.weapon.name, 1)])
         self.clear_screen()
         # Equips new weapon and removes it from the inventory
@@ -781,10 +789,11 @@ class GameInstance:
         
     # Menu for equipping armor
     def armor_select_menu(self):
+        inventory_armor_list: list[str] =  []
         armor_stats = tk.StringVar()
         armor_stats.set("No armor selected to inspect")
         
-        # Sets display string for current weapon
+        # Sets display string for current armor
         current_armor_stats = tk.StringVar()
         current_armor_stats.set(self.armor.display())
         
@@ -803,15 +812,20 @@ class GameInstance:
         armor_inventory_label = tk.Label(left_frame, text="Armors Inventory")
         armor_inventory_label.pack()
         armor_inventory = tk.Listbox(left_frame, selectmode="single")
-        #NOTE: Wesley, write a query that pulls all armor from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
-        inventory_armor_list: list[str] = [] #Insert function here. Make sure it returns an array of strings
+        armor_inventory.pack()
+        # Should retrieve all weapon tuples and then filter them down into a list of their names for display
+        database_inventory_tuples = self.restaurant_obj.access_database_inventory_filter_type_id(3)
+        
+        for inventory_tuple in database_inventory_tuples:
+            inventory_armor_list.append(inventory_tuple[2])
+            
         armor_inventory.insert(0, *inventory_armor_list)
         
         selected_armor_compare = tk.Label(middle_frame, textvariable=armor_stats)
         selected_armor_compare.pack(fill="both")
         
         # Sets what armor's stats to show in the inspector menu
-        inspect_armor_button = tk.Button(bottom_frame, text="Inspect Selected Armor", command=lambda: armor_stats.set(Armor(armor_inventory.get(armor_inventory.curselection())).display()))
+        inspect_armor_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: armor_stats.set(Armor(armor_inventory.get(armor_inventory.curselection())).display()))
         inspect_armor_button.pack()
         
         current_armor_display = tk.Label(right_frame, textvariable=current_armor_stats)
@@ -825,14 +839,19 @@ class GameInstance:
         
     # Handles the logic for equipping the armor
     def equip_armor(self, armor_name: str):
+        # Adds now unequipped weapon to the inventory
+        self.restaurant_obj.add_item([(self.armor.type_id, self.armor.item_id, self.armor.name, 1)])
         self.clear_screen()
+        # Equips new armor and removes it from the inventory
         self.armor = Armor(armor_name)
+        self.restaurant_obj.remove_item([(self.armor.type_id, self.armor.item_id, 1)])
         messagebox.showinfo(message=f"You equip {self.armor.name}!")
         self.armor_select_menu()
     
     # Displays the status of the restaurant
     def restaurant_status(self):
         self.clear_screen()
+        self.restaurant_obj.update_restaurant()
         restaurant_name_label = tk.Label(self.root, text=f"{self.restaurant_obj.restaurant_name}")
         restaurant_name_label.pack()
         restaurant_money_label = tk.Label(self.root, text=f"Money: {self.restaurant_obj.money}")
@@ -937,6 +956,7 @@ class GameInstance:
         if self.restaurant_obj.money >= new_armor.price:
             self.restaurant_obj.money -= new_armor.price
             self.restaurant_obj.update_money()
+            # Pushes item to local inventory and database inventory
             self.restaurant_obj.add_item([(new_armor.type_id, new_armor.item_id, new_armor.name, 1)])
             armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!\nYou have {self.restaurant_obj.money} money remaining")
             armor_purchase_confirmation.pack()
@@ -978,10 +998,9 @@ class GameInstance:
         self.clear_screen()
         if self.restaurant_obj.money >= cookbook_obj.price:
             self.restaurant_obj.money -= cookbook_obj.price
+            self.restaurant_obj.update_money()
             # Adds cookbook to restaurant
-            self.restaurant_obj.onetime_purchases.append(cookbook_obj.name)
-            #NOTE: Wesley, write a function to push the new cookbook purchase up to the database (shop queue table) AND then one of Max's advanced SQL bits should update the cookbooks table
-            # I just updated the Cookbooks table to remove the bool for if purchased. If an entry is in the table, it's purchased
+            self.restaurant_obj.unlock_cookbook(cookbook_obj.name)
             cookbook_purchase_confirmation = tk.Label(self.root, text=f"You bought {cookbook_obj.name} for {cookbook_obj.price}!\nYou have {self.restaurant_obj.money} money remaining")
             cookbook_purchase_confirmation.pack()
             ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
@@ -994,3 +1013,7 @@ class GameInstance:
         self.clear_screen()
         messagebox.showerror(message="You don't have enough money to purchase that")
         self.shop_menu()
+        
+    # Logic for ending the game
+    def end_game(self):
+        pass

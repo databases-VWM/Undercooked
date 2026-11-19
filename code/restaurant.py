@@ -264,3 +264,16 @@ class Restaurant:
             self.update_restaurant()
         finally:
             cursor.close()
+            
+    # Unlocks a ourchased cookbook in the database
+    def unlock_cookbook(self, cookbook_name: str) -> None:
+        cursor = self.connection.cursor()
+        self.onetime_purchases.append(cookbook_name)
+
+        try:
+            cursor.execute(
+                "INSERT INTO unlocked_cookbooks VALUES(%s, %s)",
+                (cookbook_name, self.room_id)
+            )
+        finally:
+            cursor.close()

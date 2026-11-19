@@ -170,7 +170,6 @@ def get_room_name_from_ID(connection, room_ID) -> str:
             "SELECT restaurant_name FROM rooms WHERE room_id = %s",
             (room_ID, )
         )
-        connection.commit()
         
         return cursor.fetchone()[0]
     finally:

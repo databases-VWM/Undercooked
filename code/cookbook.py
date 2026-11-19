@@ -9,5 +9,5 @@ class Cookbook:
         self.name = fileData["name"]
         self.area = fileData["area"]
         self.price = fileData["price"]
-        self.item_id = fileData["item_id"]
         self.type_id = 4
+        
