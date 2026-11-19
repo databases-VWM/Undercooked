@@ -102,11 +102,7 @@ class GameInstance:
         register_user_button.pack()
 
     # Handles the logic of the input button
-    # DONE Wesley(1): Write function to the database that returns true if the user is logged into a room and false if not
-    # is_duplicate_connection(connection, userID: str) -> bool
     def login_logic(self, userID: str, password: str):
-        # Check for if username and password are correct
-        # Wesley(3): Check menu_functions.py for info
         correct_login = check_login_info(self.connection, userID, password)
         if correct_login == True:
             # Checks to see if the user already has a connection
@@ -125,8 +121,6 @@ class GameInstance:
             self.login()
 
     # Checks for and handles duplicate connections
-    #Wesley(2): Write function that sets the in_use database attribute to either true or false and sets room_ID to NULL
-    # def set_log_in(connection, what_to_set_it_to: bool, user_id) -> None
     def duplicate_connection(self, userID, password):
         self.clear_screen()
         duplicate_connection_label = tk.Label(self.root, text="You are already logged in somewhere else. Would you like to make a new connection?")
@@ -263,7 +257,6 @@ class GameInstance:
         self.has_game_started()
 
     # This is where the guests wait
-    # Wesley (6): Write a function called check_day that returns the current day for the given room
     def waiting_room_guest(self):
         self.clear_screen()
         
@@ -696,9 +689,13 @@ class GameInstance:
         
     # Menu for equipping a weapon
     def weapon_select_menu(self):
-        inspected_weapon: Weapon
+        inspected_weapon: Weapon = self.weapon
         weapon_stats = tk.StringVar()
         weapon_stats.set("No weapon selected to inspect")
+        
+        # Sets display string for current weapon
+        current_weapon_stats = tk.StringVar()
+        current_weapon_stats.set(self.weapon.display())
         
         self.clear_screen()
         # Setting up frames
@@ -723,16 +720,65 @@ class GameInstance:
         selected_weapon_compare.pack(fill="both")
         
         # Sets what weapon's stats to show in the inspector menu
-        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: weapon_stats.set(""))
+        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: [inspected_weapon = Weapon(), weapon_stats.set(inspected_weapon.display())])
         inspect_weapon_button.pack()
+        
+        current_weapon_display = tk.Label(right_frame, textvariable=current_weapon_stats)
+        current_weapon_display.pack(side="left", fill="both")
+        
+        equip_weapon_button = tk.Button(bottom_frame, text="Equip", command=lambda: self.equip_weapon())
+        equip_weapon_button.pack()
         
         back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
         back_button.pack()
         
+    # Handles the logic for equipping the weapon
+    def equip_weapon(self, new_weapon: Weapon):
+        
+        pass
+        
     
     # Menu for equipping armor
     def armor_select_menu(self):
-        pass
+        inspected_armor: Armor = self.armor
+        armor_stats = tk.StringVar()
+        armor_stats.set("No armor selected to inspect")
+        
+        # Sets display string for current weapon
+        current_armor_stats = tk.StringVar()
+        current_armor_stats.set(self.weapon.display())
+        
+        self.clear_screen()
+        # Setting up frames
+        left_frame = tk.Frame(self.root)
+        left_frame.pack(side="left", fill="both")
+        middle_frame = tk.Frame(self.root)
+        middle_frame.pack(side="left", fill="both")
+        right_frame = tk.Frame(self.root)
+        right_frame.pack(side="left", fill="both")
+        bottom_frame = tk.Frame(self.root)
+        bottom_frame.pack(fill="x")
+        
+        # Setting up menus
+        armor_inventory_label = tk.Label(left_frame, text="Armor Inventory")
+        armor_inventory_label.pack()
+        armor_inventory = tk.Listbox(left_frame, selectmode="single")
+        #NOTE: Wesley, write a query that pulls all armor from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
+        inventory_armor_list: list[str] = [] #Insert function here. Make sure it returns an array of strings
+        armor_inventory.insert(0, *inventory_armor_list)
+        
+        selected_armor_compare = tk.Label(middle_frame, textvariable=armor_stats)
+        selected_armor_compare.pack(fill="both")
+        
+        # Sets what armor's stats to show in the inspector menu
+        inspect_armor_button = tk.Button(bottom_frame, text="Inspect Selected Armor", command=lambda: armor_stats.set(self.armor.display()))
+        inspect_armor_button.pack()
+
+        current_armor_display = tk.Label(right_frame, textvariable=current_armor_stats)
+        current_armor_display.pack(side="left", fill="both")
+        
+        back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
+        back_button.pack()
     
     # Displays the status of the restaurant
     def restaurant_status(self):

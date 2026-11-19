@@ -27,47 +27,47 @@ class Restaurant:
 
         self.update_restaurant()
 
-def update_restaurant(self):
-    cursor = self.connection.cursor()
+    def update_restaurant(self):
+        cursor = self.connection.cursor()
 
-    try:
-        cursor.execute(
-            """
-            SELECT current_money, game_day, day_time
-            FROM rooms
-            WHERE room_id = %s
-            """,
-            (self.room_id,)
-        )
+        try:
+            cursor.execute(
+                """
+                SELECT current_money, game_day, day_time
+                FROM rooms
+                WHERE room_id = %s
+                """,
+                (self.room_id,)
+            )
 
-        result = cursor.fetchone()
+            result = cursor.fetchone()
 
-        if result is None:
-            raise ValueError(f"No restaurant found with room_id {self.room_id}")
+            if result is None:
+                raise ValueError(f"No restaurant found with room_id {self.room_id}")
 
-        self.money = result[0]
-        self.day = result[1]
-        self.time = result[2]
+            self.money = result[0]
+            self.day = result[1]
+            self.time = result[2]
 
-        # cookbook names that are unlocked
-        cursor.execute(
-            """
-            SELECT cookbook_name
-            FROM cookbooks
-            WHERE room_id = %s
-            """,
-            (self.room_id,)
-        )
+            # cookbook names that are unlocked
+            cursor.execute(
+                """
+                SELECT cookbook_name
+                FROM cookbooks
+                WHERE room_id = %s
+                """,
+                (self.room_id,)
+            )
 
-        self.onetime_purchases = [
-            row[0] for row in cursor.fetchall()
-        ]
+            self.onetime_purchases = [
+                row[0] for row in cursor.fetchall()
+            ]
 
-    finally:
-        cursor.close()
+        finally:
+            cursor.close()
 
-    # Retrieve inventory
-    self.inventory = self.access_inventory()
+        # Retrieve inventory
+        self.inventory = self.access_inventory()
 
 
 
@@ -185,13 +185,15 @@ def update_restaurant(self):
         finally:
             cursor.close()
 
-def display_inventory(self):
+def display_inventory(self, id_in):
     # Refresh inventory from database
     self.inventory = self.access_inventory()
 
     display_list = []
 
     for type_id, item_id, item_name, quantity in self.inventory:
-        display_list.append((item_name, quantity))
+        if (type_id == id_in):
+            display_list.append((item_name, quantity))
+        
 
     return display_list

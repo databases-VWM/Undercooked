@@ -253,7 +253,7 @@ def increment_day(connection, room_id) -> None:
     finally:
         cursor.close()
 
-# Wesley (6)
+
 def check_day(connection, room_ID) -> int:
     cursor = connection.cursor()
 

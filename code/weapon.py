@@ -1,4 +1,5 @@
 import json
+from entity import *
 
 # Allows for dynamic creation of an object from JSON from just its name
 class Weapon:
@@ -14,6 +15,7 @@ class Weapon:
         self.price: int = fileData["price"]
         self.type_id: int = 2
 
-    def display(self) -> :
-        weapon_blurb: str = f"{self.name}:\nAttack Roll: {transform_dice_to_str(self.attack_dice)}\n Average Damage: {dice_avg(displayed_weapon.attack_dice)}\nAttack Modifier: {displayed_weapon.modifier}\nPrice: {displayed_weapon.price}"
-        return 
+    # Returns a string that outputs the stats of a weapon
+    def display(self) -> str:
+        weapon_blurb: str = f"{self.name}:\nAttack Roll: {transform_dice_to_str(self.attack_dice)}\n Average Damage: {dice_avg(self.attack_dice)}\nAttack Modifier: {self.modifier}\nPrice: {self.price}"
+        return weapon_blurb
