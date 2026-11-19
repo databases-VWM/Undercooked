@@ -119,7 +119,7 @@ class Restaurant:
 
 
 
-    # function that removes item
+    # function that removes item tuple
     def remove_item(self, items):
         cursor = self.connection.cursor()
 
@@ -150,26 +150,36 @@ class Restaurant:
 
                 cursor.execute(
                     """
-                    UPDATE inventory
-                    SET quantity = quantity - %s
-                    WHERE room_id = %s
-                    AND type_id = %s
-                    AND item_id = %s
+                    CALL remove_inventory_item(%s, %s, %s, %s)
                     """,
-                    (quantity, self.room_id, type_id, item_id)
-                )
+                    (type_id, item_id, quantity, self.room_id)
+                ) 
 
-                # Delete entry if quantity reaches zero
-                cursor.execute(
-                    """
-                    DELETE FROM inventory
-                    WHERE room_id = %s
-                    AND type_id = %s
-                    AND item_id = %s
-                    AND quantity = 0
-                    """,
-                    (self.room_id, type_id, item_id)
-                )
+
+
+                
+                # cursor.execute(
+                #     """
+                #     UPDATE inventory
+                #     SET quantity = quantity - %s
+                #     WHERE room_id = %s
+                #     AND type_id = %s
+                #     AND item_id = %s
+                #     """,
+                #     (quantity, self.room_id, type_id, item_id)
+                # )
+
+                # # Delete entry if quantity reaches zero
+                # cursor.execute(
+                #     """
+                #     DELETE FROM inventory
+                #     WHERE room_id = %s
+                #     AND type_id = %s
+                #     AND item_id = %s
+                #     AND quantity = 0
+                #     """,
+                #     (self.room_id, type_id, item_id)
+                # )
 
             self.connection.commit()
 

@@ -33,8 +33,7 @@ def inv_to_database(connection, room_id, inventory):
             # Insert the item into the inventory table
             cursor.execute(
                 """
-                INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
-                VALUES (1, %s, %s, %s, %s)
+                CALL add_inventory_item(1, %s, %s, %s, %s)
                 """,
                 (item_id, item_name, quantity, room_id)
             )
