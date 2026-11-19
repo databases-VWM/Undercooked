@@ -162,6 +162,19 @@ def connect_to_room(connection, room_ID, user_ID):
 
     finally:
         cursor.close()
+        
+def get_room_name_from_ID(connection, room_ID) -> str:
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "SELECT restaurant_name FROM rooms WHERE room_id = %s",
+            (room_ID, )
+        )
+        connection.commit()
+        
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
 
 
 def create_new_room(connection, room_ID, room_name):

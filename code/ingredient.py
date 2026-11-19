@@ -56,7 +56,7 @@ def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
             ingredients_str += ": "
             ingredients_str += str(ingredients[inventory_num][1])
             if inventory_num != (len(ingredients) - 1):
-                ingredients_str += ", "
+                ingredients_str += "\n "
     else:
         ingredients_str = "Nothing in Inventory"
     return ingredients_str

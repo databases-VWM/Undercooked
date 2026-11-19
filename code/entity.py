@@ -96,15 +96,15 @@ def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
     entity_array.append(f"{entity.health} / {entity.max_health} Health")
     if extended == True:
         attack_die_str = transform_dice_to_str(entity.attack_dice)
-        guard_die_str = transform_dice_to_str(entity.block_dice)
-        dodge_die_str = transform_dice_to_str(entity.dodge_dice)
+        # guard_die_str = transform_dice_to_str(entity.block_dice)
+        # dodge_die_str = transform_dice_to_str(entity.dodge_dice)
         entity_array.append(f"Power: {entity.power}")
         entity_array.append(f"Weapon: {entity.weapon}")
         entity_array.append(f"Armor: {entity.armor}")
         entity_array.append(f"Defense: {entity.defense}")
         entity_array.append(f"Damage: {attack_die_str}")
-        entity_array.append(f"Guard: {guard_die_str}")
-        entity_array.append(f"Dodge: {dodge_die_str}")
+        # entity_array.append(f"Guard: {guard_die_str}")
+        # entity_array.append(f"Dodge: {dodge_die_str}")
     entity_array.append(f"\"{entity.description}\"")
     return entity_array
         

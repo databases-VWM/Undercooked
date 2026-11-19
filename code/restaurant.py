@@ -53,7 +53,7 @@ class Restaurant:
             cursor.execute(
                 """
                 SELECT cookbook_name
-                FROM cookbooks
+                FROM unlocked_cookbooks
                 WHERE room_id = %s
                 """,
                 (self.room_id,)
@@ -81,7 +81,25 @@ class Restaurant:
                 FROM inventory
                 WHERE room_id = %s
                 """,
-                (self.room_id,)
+                (self.room_id, )
+            )
+
+            return cursor.fetchall()
+
+        finally:
+            cursor.close()
+            
+    def access_database_inventory_filter_type_id(self, type_id):
+        cursor = self.connection.cursor()
+
+        try:
+            cursor.execute(
+                """
+                SELECT type_id, item_id, item_name, quantity
+                FROM inventory
+                WHERE room_id = %s AND type_id = %s
+                """,
+                (self.room_id, type_id)
             )
 
             return cursor.fetchall()
@@ -89,7 +107,8 @@ class Restaurant:
         finally:
             cursor.close()
 
-    def add_item(self, items):
+    # type_id, item_id,item_name, quantity 
+    def add_item(self, items: list[tuple[int, int, str, int]]):
         cursor = self.connection.cursor()
 
         try:
@@ -98,12 +117,12 @@ class Restaurant:
                 cursor.execute(
                     """
                     CALL add_inventory_item(%s, %s, %s, %s, %s)
-                    """
+                    """,
+                    (type_id, item_id, item_name, quantity, self.room_id)
                     # """
                     # INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
                     # VALUES (%s, %s, %s, %s, %s)
                     # """,
-                    (type_id, item_id, item_name, quantity, self.room_id)
                 )
 
             self.connection.commit()
@@ -124,30 +143,32 @@ class Restaurant:
 
     # function that removes item tuple
     # (typeid itemid name quantity)
-    def remove_item(self, items):
+    def remove_item(self, items: list[tuple[int, int, int]]):
         cursor = self.connection.cursor()
 
         self.update_restaurant()
 
         try:
             # First, validate that every requested item exists locally
-            for type_id, item_id, quantity in items:
+            # for type_id, item_id, quantity in items:
+                
+                
+                # I think this is redundant. The procedure handles this
+                # found = False
 
-                found = False
+                # for inv_type, inv_id, inv_name, inv_quantity in self.inventory:
+                #     if inv_type == type_id and inv_id == item_id:
+                #         found = True
 
-                for inv_type, inv_id, inv_name, inv_quantity in self.inventory:
-                    if inv_type == type_id and inv_id == item_id:
-                        found = True
+                #         # Not enough quantity
+                #         if inv_quantity < quantity:
+                #             return False
 
-                        # Not enough quantity
-                        if inv_quantity < quantity:
-                            return False
+                #         break
 
-                        break
-
-                # Item doesn't exist in inventory
-                if not found:
-                    return False
+                # # Item doesn't exist in inventory
+                # if not found:
+                #     return False
 
             # All items are available, so remove them
             for type_id, item_id, quantity in items:
@@ -199,15 +220,47 @@ class Restaurant:
         finally:
             cursor.close()
 
-def display_inventory(self, id_in):
-    # Refresh inventory from database
-    self.inventory = self.access_inventory()
+    # Generic function to display inventory
+    def display_inventory(self):
+        # Refresh inventory from database
+        self.inventory = self.access_inventory()
 
-    display_list = []
+        inventory_str = ""
 
-    for type_id, item_id, item_name, quantity in self.inventory:
-        if (type_id == id_in):
-            display_list.append((item_name, quantity))
-        
+        if len(self.inventory) > 0:
+            for inventory_num in range(len(self.inventory)):
+                inventory_str += self.inventory[inventory_num][0]
+                inventory_str += ": "
+                inventory_str += str(self.inventory[inventory_num][1])
+                if inventory_num != (len(self.inventory) - 1):
+                    inventory_str += "\n "
+        else:
+            inventory_str = "Nothing in Inventory"
+        return inventory_str
+    
+    # def display_inventory(self, id_in):
+    #         # Refresh inventory from database
+    #         self.inventory = self.access_inventory()
+    
+    #         display_list = []
+    
+    #         for type_id, item_id, item_name, quantity in self.inventory:
+    #             if (type_id == id_in):
+    #                 display_list.append((item_name, quantity))
+                
+    
+    #         return display_list
+    
+    # Updates money in the database
+    def update_money(self):
+        cursor = self.connection.cursor()
 
-    return display_list
+        try:
+            cursor.execute(
+                "UPDATE rooms SET current_money = %s WHERE room_id = %s",
+                (self.money, self.room_id)
+            )
+            
+            self.update_restaurant()
+        finally:
+            cursor.close()

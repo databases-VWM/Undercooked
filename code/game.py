@@ -200,6 +200,8 @@ class GameInstance:
         self.clear_screen()
         # room_IP_button = tk.Entry(self.root)
         # room_IP_button.pack()
+        join_room_label = tk.Label(self.root, text="Join Room\nEnter the room ID to join. Make sure you're connected to the same network and database\n")
+        join_room_label.pack()
         room_ID_button = tk.Entry(self.root)
         room_ID_button.pack()
         join_room_button = tk.Button(self.root, text="Join Room", command=lambda: self.join_room(room_ID_button.get()))
@@ -224,6 +226,9 @@ class GameInstance:
     # Logic for joining an established room
     def join_room(self, room_ID):
         if (connect_to_room(self.connection, room_ID, self.userID)):
+            self.room_ID = room_ID
+            self.is_host = False
+            self.room_name = get_room_name_from_ID(self.connection, self.room_ID) # The function
             self.waiting_room_guest()
         else:
             messagebox.showerror(message="Room not found")
@@ -246,7 +251,7 @@ class GameInstance:
         IP_address_button.pack()
         players_list = tk.Label(self.root, textvariable=current_players_list)
         players_list.pack()
-        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_host)
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=lambda: current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID))))
         update_players_list_button.pack()
         start_button = tk.Button(self.root, text="Start Game", command=self.start_day)
         start_button.pack()
@@ -269,7 +274,7 @@ class GameInstance:
         
         room_name_label = tk.Label(self.root, text=self.room_name)
         room_name_label.pack()
-        room_ID_label = tk.Label(self.root, text="ID: " + str(self.room_ID))
+        room_ID_label = tk.Label(self.root, text="Room ID: " + str(self.room_ID))
         room_ID_label.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
@@ -277,7 +282,7 @@ class GameInstance:
         waiting_button.pack()
         players_list = tk.Label(self.root, textvariable=current_players_list)
         players_list.pack()
-        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=self.waiting_room_guest)
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command= lambda: current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID))))
         update_players_list_button.pack()
         join_game_button = tk.Button(self.root, text="Join Game", command=self.has_game_started)
         join_game_button.pack()
@@ -287,7 +292,6 @@ class GameInstance:
     def has_game_started(self):
         day_num: int = check_day(self.connection, self.room_ID)
         if day_num > 0:
-            increment_day(self.connection, self.room_ID)
             messagebox.showinfo(message="You have successfully joined the game!")
             # Creates restaurant object
             self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
@@ -296,7 +300,6 @@ class GameInstance:
             messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
             
-
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
         self.restaurant_obj.update_restaurant()
@@ -334,7 +337,6 @@ class GameInstance:
         wilderness_title = tk.Label(self.root, text="Welcome to the Wilderness!\nSelect an Area!")
         wilderness_title.pack()
         areas_dropdown = tk.OptionMenu(self.root, selected_area, *unlocked_areas_list) 
-        """TODO at some point: command=ingredients_forecast.set(setup_ingredients_forecast(selected_area.get()))"""
         areas_dropdown.pack()
         show_forecast_button = tk.Button(self.root, text="Show area ingredient forecast", command= lambda: ingredients_forecast.set(setup_ingredients_forecast(selected_area.get())))
         show_forecast_button.pack()
@@ -482,7 +484,7 @@ class GameInstance:
     def node_type_text(self):
         self.clear_screen()
         # Sets flavor message for popup to signify node type
-        # TODO: Maybe do random messages of each type to add a little more flavor
+        # NOTE: Maybe do random messages of each type to add a little more flavor
         if self.current_area.node_type == "fishing":
             node_type_message = "This looks like a great spot to go FISHING!"
         elif self.current_area.node_type == "flora":
@@ -495,12 +497,14 @@ class GameInstance:
         ok_button = tk.Button(self.root, text="Ok", command=self.is_there_an_enemy)
         ok_button.pack()
 
+    # Checks to see if a newly generated node has an enemy
     def is_there_an_enemy(self):
         if self.current_area.is_enemy == True:
             self.enemy_node_text()
         else:
             self.harvest_node_text()
 
+    # Shows text for nodes with enemy
     def enemy_node_text(self):
         self.clear_screen()
         self.current_enemy = Entity(self.current_area.enemy_name)
@@ -672,8 +676,37 @@ class GameInstance:
             checkpoint_num = 0
         return checkpoint_num
     
+    # The menu for interacting with cooking and fulfilling orders of customers
     def cook_menu(self):
-        pass
+        self.clear_screen()
+        ingredients_list = print_ingredients(self.restaurant_obj.inventory)
+        
+        # Frames
+        orders_frame = tk.Frame(self.root)
+        orders_frame.pack(side=tk.LEFT, expand=True)
+        
+        ingredients_frame = tk.Frame(self.root)
+        ingredients_frame.pack(side=tk.RIGHT, expand=True)
+        
+        buttons_frame = tk.Frame(self.root)
+        buttons_frame.pack(side=tk.BOTTOM, expand=True)
+        
+        # Orders GUI
+        orders_interface = tk.Listbox(orders_frame, selectmode="single")
+        orders_interface.pack()
+        # Write a query to bring down the names of the requested orders
+        # orders_interface.insert(0, *)
+        
+        # Ingredients Inventory GUI
+        ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}")
+        ingredients_display.pack()
+        
+        # Buttons GUI
+        back_button = tk.Button(buttons_frame, text="Back", command=self.restaurant_menu)
+        back_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
+        
+        cook_button = tk.Button(buttons_frame, text="Cook selected order meal", command=lambda: ())
+        cook_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
     
     # Allows for equipping weapons and armor
     def equipment_menu(self):
@@ -711,8 +744,12 @@ class GameInstance:
         weapons_inventory_label = tk.Label(left_frame, text="Weapons Inventory")
         weapons_inventory_label.pack()
         weapons_inventory = tk.Listbox(left_frame, selectmode="single")
-        #NOTE: Wesley, write a query that pulls all weapons from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
-        inventory_weapons_list: list[str] = [] #Insert function here. Make sure it returns an array of strings
+        # Should retrieve all weapon tuples and then filter them down into a list of their names for display
+        database_inventory_tuples = self.restaurant_obj.access_database_inventory_filter_type_id(2)
+        inventory_weapons_list: list[str] =  []
+        for inventory_tuple in database_inventory_tuples:
+            inventory_weapons_list.append(inventory_tuple[2])
+            
         weapons_inventory.insert(0, *inventory_weapons_list)
         
         selected_weapon_compare = tk.Label(middle_frame, textvariable=weapon_stats)
@@ -733,13 +770,15 @@ class GameInstance:
         
     # Handles the logic for equipping the weapon
     def equip_weapon(self, weapon_name: str):
+        # Adds now uneqipped weapon to the inventory
+        self.restaurant_obj.add_item([(self.weapon.type_id, self.weapon.item_id, self.weapon.name, 1)])
         self.clear_screen()
+        # Equips new weapon and removes it from the inventory
         self.weapon = Weapon(weapon_name)
+        self.restaurant_obj.remove_item([(self.weapon.type_id, self.weapon.item_id, 1)])
         messagebox.showinfo(message=f"You equip {self.weapon.name}!")
         self.weapon_select_menu()
         
-        
-    
     # Menu for equipping armor
     def armor_select_menu(self):
         armor_stats = tk.StringVar()
@@ -752,13 +791,13 @@ class GameInstance:
         self.clear_screen()
         # Setting up frames
         left_frame = tk.Frame(self.root)
-        left_frame.pack(side="left", fill="x")
+        left_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         middle_frame = tk.Frame(self.root)
-        middle_frame.pack(side="left", fill="x")
+        middle_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         right_frame = tk.Frame(self.root)
-        right_frame.pack(side="left", fill="x")
+        right_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         bottom_frame = tk.Frame(self.root)
-        bottom_frame.pack(fill="x")
+        bottom_frame.pack(side="bottom", fill="both", expand=True, padx=5, pady=5)
         
         # Setting up menus
         armor_inventory_label = tk.Label(left_frame, text="Armors Inventory")
@@ -800,8 +839,6 @@ class GameInstance:
         restaurant_money_label.pack()
         day_label = tk.Label(self.root, text=f"Day: {self.restaurant_obj.day}")
         day_label.pack()
-        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: {print_ingredients(self.restaurant_obj.inventory)}")
-        ingredient_inventory_label.pack()
         player_status_label = tk.Label(self.root, text="Your character's stats:\n")
         player_status_label.pack()
         player_status = tk.StringVar()
@@ -810,6 +847,8 @@ class GameInstance:
         weapon_info_display.pack()
         armor_info_display = tk.Label(self.root, text=f"{self.armor.name}:\n Type: {self.armor.type}\nDefense: {self.armor.defense}\n Block Dice: {transform_dice_to_str(self.armor.block_dice)}\nDodge Dice: {transform_dice_to_str(self.armor.dodge_dice)}\nPrice: {self.armor.price}")
         armor_info_display.pack()
+        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: \n{print_ingredients(self.restaurant_obj.access_database_inventory_filter_type_id(1))}")
+        ingredient_inventory_label.pack()
         continue_button = tk.Button(self.root, text="Back to work!", command=self.restaurant_menu)
         continue_button.pack()
 
@@ -855,10 +894,12 @@ class GameInstance:
     def weapon_purchase_wrapper(self, new_weapon: Weapon):
         # Check for money
         self.clear_screen()
+        # Checks to see if you have money
         if self.restaurant_obj.money >= new_weapon.price:
             self.restaurant_obj.money -= new_weapon.price
-            #NOTE: Wesley, write a function that takes in the connection, weapon object, and room_id and pushes to shop queue table
-            # Make it generic so it can be used for armor and weapons
+            self.restaurant_obj.update_money()
+            # Pushes item to local inventory and database inventory
+            self.restaurant_obj.add_item([(new_weapon.type_id, new_weapon.item_id, new_weapon.name, 1)])
             weapon_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_weapon.name} for {new_weapon.price}!\nYou have {self.restaurant_obj.money} money remaining")
             weapon_purchase_confirmation.pack()
             ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
@@ -895,7 +936,8 @@ class GameInstance:
         self.clear_screen()
         if self.restaurant_obj.money >= new_armor.price:
             self.restaurant_obj.money -= new_armor.price
-            #NOTE: Wesley, put the same function here
+            self.restaurant_obj.update_money()
+            self.restaurant_obj.add_item([(new_armor.type_id, new_armor.item_id, new_armor.name, 1)])
             armor_purchase_confirmation = tk.Label(self.root, text=f"You bought {new_armor.name} for {new_armor.price}!\nYou have {self.restaurant_obj.money} money remaining")
             armor_purchase_confirmation.pack()
             ok_button = tk.Button(self.root, text="Yay!", command=self.shop_menu)
