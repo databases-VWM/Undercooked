@@ -587,7 +587,7 @@ class GameInstance:
         combat_log_frame = tk.Frame(self.root)
         combat_log_frame.pack(side="right", fill="both")
         combat_buttons_frame = tk.Frame(self.root)
-        combat_buttons_frame.pack()
+        combat_buttons_frame.pack(side="bottom")
         # combat_buttons_frame.pack(side="bottom")
         
         # Displays
@@ -595,7 +595,7 @@ class GameInstance:
         player_stats_screen.pack(fill="both")
         enemy_stats_screen = tk.Label(stats_frame, textvariable=local_enemy_stats)
         enemy_stats_screen.pack(fill="both")
-        combat_log_menu = tk.Label(combat_buttons_frame, textvariable=local_combat_log)
+        combat_log_menu = tk.Label(combat_log_frame, textvariable=local_combat_log)
         combat_log_menu.pack(fill="both")
         
         # Button Menu
@@ -689,7 +689,6 @@ class GameInstance:
         
     # Menu for equipping a weapon
     def weapon_select_menu(self):
-        inspected_weapon: Weapon = self.weapon
         weapon_stats = tk.StringVar()
         weapon_stats.set("No weapon selected to inspect")
         
@@ -700,13 +699,13 @@ class GameInstance:
         self.clear_screen()
         # Setting up frames
         left_frame = tk.Frame(self.root)
-        left_frame.pack(side="left", fill="both")
+        left_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         middle_frame = tk.Frame(self.root)
-        middle_frame.pack(side="left", fill="both")
+        middle_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         right_frame = tk.Frame(self.root)
-        right_frame.pack(side="left", fill="both")
+        right_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         bottom_frame = tk.Frame(self.root)
-        bottom_frame.pack(fill="x")
+        bottom_frame.pack(side="bottom", fill="both", expand=True, padx=5, pady=5)
         
         # Setting up menus
         weapons_inventory_label = tk.Label(left_frame, text="Weapons Inventory")
@@ -720,47 +719,49 @@ class GameInstance:
         selected_weapon_compare.pack(fill="both")
         
         # Sets what weapon's stats to show in the inspector menu
-        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: [inspected_weapon = Weapon(), weapon_stats.set(inspected_weapon.display())])
+        inspect_weapon_button = tk.Button(bottom_frame, text="Inspect Selected Weapon", command=lambda: weapon_stats.set(Weapon(weapons_inventory.get(weapons_inventory.curselection())).display()))
         inspect_weapon_button.pack()
         
         current_weapon_display = tk.Label(right_frame, textvariable=current_weapon_stats)
         current_weapon_display.pack(side="left", fill="both")
         
-        equip_weapon_button = tk.Button(bottom_frame, text="Equip", command=lambda: self.equip_weapon())
+        equip_weapon_button = tk.Button(bottom_frame, text="Equip", command=lambda: self.equip_weapon(weapons_inventory.get(weapons_inventory.curselection())))
         equip_weapon_button.pack()
         
-        back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
+        back_button = tk.Button(bottom_frame, text="Back", command=self.equipment_menu)
         back_button.pack()
         
     # Handles the logic for equipping the weapon
-    def equip_weapon(self, new_weapon: Weapon):
+    def equip_weapon(self, weapon_name: str):
+        self.clear_screen()
+        self.weapon = Weapon(weapon_name)
+        messagebox.showinfo(message=f"You equip {self.weapon.name}!")
+        self.weapon_select_menu()
         
-        pass
         
     
     # Menu for equipping armor
     def armor_select_menu(self):
-        inspected_armor: Armor = self.armor
         armor_stats = tk.StringVar()
         armor_stats.set("No armor selected to inspect")
         
         # Sets display string for current weapon
         current_armor_stats = tk.StringVar()
-        current_armor_stats.set(self.weapon.display())
+        current_armor_stats.set(self.armor.display())
         
         self.clear_screen()
         # Setting up frames
         left_frame = tk.Frame(self.root)
-        left_frame.pack(side="left", fill="both")
+        left_frame.pack(side="left", fill="x")
         middle_frame = tk.Frame(self.root)
-        middle_frame.pack(side="left", fill="both")
+        middle_frame.pack(side="left", fill="x")
         right_frame = tk.Frame(self.root)
-        right_frame.pack(side="left", fill="both")
+        right_frame.pack(side="left", fill="x")
         bottom_frame = tk.Frame(self.root)
         bottom_frame.pack(fill="x")
         
         # Setting up menus
-        armor_inventory_label = tk.Label(left_frame, text="Armor Inventory")
+        armor_inventory_label = tk.Label(left_frame, text="Armors Inventory")
         armor_inventory_label.pack()
         armor_inventory = tk.Listbox(left_frame, selectmode="single")
         #NOTE: Wesley, write a query that pulls all armor from the inventory. Maybe write a generic function that pulls all names for a type_id and room_id instead?
@@ -771,14 +772,24 @@ class GameInstance:
         selected_armor_compare.pack(fill="both")
         
         # Sets what armor's stats to show in the inspector menu
-        inspect_armor_button = tk.Button(bottom_frame, text="Inspect Selected Armor", command=lambda: armor_stats.set(self.armor.display()))
+        inspect_armor_button = tk.Button(bottom_frame, text="Inspect Selected Armor", command=lambda: armor_stats.set(Armor(armor_inventory.get(armor_inventory.curselection())).display()))
         inspect_armor_button.pack()
-
+        
         current_armor_display = tk.Label(right_frame, textvariable=current_armor_stats)
         current_armor_display.pack(side="left", fill="both")
         
-        back_button = tk.Button(bottom_frame, text="Back", command=self.restaurant_menu)
+        equip_armor_button = tk.Button(bottom_frame, text="Equip", command=lambda: self.equip_armor(armor_inventory.get(armor_inventory.curselection())))
+        equip_armor_button.pack()
+        
+        back_button = tk.Button(bottom_frame, text="Back", command=self.equipment_menu)
         back_button.pack()
+        
+    # Handles the logic for equipping the armor
+    def equip_armor(self, armor_name: str):
+        self.clear_screen()
+        self.armor = Armor(armor_name)
+        messagebox.showinfo(message=f"You equip {self.armor.name}!")
+        self.armor_select_menu()
     
     # Displays the status of the restaurant
     def restaurant_status(self):
@@ -861,7 +872,7 @@ class GameInstance:
         armors_display = tk.Listbox(self.root, selectmode="single")
         armors_display.pack()
         armors_array: list[str] = get_item_names("armors")
-        armors_array.insert(0, *armors_array)
+        armors_display.insert(0, *armors_array)
     
         show_info_button = tk.Button(self.root, text="Inspect", command=lambda: self.display_armor(armors_display.get(armors_display.curselection())))
         show_info_button.pack()
