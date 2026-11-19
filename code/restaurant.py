@@ -97,9 +97,12 @@ class Restaurant:
 
                 cursor.execute(
                     """
-                    INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
-                    VALUES (%s, %s, %s, %s, %s)
-                    """,
+                    CALL add_inventory_item(%s, %s, %s, %s, %s)
+                    """
+                    # """
+                    # INSERT INTO inventory (type_id, item_id, item_name, quantity, room_id)
+                    # VALUES (%s, %s, %s, %s, %s)
+                    # """,
                     (type_id, item_id, item_name, quantity, self.room_id)
                 )
 
@@ -120,29 +123,30 @@ class Restaurant:
 
 
     # function that removes item tuple
+    # (typeid itemid name quantity)
     def remove_item(self, items):
         cursor = self.connection.cursor()
 
+        self.update_restaurant()
+
         try:
-            # First, validate that every requested item exists
+            # First, validate that every requested item exists locally
             for type_id, item_id, quantity in items:
 
-                cursor.execute(
-                    """
-                    SELECT quantity
-                    FROM inventory
-                    WHERE room_id = %s
-                    AND type_id = %s
-                    AND item_id = %s
-                    """,
-                    (self.room_id, type_id, item_id)
-                )
+                found = False
 
-                result = cursor.fetchone()
+                for inv_type, inv_id, inv_name, inv_quantity in self.inventory:
+                    if inv_type == type_id and inv_id == item_id:
+                        found = True
 
-                # Item isnt in inventory, or there isnt enough quantity
-                if result is None or result[0] < quantity:
-                    self.connection.rollback()
+                        # Not enough quantity
+                        if inv_quantity < quantity:
+                            return False
+
+                        break
+
+                # Item doesn't exist in inventory
+                if not found:
                     return False
 
             # All items are available, so remove them

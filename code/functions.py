@@ -32,3 +32,19 @@ def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> li
     with open("../assets/JSON" + fname, "r") as file_object:
         file_data = json.load(file_object)
         return [x[attr] for x in file_data.values() if x['name'] in item_names]
+
+
+# Temporary function for reference
+# def build_object_from_db(connection, table_name, id):
+#     cursor = connection.cursor()
+
+#     cursor.execute(
+#         "SELECT * FROM %s WHERE id = %s",
+#         (table_name, id)
+#     )
+#     result = cursor.fetchall()
+#     for (column1, column2, column3, column4) in result:
+#         self.column1 = column1
+#         self.column2, = column2
+#         self.column3 = column3
+#         self.column4 = column4
