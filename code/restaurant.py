@@ -199,13 +199,15 @@ class Restaurant:
         finally:
             cursor.close()
 
-def display_inventory(self):
+def display_inventory(self, id_in):
     # Refresh inventory from database
     self.inventory = self.access_inventory()
 
     display_list = []
 
     for type_id, item_id, item_name, quantity in self.inventory:
-        display_list.append((item_name, quantity))
+        if (type_id == id_in):
+            display_list.append((item_name, quantity))
+        
 
     return display_list
