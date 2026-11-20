@@ -48,3 +48,4 @@ def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> li
 #         self.column2, = column2
 #         self.column3 = column3
 #         self.column4 = column4
+

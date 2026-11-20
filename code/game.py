@@ -685,7 +685,10 @@ class GameInstance:
     # The menu for interacting with cooking and fulfilling orders of customers
     def cook_menu(self):
         self.clear_screen()
-        ingredients_list = print_ingredients(self.restaurant_obj.inventory)
+        # Updates customer list
+        self.restaurant_obj.update_customer_orders_from_database()
+        # Sets up for displaying ingredients in inventory
+        ingredients_list = print_ingredients(self.restaurant_obj.access_database_inventory_filter_type_id(1))
         
         # Frames
         orders_frame = tk.Frame(self.root)
@@ -701,7 +704,7 @@ class GameInstance:
         orders_interface = tk.Listbox(orders_frame, selectmode="single")
         orders_interface.pack()
         # Write a query to bring down the names of the requested orders
-        # orders_interface.insert(0, *)
+        orders_interface.insert(0, *self.restaurant_obj.display_customer_order_list())
         
         # Ingredients Inventory GUI
         ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}")
@@ -711,9 +714,30 @@ class GameInstance:
         back_button = tk.Button(buttons_frame, text="Back", command=self.restaurant_menu)
         back_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
         
-        cook_button = tk.Button(buttons_frame, text="Cook selected order meal", command=lambda: ())
+        # Refreshes the page
+        refresh_button = tk.Button(buttons_frame, text="Refresh", command=self.cook_menu)
+        refresh_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
+        
+        cook_button = tk.Button(buttons_frame, text="Cook selected order meal", command=lambda: self.cook_order(orders_interface.get(orders_interface.curselection())))
         cook_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
     
+    # Function that actually handles cooking an order
+    def cook_order(self, selected_order_name: str):
+        self.clear_screen()
+        customer_order: Recipe = Recipe(selected_order_name)
+        used_ingredients: list[tuple[int, int, int]] = []
+        # Sets up array of tuples for removing ingredients
+        # for i in range(len(customer_order.raw_ingredients)):
+        #     used_ingredients.append(tuple(1, Ingredient(customer_order.raw_ingredients[i][0]).item_id, int(Ingredient(customer_order.raw_ingredients[i][1]))))
+            
+        # Checks if this order can be cooked based on the user's ingredients
+        #TODO: Wesley, write a method of recipe in recipe.py that checks if the user has the required ingredients and quantities to cook this item. Return a boolean
+        if (customer_order.can_cook()):
+            self.restaurant_obj.remove_item([])
+        else:
+            messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
+            self.cook_menu()
+            
     # Allows for equipping weapons and armor
     def equipment_menu(self):
         self.clear_screen()

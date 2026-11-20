@@ -2,6 +2,7 @@ import mysql.connector
 from ingredient import Ingredient
 from weapon import Weapon
 from armor import Armor
+from customer import *
 
 
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
@@ -21,6 +22,7 @@ class Restaurant:
         # List of one-time purchases already made. Stores the by id
         self.onetime_purchases: list[str] = []
         self.unlocked_recipes = []
+        self.customers: list[Customer] = []
 
         # List of tuples: (item_name, quantity)
         self.inventory: list[tuple[str, int]] = [] # NOTE this may be redundant
@@ -277,3 +279,34 @@ class Restaurant:
             )
         finally:
             cursor.close()
+            
+    # Retrieves all customer tuples and returns their values
+    def update_customer_orders_from_database(self) -> None:
+        cursor = self.connection.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT * FROM customers WHERE room_id = %s",
+                (self.room_id, )
+            )
+            
+            customer_tuples = cursor.fetchall()
+            for customer in customer_tuples:
+                self.customers.append(Customer(customer[0], customer[2], customer[1]))
+        finally:
+            cursor.close()
+            
+    # For a given customer, return a list of strings containing their name, order, and required ingredients to cook their order
+    # This is for listbox
+    def display_customer_order_list(self) -> list[str]:
+        customer_order_list: list[str] = []
+        for i in range(len(self.customers)):
+            customer_str = ""
+            customer_str += self.customers[i].name
+            customer_str += " is ordering "
+            customer_str += self.customers[i].order.name
+            customer_str += "\nThis requires: "
+            customer_str += self.customers[i].order.display_ingredients()
+            customer_order_list.append(customer_str)
+        return customer_order_list
+            

@@ -93,10 +93,10 @@ CREATE TABLE recipes (
 
 -- State preservation table. Depends on recipes
 CREATE TABLE customers (
-    customer_id int not null,
+    customer_name varchar(100) not null,
     room_id int not null,
     recipe_name varchar(100) not null,
-    PRIMARY KEY (customer_id, room_id),
+    PRIMARY KEY (customer_name, room_id),
     FOREIGN KEY (room_id) references rooms,
     FOREIGN KEY (recipe_name) REFERENCES recipes
 );
