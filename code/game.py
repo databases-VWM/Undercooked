@@ -725,18 +725,23 @@ class GameInstance:
     def cook_order(self, selected_order_name: str):
         self.clear_screen()
         customer_order: Recipe = Recipe(selected_order_name)
-        used_ingredients: list[tuple[int, int, int]] = []
-        # Sets up array of tuples for removing ingredients
-        # for i in range(len(customer_order.raw_ingredients)):
-        #     used_ingredients.append(tuple(1, Ingredient(customer_order.raw_ingredients[i][0]).item_id, int(Ingredient(customer_order.raw_ingredients[i][1]))))
-            
+        
         # Checks if this order can be cooked based on the user's ingredients
         #TODO: Wesley, write a method of recipe in recipe.py that checks if the user has the required ingredients and quantities to cook this item. Return a boolean
+        # Maybe make it an advanced SQL procedure?
         if (customer_order.can_cook()):
-            self.restaurant_obj.remove_item([])
+            # Removes each used items from the inventory
+            for i in range(len(customer_order.raw_ingredients)):
+                type_id: int = 1
+                ingredient_id: int = Ingredient(customer_order.raw_ingredients[i][0]).item_id
+                ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
+                self.restaurant_obj.remove_item([(type_id, ingredient_id, ingredient_quantity)])
+                messagebox.showinfo(message=f"You successfully cooked {customer_order.name}!")
+                self.cook_menu()
         else:
             messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
             self.cook_menu()
+    
             
     # Allows for equipping weapons and armor
     def equipment_menu(self):
