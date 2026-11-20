@@ -109,7 +109,7 @@ class GameInstance:
             if is_logged_in(self.connection, userID) == False:
                 self.userID = userID
                 #Creates player
-                self.player = Entity("Player", True)
+                self.player = Entity("Player", self.connection, True)
                 # Sets player name from database
                 self.player.name = get_username(self.connection, self.userID)
                 self.main_menu()
@@ -304,7 +304,7 @@ class GameInstance:
     def restaurant_menu(self):
         self.restaurant_obj.update_restaurant()
         self.clear_screen()
-        self.player = Entity(get_username(self.connection, self.userID), True)
+        self.player = Entity(get_username(self.connection, self.userID), self.connection, True)
         self.player.health = self.player.max_health
         cook_button = tk.Button(self.root, text="Cook", command=self.cook_menu)
         cook_button.pack()
@@ -513,7 +513,7 @@ class GameInstance:
     # Shows text for nodes with enemy
     def enemy_node_text(self):
         self.clear_screen()
-        self.current_enemy = Entity(self.current_area.enemy_name)
+        self.current_enemy = Entity(self.current_area.enemy_name, self.connection)
         # Change flavor text for elite or not
         if self.current_area.is_elite == True:
             enemy_message = "You encounter a " + self.current_area.enemy_name + "\nIt looks incredibly strong!\n"
@@ -733,10 +733,11 @@ class GameInstance:
             # Removes each used items from the inventory
             for i in range(len(customer_order.raw_ingredients)):
                 type_id: int = 1
-                ingredient_id: int = Ingredient(customer_order.raw_ingredients[i][0]).item_id
+                ingredient_id: int = Ingredient(customer_order.raw_ingredients[i][0], self.connection).item_id
                 ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
                 self.restaurant_obj.remove_item([(type_id, ingredient_id, ingredient_quantity)])
                 messagebox.showinfo(message=f"You successfully cooked {customer_order.name}!")
+                
                 self.cook_menu()
         else:
             messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")

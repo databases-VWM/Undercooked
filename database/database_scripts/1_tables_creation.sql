@@ -107,6 +107,7 @@ CREATE TABLE enemies (
     enemy_health int not null,
     enemy_def int not null,
     is_boss bool not null,
+    description varchar(500),
     PRIMARY KEY(enemy_name)
 );
 

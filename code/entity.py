@@ -1,37 +1,79 @@
 import json
-
+import mysql.connector
 # Allows for dynamic creation of an object from JSON from just its name
 class Entity:
-    def __init__(self, entity_name: str, player: bool = False):
+    def __init__(self, entity_name: str, connection, player: bool = False):
+        cursor = connection.cursor()
+        self.ELITE_ENEMY_HEALTH_SCALAR: int = 3
+        self.ELITE_ENEMY_DAMAGE_SCALAR: int = 2
+        self.ELITE_ENEMY_DEFENSE_SCALAR: int = 2
 
         if player != True:
-            fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
-            fileData = json.load(fileObject)[entity_name]
+            try:
+                # Setup all non dice values
+                cursor.execute(
+                    "SELECT * FROM enemies WHERE enemy_name = %s",
+                    (entity_name,)
+                )
 
-            # Imported Properties
-            self.ELITE_ENEMY_HEALTH_SCALAR: int = 3
-            self.ELITE_ENEMY_DAMAGE_SCALAR: int = 2
-            self.ELITE_ENEMY_DEFENSE_SCALAR: int = 2
-            self.name: str = fileData["name"]
-            self.weapon: str = ""
-            self.armor: str = ""
-            self.health: int = fileData["health"]
-            self.max_health = self.health
-            self.defense: int = fileData["defense"]
-            self.attack_dice: list[list[int]] = fileData["attack_dice"]
-            self.block_dice: list[list[int]] = fileData["block_dice"]
-            self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
-            self.description: str = fileData["description"]
-            self.is_elite: bool = False
-            self.is_boss: bool = fileData["is_boss"]
-            self.power: int = 0
+                enemy_tuple = cursor.fetchone()
+                self.name: str = entity_name
+                # self.weapon: str = ""
+                # self.armor: str = ""
+                self.health = enemy_tuple[1]
+                self.max_health = self.health
+                self.defense = enemy_tuple[2]
+                self.description = enemy_tuple[4]
+                self.is_elite: bool = False
+                self.is_boss = enemy_tuple[3]
+                self.power: int = 0
+                self.attack_dice: list[list[int]] = []
+                
+                cursor.execute(
+                    "SELECT * FROM enemy_attack_dice WHERE enemy_name = %s",
+                    (entity_name, )
+                )
+                
+                dice_tuples = cursor.fetchall()
+                # Adds dice from the database
+                for dice_tuple in dice_tuples:
+                    temp_dice_list = []
+                    temp_dice_list.append(dice_tuple[1])
+                    temp_dice_list.append(dice_tuple[2])
+                    self.attack_dice.append(temp_dice_list)
+
+            finally:
+                cursor.close()
+        
+            
+            
+            # fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
+            # fileData = json.load(fileObject)[entity_name]
+
+            # # Imported Properties
+            # self.ELITE_ENEMY_HEALTH_SCALAR: int = 3
+            # self.ELITE_ENEMY_DAMAGE_SCALAR: int = 2
+            # self.ELITE_ENEMY_DEFENSE_SCALAR: int = 2
+            # self.name: str = fileData["name"]
+            # self.weapon: str = ""
+            # self.armor: str = ""
+            # self.health: int = fileData["health"]
+            # self.max_health = self.health
+            # self.defense: int = fileData["defense"]
+            # self.attack_dice: list[list[int]] = fileData["attack_dice"]
+            # self.block_dice: list[list[int]] = fileData["block_dice"]
+            # self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
+            # self.description: str = fileData["description"]
+            # self.is_elite: bool = False
+            # self.is_boss: bool = fileData["is_boss"]
+            # self.power: int = 0
         else:
             # Testing defaults
             self.name: str = entity_name
-            self.weapon: str = "These hands"
-            self.weapon_ID: int = 0
-            self.armor: str = "Traveler's Garbs"
-            self.armor_ID: int = 0
+            # self.weapon: str = "These hands"
+            # self.weapon_ID: int = 0
+            # self.armor: str = "Traveler's Garbs"
+            # self.armor_ID: int = 0
             self.health: int = 100
             self.max_health: int = self.health
             self.defense: int = 10
@@ -99,8 +141,8 @@ def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
         # guard_die_str = transform_dice_to_str(entity.block_dice)
         # dodge_die_str = transform_dice_to_str(entity.dodge_dice)
         entity_array.append(f"Power: {entity.power}")
-        entity_array.append(f"Weapon: {entity.weapon}")
-        entity_array.append(f"Armor: {entity.armor}")
+        # entity_array.append(f"Weapon: {entity.weapon}")
+        # entity_array.append(f"Armor: {entity.armor}")
         entity_array.append(f"Defense: {entity.defense}")
         entity_array.append(f"Damage: {attack_die_str}")
         # entity_array.append(f"Guard: {guard_die_str}")

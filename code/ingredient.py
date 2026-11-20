@@ -1,17 +1,38 @@
 import json
 from functions import *
+from ingredient import *
+import mysql.connector
 
-# Allows for dynamic creation of an object from JSON from just its name
+# Allows for dynamic creation of an object from the database
 class Ingredient:
-    def __init__(self, ingredient_name: str):
-        fileObject = open("../assets/JSON/ingredients.json", "r")
-        fileData = json.load(fileObject)[ingredient_name]
+    def __init__(self, ingredient_name: str, connection):
+        self.connection = connection
+        self.ingredient_name = ingredient_name
+        
+        cursor = connection.cursor()
 
-        # Imported Properties
-        self.name: str = fileData["name"]
-        self.type: str = fileData["type"]
-        self.item_id: int = fileData["item_id"]
-        self.type_id: int = 1
+        try:
+            cursor.execute(
+                "SELECT * FROM ingredients WHERE ingredient_name = %s",
+                (ingredient_name,)
+            )
+
+            self.item_id = cursor.fetchall()[0]
+            self.type_id = 1
+            self.type: str = cursor.fetchall()[2]
+
+        finally:
+            cursor.close()
+        
+        # fileObject = open("../assets/JSON/ingredients.json", "r")
+        # fileData = json.load(fileObject)[ingredient_name]
+        # self.connection = connection
+
+        # # Imported Properties
+        # self.name: str = fileData["name"]
+        # self.type: str = fileData["type"]
+        # self.item_id: int = fileData["item_id"]
+        # self.type_id: int = 1
 
 
 
@@ -24,7 +45,7 @@ def inv_to_database(connection, room_id, inventory):
         for (item_name, quantity) in inventory:
 
             # look up id
-            ingredient = Ingredient(item_name)
+            ingredient = Ingredient(item_name, connection)
             item_id = ingredient.item_id
 
             # Insert the item into the inventory table
