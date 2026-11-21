@@ -66,3 +66,28 @@ BEGIN
 END //
 
 DELIMITER ;
+
+DELIMETER //
+-- Trigger for room cleanup when a room is deleted
+CREATE TRIGGER cleanup_deleted_room
+BEFORE DELETE ON rooms
+FOR EACH ROW
+BEGIN
+    -- remove room inv
+    DELETE FROM inventory
+    WHERE room_id = OLD.room_id;
+
+    -- Cookbooks that are unlocked
+    DELETE FROM unlocked_cookbooks
+    WHERE room_id = OLD.room_id;
+
+    -- Customers
+    DELETE FROM customers
+    WHERE room_id = OLD.room_id;
+
+    UPDATE users
+    SET room_id = NULL
+    WHERE room_id = OLD.room_id;
+END //
+
+DELIMITER ;
