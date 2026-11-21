@@ -1,4 +1,3 @@
-import json
 import mysql.connector
 
 # Allows for dynamic creation of an object from the database

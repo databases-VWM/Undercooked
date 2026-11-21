@@ -995,7 +995,7 @@ class GameInstance:
         self.clear_screen()
         cookbooks_display = tk.Listbox(self.root, selectmode="single")
         cookbooks_display.pack()
-        local_cookbooks_array: list[str] = get_item_names("cookbooks")
+        local_cookbooks_array: list[str] = get_cookbook_names(self.connection)
         #Removes already purchased cookbooks from display
         for purchased_cookbook in self.restaurant_obj.onetime_purchases:
             local_cookbooks_array.remove(purchased_cookbook)
@@ -1009,7 +1009,7 @@ class GameInstance:
         
     def display_cookbook(self, cookbook_name: str):
         self.clear_screen()
-        displayed_cookbook: Cookbook = Cookbook(cookbook_name)
+        displayed_cookbook: Cookbook = Cookbook(cookbook_name, self.connection)
         cookbook_info_display = tk.Label(self.root, text=f"{displayed_cookbook.name}:\nFor Area: {displayed_cookbook.area}\nPrice: {displayed_cookbook.price}")
         cookbook_info_display.pack()
         show_money_label = tk.Label(self.root, text=f"You have {self.restaurant_obj.money} money left!")

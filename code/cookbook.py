@@ -17,12 +17,18 @@ class Cookbook:
             self.price: int = db_cookbook[2]
         finally:
             cursor.close()
-            
-        # fileObject = open("../assets/JSON/cookbooks.json", "r")
-        # fileData = json.load(fileObject)[cookbook_name]
+
+# Returns the names of all cookbooks
+def get_cookbook_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT cookbook_name FROM cookbooks"
+        )
+        cookbooks_list: list[str] = cursor.fetchall()
         
-        # self.name = fileData["name"]
-        # self.area = fileData["area"]
-        # self.price = fileData["price"]
-        # self.type_id = 4
+        return cookbooks_list
         
+    finally:
+        cursor.close()
