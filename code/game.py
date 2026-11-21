@@ -717,27 +717,33 @@ class GameInstance:
         cook_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
     
     # Function that actually handles cooking an order
-    def cook_order(self, selected_order_name: str):
+    def cook_order(self, selected_order_index: int):
         self.clear_screen()
-        customer_order: Recipe = Recipe(selected_order_name, self.connection)
-        
-        # Checks if this order can be cooked based on the user's ingredients
-        #TODO: Wesley, write a method of recipe in recipe.py that checks if the user has the required ingredients and quantities to cook this item. Return a boolean
-        # Maybe make it an advanced SQL procedure?
-        if (customer_order.can_cook()):
-            # Removes each used items from the inventory
+        current_customer: Customer = self.restaurant_obj.customers[selected_order_index]
+        customer_order: Recipe = current_customer.order
+        ingredients_list: list[tuple[int, int, int]] = []
+        if current_customer.still_exist() == True:
+            # Setup to send this data in remove item
+            # Iterates through each type of item
             for i in range(len(customer_order.raw_ingredients)):
-                type_id: int = 1
-                ingredient_id: int = Ingredient(customer_order.raw_ingredients[i][0], self.connection).item_id
-                ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
-                self.restaurant_obj.remove_item([(type_id, ingredient_id, ingredient_quantity)])
-                messagebox.showinfo(message=f"You successfully cooked {customer_order.name}!")
+                temp_type_id = 1
+                temp_ingredient_id: int = int(customer_order.raw_ingredients[i][0])
+                temp_ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
+                temp_tuple = (temp_type_id, temp_ingredient_id, temp_ingredient_quantity)
+                ingredients_list.append(temp_tuple)
                 
+            # Checks if this order can be cooked based on the user's ingredients
+            successful_cook = self.restaurant_obj.remove_item(ingredients_list)
+            if successful_cook != True:
+                messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
+                self.cook_menu()
+            else:
+                current_customer.delete()
+                messagebox.showinfo("Order fulfilled!")
                 self.cook_menu()
         else:
-            messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
+            messagebox.showerror(message="That customer's order has already been fulfilled!")
             self.cook_menu()
-    
             
     # Allows for equipping weapons and armor
     def equipment_menu(self):
