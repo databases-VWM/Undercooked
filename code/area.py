@@ -1,39 +1,134 @@
 import json
 import random
+import mysql.connector
 
 from functions import *
 from entity import *
 
+
+#Attempting to write a function that can build areas using the database
+
+
+
+class Area:
+    def __init__(self, area_name: str, connection):
+        self.connection = connection
+        cursor = self.connection.cursor()
+
+        try:
+            # Retrieve basic area information
+            cursor.execute(
+                """
+                SELECT area_name, area_power
+                FROM areas
+                WHERE area_name = %s
+                """,
+                (area_name,)
+            )
+
+            result = cursor.fetchone() # fetch one cause there should only be one with that name
+
+            if result is None:
+                raise ValueError(f"Area '{area_name}' does not exist.")
+
+            self.name = result[0]
+            self.recommended_power = result[1]
+
+            # Retrieve enemies and their weights
+            cursor.execute(
+                """
+                SELECT enemy_name, enemy_weight
+                FROM area_enemies
+                WHERE area_name = %s
+                """,
+                (area_name,)
+            )
+
+            self.enemies_list = cursor.fetchall()
+
+            # Retrieve ingredients and their weights
+            cursor.execute(
+                """
+                SELECT ingredients.ingredient_name,
+                    ingredients.ingredient_type,
+                    area_ingredients.ingredient_weight
+                FROM area_ingredients
+                JOIN ingredients
+                    ON area_ingredients.ingredient_id = ingredients.ingredient_id
+                WHERE area_ingredients.area_name = %s
+                """,
+                (area_name,)
+            )
+
+            ingredients = cursor.fetchall()
+
+            # Separate ingredients by type
+            self.fishing_list = []
+            self.flora_list = []
+            self.fauna_list = []
+
+            for ingredient_name, ingredient_type, weight in ingredients:
+                if ingredient_type == "fishing":
+                    self.fishing_list.append((ingredient_name, weight))
+
+                elif ingredient_type == "flora":
+                    self.flora_list.append((ingredient_name, weight))
+
+                elif ingredient_type == "fauna":
+                    self.fauna_list.append((ingredient_name, weight))
+
+        finally:
+            cursor.close()
+
+        self.chosen_list = []
+
+        # TODO Map unlock, idk how you want to implement this
+        self.map_unlock = ""
+
+        # Flags for integration with game.py
+        self.current_node: int = 0
+        self.progress: bool = True
+        self.node_type: str = ""
+        self.is_enemy: bool = False
+        self.is_elite: bool = False
+        self.is_boss: bool = False
+        self.enemy_name: str = ""
+
+        # Constants for game balancing
+        self.ENEMY_CHANCE: float = 0.30
+        self.ELITE_THRESHOLD: int = 100
+
+
 # Allows for dynamic creation of an object from JSON from just its name
 #Ingredients list arrays and enemies/bosses list arrays are in the format [[item_name, weight], [item_name, weight]]
-class Area:
-    def __init__(self, area_name: str):
-        with open("../assets/JSON/areas.json", "r") as file_object:
-            file_data = json.load(file_object)[area_name]
+# class Area:
+#     def __init__(self, area_name: str):
+#         with open("../assets/JSON/areas.json", "r") as file_object:
+#             file_data = json.load(file_object)[area_name]
 
-            # Imported Properties
-            self.name: str = file_data["name"]
-            self.recommended_power = file_data["recommended_power"]
-            self.enemies_list: list[tuple[str, int]] = file_data["enemies_list"]
-            self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
-            self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
-            self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
-            self.chosen_list = []
-            self.map_unlock: str = file_data["map_unlock"]
+#             # Imported Properties
+#             self.name: str = file_data["name"]
+#             self.recommended_power = file_data["recommended_power"]
+#             self.enemies_list: list[tuple[str, int]] = file_data["enemies_list"]
+#             self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
+#             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
+#             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
+#             self.chosen_list = []
+#             self.map_unlock: str = file_data["map_unlock"]
 
 
-            # Flags for integration with game.py
-            self.current_node: int = 0
-            self.progress: bool = True
-            self.node_type: str = ""
-            self.is_enemy: bool = False
-            self.is_elite: bool = False
-            self.is_boss: bool = False
-            self.enemy_name: str = ""
+#             # Flags for integration with game.py
+#             self.current_node: int = 0
+#             self.progress: bool = True
+#             self.node_type: str = ""
+#             self.is_enemy: bool = False
+#             self.is_elite: bool = False
+#             self.is_boss: bool = False
+#             self.enemy_name: str = ""
 
-            # Constants for game balancing
-            self.ENEMY_CHANCE: float = 0.30
-            self.ELITE_THRESHOLD: int = 100
+#             # Constants for game balancing
+#             self.ENEMY_CHANCE: float = 0.30
+#             self.ELITE_THRESHOLD: int = 100
 
     # Handles generation of and setting flags for a standard node
     def generate_node(self) -> None:
