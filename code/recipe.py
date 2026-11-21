@@ -1,16 +1,42 @@
-import json
+import mysql.connector
 
-# Allows for dynamic creation of an object from JSON from just its name
+# Allows for dynamic creation of an object from the database
 class Recipe:
-    def __init__(self, recipe_name: str):
-        fileObject = open("../assets/JSON/recipes.json", "r")
-        fileData = json.load(fileObject)[recipe_name]
+    def __init__(self, recipe_name: str, connection):
+        cursor = connection.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT * FROM recipes WHERE recipe_name = %s",
+                (recipe_name, )
+            )
+            self.name = recipe_name
+            self.required_cookbook = cursor.fetchone()[1]
+            self.price = cursor.fetchone()[2]
+            self.raw_ingredients: list[list[str]] = []
+            
+            cursor.execute(
+                "SELECT * FROM recipe_ingredients WHERE recipe_name = %s",
+                (recipe_name, )
+            )
+            ingredients_tuples_list = cursor.fetchall()
+            
+            for ingredients_tuple in ingredients_tuples_list:
+                ingredient_list: list[str] = []
+                ingredient_list.append(ingredients_tuple[1])
+                ingredient_list.append(ingredients_tuple[2])
+                self.raw_ingredients.append(ingredient_list)
+            
+        finally:
+            cursor.close()
+        # fileObject = open("../assets/JSON/recipes.json", "r")
+        # fileData = json.load(fileObject)[recipe_name]
 
-        # Imported Properties
-        self.name = fileData["name"]
-        self.raw_ingredients: list[list[str]] = fileData["Ingredients"]
-        self.required_cookbook: str = fileData["Cookbook"]
-        self.workstation: str = fileData["Workstation"]
+        # # Imported Properties
+        # self.name = fileData["name"]
+        # self.raw_ingredients: list[list[str]] = fileData["Ingredients"]
+        # self.required_cookbook: str = fileData["Cookbook"]
+        # self.workstation: str = fileData["Workstation"]
         
     def display_ingredients(self) -> str:
         ingredients_str = ""

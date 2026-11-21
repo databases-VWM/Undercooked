@@ -1,4 +1,3 @@
-import json
 import mysql.connector
 # Allows for dynamic creation of an object from JSON from just its name
 class Entity:
@@ -28,6 +27,7 @@ class Entity:
                 self.is_boss = enemy_tuple[3]
                 self.power: int = 0
                 self.attack_dice: list[list[int]] = []
+                self.is_player = False
                 
                 cursor.execute(
                     "SELECT * FROM enemy_attack_dice WHERE enemy_name = %s",
@@ -45,28 +45,6 @@ class Entity:
             finally:
                 cursor.close()
         
-            
-            
-            # fileObject = open("../assets/JSON/enemies.json", "r") # NOTE: I HAD TO CHANGE PATH TO .. TO TEST COMBAT.py
-            # fileData = json.load(fileObject)[entity_name]
-
-            # # Imported Properties
-            # self.ELITE_ENEMY_HEALTH_SCALAR: int = 3
-            # self.ELITE_ENEMY_DAMAGE_SCALAR: int = 2
-            # self.ELITE_ENEMY_DEFENSE_SCALAR: int = 2
-            # self.name: str = fileData["name"]
-            # self.weapon: str = ""
-            # self.armor: str = ""
-            # self.health: int = fileData["health"]
-            # self.max_health = self.health
-            # self.defense: int = fileData["defense"]
-            # self.attack_dice: list[list[int]] = fileData["attack_dice"]
-            # self.block_dice: list[list[int]] = fileData["block_dice"]
-            # self.dodge_dice: list[list[int]] = fileData["dodge_dice"]
-            # self.description: str = fileData["description"]
-            # self.is_elite: bool = False
-            # self.is_boss: bool = fileData["is_boss"]
-            # self.power: int = 0
         else:
             # Testing defaults
             self.name: str = entity_name
@@ -84,6 +62,7 @@ class Entity:
             self.is_elite = False
             self.is_boss: bool = False
             self.power: int = 0
+            self.is_player = True
 
             self.get_player_data_from_database()
             self.calculate_power()
@@ -95,12 +74,18 @@ class Entity:
     # Power is a formulaic, general metric of how strong a player is
     def calculate_power(self):
         temp_power: int = 0
-        temp_power += self.max_health // 10
-        temp_power += self.defense
-        temp_power += dice_avg(self.attack_dice) // 2
-        temp_power += dice_avg(self.block_dice) // 3
-        temp_power += dice_avg(self.dodge_dice) // 3
-        self.power = temp_power
+        if self.is_player:
+            temp_power += self.max_health // 10
+            temp_power += self.defense
+            temp_power += dice_avg(self.attack_dice) // 2
+            temp_power += dice_avg(self.block_dice) // 3
+            temp_power += dice_avg(self.dodge_dice) // 3
+            self.power = temp_power
+        else:
+            temp_power += self.max_health // 10
+            temp_power += self.defense
+            temp_power += dice_avg(self.attack_dice)
+            self.power = temp_power
         
 #Returns the average of a set of dice
 def dice_avg(dice_array: list[list[int]]) -> int:
@@ -135,18 +120,18 @@ def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
     # Update power
     entity.calculate_power()
     entity_array.append(f"{entity.name}'s stats:")
+    entity_array.append(f"Power: {entity.power}")
     entity_array.append(f"{entity.health} / {entity.max_health} Health")
     if extended == True:
         attack_die_str = transform_dice_to_str(entity.attack_dice)
-        # guard_die_str = transform_dice_to_str(entity.block_dice)
-        # dodge_die_str = transform_dice_to_str(entity.dodge_dice)
-        entity_array.append(f"Power: {entity.power}")
-        # entity_array.append(f"Weapon: {entity.weapon}")
-        # entity_array.append(f"Armor: {entity.armor}")
+        
         entity_array.append(f"Defense: {entity.defense}")
         entity_array.append(f"Damage: {attack_die_str}")
-        # entity_array.append(f"Guard: {guard_die_str}")
-        # entity_array.append(f"Dodge: {dodge_die_str}")
+        if entity.is_player:
+            guard_die_str = transform_dice_to_str(entity.block_dice)
+            dodge_die_str = transform_dice_to_str(entity.dodge_dice)
+            entity_array.append(f"Guard: {guard_die_str}")
+            entity_array.append(f"Dodge: {dodge_die_str}")
     entity_array.append(f"\"{entity.description}\"")
     return entity_array
         

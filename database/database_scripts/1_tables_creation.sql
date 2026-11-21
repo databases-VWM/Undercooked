@@ -92,6 +92,16 @@ CREATE TABLE recipes (
     FOREIGN KEY (cookbook_name) REFERENCES cookbooks
 );
 
+-- Depends on recipes and ingredients
+CREATE TABLE recipe_ingredients (
+    recipe_name varchar(100) not null,
+    ingredient_id int not null,
+    quantity int not null,
+    PRIMARY KEY (recipe_name, ingredient_id),
+    FOREIGN KEY (recipe_name) REFERENCES recipes,
+    FOREIGN KEY (ingredient_id) REFERENCES ingredients
+);
+
 -- State preservation table. Depends on recipes
 CREATE TABLE customers (
     customer_name varchar(100) not null,

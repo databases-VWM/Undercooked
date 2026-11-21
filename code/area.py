@@ -1,4 +1,3 @@
-import json
 import random
 import mysql.connector
 
@@ -7,9 +6,6 @@ from entity import *
 
 
 #Attempting to write a function that can build areas using the database
-
-
-
 class Area:
     def __init__(self, area_name: str, connection):
         self.connection = connection
@@ -68,13 +64,13 @@ class Area:
             self.fauna_list = []
 
             for ingredient_name, ingredient_type, weight in ingredients:
-                if ingredient_type == "fishing":
+                if ingredient_type == "fish":
                     self.fishing_list.append((ingredient_name, weight))
 
-                elif ingredient_type == "flora":
+                elif ingredient_type == "plant":
                     self.flora_list.append((ingredient_name, weight))
 
-                elif ingredient_type == "fauna":
+                elif ingredient_type == "meat":
                     self.fauna_list.append((ingredient_name, weight))
 
         finally:
@@ -95,40 +91,49 @@ class Area:
         self.enemy_name: str = ""
 
         # Constants for game balancing
-        self.ENEMY_CHANCE: float = 0.30
+        self.ENEMY_CHANCE: float = 0.50
         self.ELITE_THRESHOLD: int = 100
+        
 
 
 # Allows for dynamic creation of an object from JSON from just its name
 #Ingredients list arrays and enemies/bosses list arrays are in the format [[item_name, weight], [item_name, weight]]
 # class Area:
-#     def __init__(self, area_name: str):
-#         with open("../assets/JSON/areas.json", "r") as file_object:
-#             file_data = json.load(file_object)[area_name]
+#     def __init__(self, area_name: str, connection):
+#         cursor = connection.cursor()
+#         try:
+#             cursor.execute(
+                
+#             )
+#         except:
+#             pass
+                
+#         # with open("../assets/JSON/areas.json", "r") as file_object:
+#         #     file_data = json.load(file_object)[area_name]
 
-#             # Imported Properties
-#             self.name: str = file_data["name"]
-#             self.recommended_power = file_data["recommended_power"]
-#             self.enemies_list: list[tuple[str, int]] = file_data["enemies_list"]
-#             self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
-#             self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
-#             self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
-#             self.chosen_list = []
-#             self.map_unlock: str = file_data["map_unlock"]
+#         #     # Imported Properties
+#         #     self.name: str = file_data["name"]
+#         #     self.recommended_power = file_data["recommended_power"]
+#         #     self.enemies_list: list[tuple[str, int]] = file_data["enemies_list"]
+#         #     self.fishing_list: list[tuple[str, int]] = file_data["fishing_list"]
+#         #     self.flora_list: list[tuple[str, int]] = file_data["flora_list"]
+#         #     self.fauna_list: list[tuple[str, int]] = file_data["fauna_list"]
+#         #     self.chosen_list = []
+#         #     self.map_unlock: str = file_data["map_unlock"]
 
 
-#             # Flags for integration with game.py
-#             self.current_node: int = 0
-#             self.progress: bool = True
-#             self.node_type: str = ""
-#             self.is_enemy: bool = False
-#             self.is_elite: bool = False
-#             self.is_boss: bool = False
-#             self.enemy_name: str = ""
+#         #     # Flags for integration with game.py
+#         #     self.current_node: int = 0
+#         #     self.progress: bool = True
+#         #     self.node_type: str = ""
+#         #     self.is_enemy: bool = False
+#         #     self.is_elite: bool = False
+#         #     self.is_boss: bool = False
+#         #     self.enemy_name: str = ""
 
-#             # Constants for game balancing
-#             self.ENEMY_CHANCE: float = 0.30
-#             self.ELITE_THRESHOLD: int = 100
+#         #     # Constants for game balancing
+#         #     self.ENEMY_CHANCE: float = 0.30
+#         #     self.ELITE_THRESHOLD: int = 100
 
     # Handles generation of and setting flags for a standard node
     def generate_node(self) -> None:
@@ -147,7 +152,7 @@ class Area:
 
         # Remove categories with no available items
         available_categories = [
-            category for category in node_categories if category[1] > 0 # Protects against edgecases
+            category for category in node_categories if category[1] > 0 # Protects against edge cases
         ]
         if not available_categories:
             print("ERROR: No resources are available in this area.")
@@ -180,10 +185,10 @@ class Area:
         self.enemy_name = sample_item(self.enemies_list)
 
 #Sets up string for the ingredient forecast for a given area
-def setup_ingredients_forecast(area_name: str) -> str:
+def setup_ingredients_forecast(area_name: str, connection) -> str:
     try:
         # Temporarily loads up a given area
-        new_area = Area(area_name)
+        new_area = Area(area_name, connection)
         total_ingredients_array: list[tuple[str, int]] = []
         ingredients_forecast_str = f"Recommended Power: {new_area.recommended_power}\nIngredients Forecast:\n"
         
@@ -204,14 +209,25 @@ def setup_ingredients_forecast(area_name: str) -> str:
                 pass
         if len(total_ingredients_array) > 30:
             ingredients_forecast_str += "... Plus more"
-    except KeyError:
+    except ValueError:
         ingredients_forecast_str = "No ingredients to display"
     return ingredients_forecast_str
-    
 
-    
-    
-    
+# Database function to return all area names
+def get_area_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    areas_list: list[str] = []
+    try:
+        cursor.execute(
+            "SELECT area_name FROM areas"
+        )
+        area_tuples = cursor.fetchall()
+        for row in area_tuples:
+            areas_list.append(row[0])
+        return areas_list
+    finally:
+        cursor.close()
+        
     
     
     

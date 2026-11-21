@@ -1,4 +1,3 @@
-import json
 from functions import *
 from ingredient import *
 import mysql.connector
@@ -16,26 +15,15 @@ class Ingredient:
                 "SELECT * FROM ingredients WHERE ingredient_name = %s",
                 (ingredient_name,)
             )
+            
+            db_item = cursor.fetchone()
 
-            self.item_id = cursor.fetchall()[0]
-            self.type_id = 1
-            self.type: str = cursor.fetchall()[2]
+            self.item_id: int = db_item[0]
+            self.type_id: int = 1
+            self.type: str = db_item[2]
 
         finally:
             cursor.close()
-        
-        # fileObject = open("../assets/JSON/ingredients.json", "r")
-        # fileData = json.load(fileObject)[ingredient_name]
-        # self.connection = connection
-
-        # # Imported Properties
-        # self.name: str = fileData["name"]
-        # self.type: str = fileData["type"]
-        # self.item_id: int = fileData["item_id"]
-        # self.type_id: int = 1
-
-
-
 
 # This is the function that sends the ingredients in the inventory, to the database shared inventory
 def inv_to_database(connection, room_id, inventory):
@@ -66,6 +54,7 @@ def inv_to_database(connection, room_id, inventory):
         cursor.close()
         
 # Puts the player's inventory of ingredients into a printable format for tk.Stringvar   
+# name, quantity
 def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
     ingredients_str = "Inventory: \n"
     if len(ingredients) > 0:
@@ -73,6 +62,20 @@ def print_ingredients(ingredients: list[tuple[str, int]]) -> str:
             ingredients_str += ingredients[inventory_num][0]
             ingredients_str += ": "
             ingredients_str += str(ingredients[inventory_num][1])
+            if inventory_num != (len(ingredients) - 1):
+                ingredients_str += "\n "
+    else:
+        ingredients_str = "Nothing in Inventory"
+    return ingredients_str
+
+# Prints ingredients, but compatible with the database
+def print_ingredients_full(ingredients: list[tuple[int, int, str, int]]) -> str:
+    ingredients_str = "Inventory: \n"
+    if len(ingredients) > 0:
+        for inventory_num in range(len(ingredients)):
+            ingredients_str += ingredients[inventory_num][2]
+            ingredients_str += ": "
+            ingredients_str += str(ingredients[inventory_num][3])
             if inventory_num != (len(ingredients) - 1):
                 ingredients_str += "\n "
     else:
