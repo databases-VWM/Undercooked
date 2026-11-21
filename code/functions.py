@@ -34,6 +34,7 @@ def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> li
         return [x[attr] for x in file_data.values() if x['name'] in item_names]
 
 
+
 # Temporary function for reference
 # def build_object_from_db(connection, table_name, id):
 #     cursor = connection.cursor()

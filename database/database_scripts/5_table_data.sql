@@ -52,47 +52,56 @@ INSERT INTO areas VALUES(
 -- area_ingredients
 INSERT INTO area_ingredients VALUES(
     "Blasted Beach",
-    1
-);
-
-INSERT INTO area_ingredients VALUES(
-    "Blasted Beach",
-    2
-);
-
-INSERT INTO area_ingredients VALUES(
-    "Blasted Beach",
+    1,
     3
 );
 
 INSERT INTO area_ingredients VALUES(
     "Blasted Beach",
+    2,
+    2
+);
+
+INSERT INTO area_ingredients VALUES(
+    "Blasted Beach",
+    3,
     5
 );
 
 INSERT INTO area_ingredients VALUES(
-    "Craw's Domain",
-    1
-);
-
-INSERT INTO area_ingredients VALUES(
-    "Craw's Domain",
+    "Blasted Beach",
+    5,
     2
 );
 
 INSERT INTO area_ingredients VALUES(
     "Craw's Domain",
+    1,
     3
 );
 
 INSERT INTO area_ingredients VALUES(
     "Craw's Domain",
-    4
+    2,
+    3
 );
 
 INSERT INTO area_ingredients VALUES(
     "Craw's Domain",
+    3,
     5
+);
+
+INSERT INTO area_ingredients VALUES(
+    "Craw's Domain",
+    4,
+    2
+);
+
+INSERT INTO area_ingredients VALUES(
+    "Craw's Domain",
+    5,
+    1
 );
 
 -- cookbooks
@@ -109,19 +118,34 @@ INSERT INTO recipes VALUES (
     10
 );
 
+-- recipe_ingredients
+INSERT INTO recipe_ingredients VALUES (
+    "Mushroom Stew",
+    3,
+    2
+);
+
+INSERT INTO recipe_ingredients VALUES (
+    "Mushroom Stew",
+    1,
+    1
+);
+
 -- Enemies
 INSERT INTO enemies VALUES (
     "The Big Craw",
     21,
     2,
-    False
+    False,
+    "He's literally the biggest of craws"
 );
 
 INSERT INTO enemies VALUES (
     "Vincent's Procrastination",
     100,
     69,
-    False
+    False,
+    "Maybe exists"
 );
 
 -- enemy_attack_dice
@@ -140,15 +164,18 @@ INSERT INTO enemy_attack_dice VALUES (
 -- area_enemies
 INSERT INTO area_enemies VALUES (
     "Blasted Beach",
-    "Vincent's Procrastination"
+    "Vincent's Procrastination",
+    2
 );
 
 INSERT INTO area_enemies VALUES (
     "Craw's Domain",
-    "Vincent's Procrastination"
+    "Vincent's Procrastination",
+    1
 );
 
 INSERT INTO area_enemies VALUES (
     "Craw's Domain",
-    "The Big Craw"
+    "The Big Craw",
+    5
 );

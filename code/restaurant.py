@@ -91,9 +91,10 @@ class Restaurant:
         finally:
             cursor.close()
             
-    def access_database_inventory_filter_type_id(self, type_id):
+    # Returns everything in the inventory of a certain type_id
+    def access_database_inventory_filter_type_id(self, type_id) -> list[tuple[int, int, str, int]]:
         cursor = self.connection.cursor()
-
+        inventory_list: list[tuple[int, int, str, int]] = []
         try:
             cursor.execute(
                 """
@@ -104,7 +105,15 @@ class Restaurant:
                 (self.room_id, type_id)
             )
 
-            return cursor.fetchall()
+            inventory_tuples = cursor.fetchall()
+            for i in range(len(inventory_tuples)):
+                item_type_id = inventory_tuples[i][0]
+                item_id = inventory_tuples[i][1]
+                item_name = inventory_tuples[i][2]
+                item_quantity = inventory_tuples[i][3]
+                inventory_list.append(tuple([item_type_id, item_id, item_name, item_quantity]))
+            
+            return inventory_list
 
         finally:
             cursor.close()
@@ -202,7 +211,7 @@ class Restaurant:
 
         if len(self.inventory) > 0:
             for inventory_num in range(len(self.inventory)):
-                inventory_str += self.inventory[inventory_num][0]
+                inventory_str += str(self.inventory[inventory_num][0])
                 inventory_str += ": "
                 inventory_str += str(self.inventory[inventory_num][1])
                 if inventory_num != (len(self.inventory) - 1):
@@ -263,7 +272,7 @@ class Restaurant:
             
             customer_tuples = cursor.fetchall()
             for customer in customer_tuples:
-                self.customers.append(Customer(customer[0], customer[2], customer[1]))
+                self.customers.append(Customer(customer[0], customer[2], customer[1], self.connection))
         finally:
             cursor.close()
             

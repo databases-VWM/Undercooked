@@ -32,7 +32,7 @@ class GameInstance:
         self.player: Entity
         self.current_enemy: Entity
         self.is_host: bool = False
-        # list of tuples of (ingredient, quantity)
+        # list of tuples of (ingredient name, quantity)
         self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
         self.checkpoints: dict[str, int] = {}
@@ -68,6 +68,7 @@ class GameInstance:
         continue_button = tk.Button(self.root, text="Continue", command= lambda: [self.setup_database_connection(ip_addr_entry.get()), self.login()])
         continue_button.pack()
         
+    # Sets up the database connection
     def setup_database_connection(self, ip_addr):
         try:
             self.connection = mysql.connector.connect(
@@ -322,7 +323,7 @@ class GameInstance:
     def wilderness_area_select(self):
         selected_area = tk.StringVar(self.root)
         selected_area.set("Select an Area")
-        unlocked_areas_list = get_item_names("areas")
+        unlocked_areas_list = get_area_names(self.connection)
         select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
         
@@ -406,7 +407,7 @@ class GameInstance:
             full_heal_button.pack()
             return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health", command=self.half_and_half)
             return_inventory_button.pack()
-            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=self.restaurant_menu)
+            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=lambda: [inv_to_database(self.connection, self.room_ID, self.local_inventory), self.restaurant_menu()])
             return_to_restaurant_button.pack()
             #Checkpoint additional logic
             if self.current_area.current_node % 10 == 0:
@@ -426,7 +427,7 @@ class GameInstance:
         player_status.set(setup_for_stringvar(output_entity_stats(self.player, True)))
         
         ingredients_inventory = tk.StringVar()
-        ingredients_inventory.set(print_ingredients(self.local_inventory)) # type: ignore
+        ingredients_inventory.set(print_ingredients(self.local_inventory))
         
         player_status_label = tk.Label(self.root, textvariable=player_status)
         player_status_label.pack()
@@ -469,8 +470,7 @@ class GameInstance:
     def half_and_half(self):
         self.clear_screen()
         # Sends off your inventory to the database
-        # Uncomment when Ingredients JSON is ready
-        #inv_to_database(connection, self.room_ID, self.local_inventory)
+        inv_to_database(self.connection, self.room_ID, self.local_inventory)
         self.local_inventory = []
         self.player.health += round(self.player.max_health * .25)
         # Don't allow for going over max health
@@ -683,7 +683,7 @@ class GameInstance:
         # Updates customer list
         self.restaurant_obj.update_customer_orders_from_database()
         # Sets up for displaying ingredients in inventory
-        ingredients_list = print_ingredients(self.restaurant_obj.access_database_inventory_filter_type_id(1))
+        ingredients_list = print_ingredients_full(self.restaurant_obj.access_database_inventory_filter_type_id(1))
         
         # Frames
         orders_frame = tk.Frame(self.root)
@@ -719,7 +719,7 @@ class GameInstance:
     # Function that actually handles cooking an order
     def cook_order(self, selected_order_name: str):
         self.clear_screen()
-        customer_order: Recipe = Recipe(selected_order_name)
+        customer_order: Recipe = Recipe(selected_order_name, self.connection)
         
         # Checks if this order can be cooked based on the user's ingredients
         #TODO: Wesley, write a method of recipe in recipe.py that checks if the user has the required ingredients and quantities to cook this item. Return a boolean
@@ -891,7 +891,7 @@ class GameInstance:
         weapon_info_display.pack()
         armor_info_display = tk.Label(self.root, text=f"{self.armor.name}:\n Type: {self.armor.type}\nDefense: {self.armor.defense}\n Block Dice: {transform_dice_to_str(self.armor.block_dice)}\nDodge Dice: {transform_dice_to_str(self.armor.dodge_dice)}\nPrice: {self.armor.price}")
         armor_info_display.pack()
-        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: \n{print_ingredients(self.restaurant_obj.access_database_inventory_filter_type_id(1))}")
+        ingredient_inventory_label = tk.Label(self.root, text=f"Ingredients Inventory: \n{print_ingredients_full(self.restaurant_obj.access_database_inventory_filter_type_id(1))}")
         ingredient_inventory_label.pack()
         continue_button = tk.Button(self.root, text="Back to work!", command=self.restaurant_menu)
         continue_button.pack()

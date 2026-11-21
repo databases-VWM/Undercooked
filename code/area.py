@@ -1,4 +1,3 @@
-import json
 import random
 import mysql.connector
 
@@ -65,13 +64,13 @@ class Area:
             self.fauna_list = []
 
             for ingredient_name, ingredient_type, weight in ingredients:
-                if ingredient_type == "fishing":
+                if ingredient_type == "fish":
                     self.fishing_list.append((ingredient_name, weight))
 
-                elif ingredient_type == "flora":
+                elif ingredient_type == "plant":
                     self.flora_list.append((ingredient_name, weight))
 
-                elif ingredient_type == "fauna":
+                elif ingredient_type == "meat":
                     self.fauna_list.append((ingredient_name, weight))
 
         finally:
@@ -94,6 +93,7 @@ class Area:
         # Constants for game balancing
         self.ENEMY_CHANCE: float = 0.50
         self.ELITE_THRESHOLD: int = 100
+        
 
 
 # Allows for dynamic creation of an object from JSON from just its name
@@ -209,14 +209,25 @@ def setup_ingredients_forecast(area_name: str, connection) -> str:
                 pass
         if len(total_ingredients_array) > 30:
             ingredients_forecast_str += "... Plus more"
-    except KeyError:
+    except ValueError:
         ingredients_forecast_str = "No ingredients to display"
     return ingredients_forecast_str
-    
 
-    
-    
-    
+# Database function to return all area names
+def get_area_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    areas_list: list[str] = []
+    try:
+        cursor.execute(
+            "SELECT area_name FROM areas"
+        )
+        area_tuples = cursor.fetchall()
+        for row in area_tuples:
+            areas_list.append(row[0])
+        return areas_list
+    finally:
+        cursor.close()
+        
     
     
     
