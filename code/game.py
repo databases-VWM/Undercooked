@@ -15,11 +15,6 @@ from armor import *
 from cookbook import *
 from restaurant import *
 
-#MySQL default connection
-
-
-# user_ID = generate_user_ID(connection)
-
 #Holds the game logic
 class GameInstance:
     def __init__(self, root):
@@ -93,7 +88,7 @@ class GameInstance:
         login_label.pack()
         userID_entry = tk.Entry(self.root)
         userID_entry.pack()
-        password_entry = tk.Entry(self.root)
+        password_entry = tk.Entry(self.root, show="*")
         password_entry.pack()
         #Checks for the UserID. If it exists, go to main menu. Else, reopen login
         login_button = tk.Button(self.root, text="Login", command=lambda: self.login_logic(userID_entry.get(), password_entry.get()))
@@ -137,7 +132,7 @@ class GameInstance:
         title.pack()
         username_input = tk.Entry(self.root)
         username_input.pack()
-        password_entry = tk.Entry(self.root)
+        password_entry = tk.Entry(self.root, show="*")
         password_entry.pack()
         register_button = tk.Button(self.root, text="Register User!", command=lambda: self.register_user(username_input.get(), password_entry.get()))
         register_button.pack()
@@ -332,7 +327,7 @@ class GameInstance:
         self.clear_screen()
         
         ingredients_forecast = tk.StringVar()
-        ingredients_forecast.set(setup_ingredients_forecast(selected_area.get()))
+        ingredients_forecast.set(setup_ingredients_forecast(selected_area.get(), self.connection))
         # Sets up frame for the ingredient forecast
         ingredients_forecast_frame = tk.Frame(self.root)
         ingredients_forecast_frame.pack(side="right")
@@ -344,7 +339,7 @@ class GameInstance:
         wilderness_title.pack()
         areas_dropdown = tk.OptionMenu(self.root, selected_area, *unlocked_areas_list) 
         areas_dropdown.pack()
-        show_forecast_button = tk.Button(self.root, text="Show area ingredient forecast", command= lambda: ingredients_forecast.set(setup_ingredients_forecast(selected_area.get())))
+        show_forecast_button = tk.Button(self.root, text="Show area ingredient forecast", command= lambda: ingredients_forecast.set(setup_ingredients_forecast(selected_area.get(), self.connection)))
         show_forecast_button.pack()
         checkpoint_checkbox = tk.Checkbutton(self.root, text="Start From Checkpoint?", variable=select_checkbox, onvalue=True, offvalue=False)
         checkpoint_checkbox.pack()
@@ -379,7 +374,7 @@ class GameInstance:
         # If checkpoint and area are good, continue
         if everything_valid == True:
             messagebox.showinfo(self.root, message=area_message)
-            self.current_area = Area(selected_area_name)
+            self.current_area = Area(selected_area_name, self.connection)
             # Sets checkpoint if there is one
             if self.current_area.current_node != checkpoint_num:
                 self.current_area.current_node = checkpoint_num

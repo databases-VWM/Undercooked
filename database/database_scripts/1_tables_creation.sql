@@ -58,6 +58,7 @@ CREATE TABLE areas (
 CREATE TABLE area_ingredients (
     area_name varchar(100) not null,
     ingredient_id int not null,
+    ingredient_weight int not null,
     PRIMARY KEY (area_name, ingredient_id),
     FOREIGN KEY (area_name) REFERENCES areas,
     FOREIGN KEY (ingredient_id) REFERENCES ingredients
@@ -124,6 +125,7 @@ CREATE TABLE enemy_attack_dice (
 CREATE TABLE area_enemies (
     area_name varchar(100) not null,
     enemy_name varchar(100) not null,
+    enemy_weight int not null,
     PRIMARY KEY (area_name, enemy_name),
     FOREIGN KEY (area_name) references areas,
     FOREIGN KEY (enemy_name) REFERENCES enemies

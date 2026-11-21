@@ -25,7 +25,7 @@ class Restaurant:
         self.customers: list[Customer] = []
 
         # List of tuples: (item_name, quantity)
-        self.inventory: list[tuple[str, int]] = [] # NOTE this may be redundant
+        self.inventory: list[tuple[int, int, str, int]] = [] # NOTE this may be redundant
 
         self.update_restaurant()
 
@@ -145,6 +145,7 @@ class Restaurant:
 
     # function that removes item tuple
     # (typeid itemid name quantity)
+    # Vincent, this is that functiion
     def remove_item(self, items: list[tuple[int, int, int]]):
         cursor = self.connection.cursor()
 
@@ -152,61 +153,31 @@ class Restaurant:
 
         try:
             # First, validate that every requested item exists locally
-            # for type_id, item_id, quantity in items:
-                
-                
-                # I think this is redundant. The procedure handles this
-                # found = False
+            for type_id, item_id, quantity in items:
+                found = False
 
-                # for inv_type, inv_id, inv_name, inv_quantity in self.inventory:
-                #     if inv_type == type_id and inv_id == item_id:
-                #         found = True
+                for inv_type, inv_id, inv_name, inv_quantity in self.inventory:
+                    if inv_type == type_id and inv_id == item_id:
+                        found = True
 
-                #         # Not enough quantity
-                #         if inv_quantity < quantity:
-                #             return False
+                        # Not enough quantity
+                        if inv_quantity < quantity:
+                            return False
 
-                #         break
+                        break
 
-                # # Item doesn't exist in inventory
-                # if not found:
-                #     return False
+                # Item doesn't exist in inventory
+                if not found:
+                    return False
 
             # All items are available, so remove them
             for type_id, item_id, quantity in items:
-
                 cursor.execute(
                     """
                     CALL remove_inventory_item(%s, %s, %s, %s)
                     """,
                     (type_id, item_id, quantity, self.room_id)
-                ) 
-
-
-
-                
-                # cursor.execute(
-                #     """
-                #     UPDATE inventory
-                #     SET quantity = quantity - %s
-                #     WHERE room_id = %s
-                #     AND type_id = %s
-                #     AND item_id = %s
-                #     """,
-                #     (quantity, self.room_id, type_id, item_id)
-                # )
-
-                # # Delete entry if quantity reaches zero
-                # cursor.execute(
-                #     """
-                #     DELETE FROM inventory
-                #     WHERE room_id = %s
-                #     AND type_id = %s
-                #     AND item_id = %s
-                #     AND quantity = 0
-                #     """,
-                #     (self.room_id, type_id, item_id)
-                # )
+                )
 
             self.connection.commit()
 
