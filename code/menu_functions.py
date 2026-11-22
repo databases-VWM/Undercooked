@@ -294,7 +294,9 @@ def set_time(connection, time, room_id):
             "UPDATE rooms SET day_time = %s WHERE room_id = %s",
             (time, room_id)
         )
-    
+        connection.commit()
+    except:
+        connection.rollback()
     finally:
         cursor.close()
 

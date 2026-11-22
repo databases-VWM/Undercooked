@@ -263,10 +263,12 @@ class GameInstance:
     # Starts the game (database setup from the host)
     def start_day(self):
         increment_day(self.connection, self.room_ID)
+        self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
         self.restaurant_obj.update_restaurant()
         self.restaurant_obj.create_customers(self.num_players)
         set_time(self.connection, int(time.time()) + self.TIME_CONSTRAINT_SECONDS, self.room_ID)
-        self.has_game_started()
+        messagebox.showinfo(message="The game has begun!")
+        self.restaurant_menu()
 
     # This is where the guests wait
     def waiting_room_guest(self):
@@ -302,39 +304,41 @@ class GameInstance:
             messagebox.showinfo(message="You have successfully joined the game!")
             # Creates restaurant object
             self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
-            self.next_day()
+            self.restaurant_obj.update_restaurant()
+            self.restaurant_menu()
         else:
             messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
             
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
-        continue_day = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
-        if continue_day == True:
+        day_over = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
+        if day_over == True:
             messagebox.showinfo(message="The day is over!")
             self.next_day()
-        self.restaurant_obj.update_restaurant()
-        self.clear_screen()
-        self.player = Entity(get_username(self.connection, self.userID), self.connection, True)
-        self.player.health = self.player.max_health
-        cook_button = tk.Button(self.root, text="Cook", command=self.cook_menu)
-        cook_button.pack()
-        equipment_button = tk.Button(self.root, text="Equipment", command=self.equipment_menu)
-        equipment_button.pack()
-        shop_button = tk.Button(self.root, text="Shop", command=self.shop_menu)
-        shop_button.pack()
-        status_button = tk.Button(self.root, text="Check Restaurant Status", command=self.restaurant_status)
-        status_button.pack()
-        rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
-        rpg_switch_button.pack()
-        quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
-        quit_button.pack()
+        else:
+            self.restaurant_obj.update_restaurant()
+            self.clear_screen()
+            self.player = Entity(get_username(self.connection, self.userID), self.connection, True)
+            self.player.health = self.player.max_health
+            cook_button = tk.Button(self.root, text="Cook", command=self.cook_menu)
+            cook_button.pack()
+            equipment_button = tk.Button(self.root, text="Equipment", command=self.equipment_menu)
+            equipment_button.pack()
+            shop_button = tk.Button(self.root, text="Shop", command=self.shop_menu)
+            shop_button.pack()
+            status_button = tk.Button(self.root, text="Check Restaurant Status", command=self.restaurant_status)
+            status_button.pack()
+            rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
+            rpg_switch_button.pack()
+            quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
+            quit_button.pack()
 
     # This is the menu that opens to let the player choose which area they are going to
     def wilderness_area_select(self):
         selected_area = tk.StringVar(self.root)
         selected_area.set("Select an Area")
-        unlocked_areas_list = get_area_names(self.connection)
+        unlocked_areas_list = get_area_names(self.connection, self.room_ID)
         select_checkbox = tk.BooleanVar(self.root)
         self.clear_screen()
         
@@ -398,45 +402,46 @@ class GameInstance:
     # This series of functions is kind of like Assembly labels due to how TKinter works. 
     def explore_node(self, pause_zone = False):
         # Checks for the end of the day. If so, drop half of your gathered ingredients
-        continue_day = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
-        if continue_day == True:
+        day_over = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
+        if day_over == True:
             messagebox.showinfo(message="The day is over!\nAs you hurry back to the restaurant before nightfall, you drop half of your gathered ingredients! Oh no!")
             self.local_inventory = drop_random_ingredients(self.local_inventory)
             inv_to_database(self.connection, self.room_ID, self.local_inventory)
             self.next_day()
-        self.clear_screen()
-        # Resets the combat log
-        self.combat_log = []
-        # Stays at same location when checkpoint is enabled
-        if pause_zone == False:
-            self.current_area.current_node = self.current_area.current_node + 1
-        # Kick back to the restaurant when done
-        if self.current_area.progress == False:
-            self.restaurant_menu()
-
-        #Every time you load into a node, check for a campsite or checkpoint (5 and 10 respectively)
-        #Campsite logic
-        if self.current_area.current_node % 5 == 0:
-            campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
-            campsite_label.pack()
-            check_status_button = tk.Button(self.root, text="Check Status", command=self.check_player_status)
-            check_status_button.pack()
-            full_heal_button = tk.Button(self.root, text="Full Heal", command=self.full_heal_menu)
-            full_heal_button.pack()
-            return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health", command=self.half_and_half)
-            return_inventory_button.pack()
-            return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=lambda: [inv_to_database(self.connection, self.room_ID, self.local_inventory), self.restaurant_menu()])
-            return_to_restaurant_button.pack()
-            #Checkpoint additional logic
-            if self.current_area.current_node % 10 == 0:
-                set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint", command=self.set_checkpoint)
-                set_checkpoint_button.pack()
-        # Generate a normal node
         else:
-            # Handles node generation and sets appropriate flags
-            self.current_area.generate_node()
-            #Triggers text for the type of node
-            self.node_type_text()
+            self.clear_screen()
+            # Resets the combat log
+            self.combat_log = []
+            # Stays at same location when checkpoint is enabled
+            if pause_zone == False:
+                self.current_area.current_node = self.current_area.current_node + 1
+            # Kick back to the restaurant when done
+            if self.current_area.progress == False:
+                self.restaurant_menu()
+
+            #Every time you load into a node, check for a campsite or checkpoint (5 and 10 respectively)
+            #Campsite logic
+            if self.current_area.current_node % 5 == 0:
+                campsite_label = tk.Label(self.root, text="Welcome to the campsite\nPick one of the following")
+                campsite_label.pack()
+                check_status_button = tk.Button(self.root, text="Check Status", command=self.check_player_status)
+                check_status_button.pack()
+                full_heal_button = tk.Button(self.root, text="Full Heal", command=self.full_heal_menu)
+                full_heal_button.pack()
+                return_inventory_button = tk.Button(self.root, text="Return ingredients to restaurant and heal 25% of your health", command=self.half_and_half)
+                return_inventory_button.pack()
+                return_to_restaurant_button = tk.Button(self.root, text="Return to the restaurant", command=lambda: [inv_to_database(self.connection, self.room_ID, self.local_inventory), self.restaurant_menu()])
+                return_to_restaurant_button.pack()
+                #Checkpoint additional logic
+                if self.current_area.current_node % 10 == 0:
+                    set_checkpoint_button = tk.Button(self.root, text="Set a checkpoint", command=self.set_checkpoint)
+                    set_checkpoint_button.pack()
+            # Generate a normal node
+            else:
+                # Handles node generation and sets appropriate flags
+                self.current_area.generate_node()
+                #Triggers text for the type of node
+                self.node_type_text()
     
     # Displays the player's status, inventory, current node, and area checkpoint
     def check_player_status(self):
@@ -759,6 +764,7 @@ class GameInstance:
                 self.cook_menu()
             else:
                 current_customer.delete()
+                self.restaurant_obj.update_restaurant()
                 messagebox.showinfo("Order fulfilled!")
                 self.cook_menu()
         else:
@@ -1091,23 +1097,27 @@ class GameInstance:
         # Host setup stuff
             didnt_die = self.next_day_setup_host()
         if didnt_die == True:
-            self.restaurant_obj.update_restaurant()
-            title_label = tk.Label(self.root, text=f"You're about to begin day {self.restaurant_obj.day}!")
-            title_label.pack()
-            rent_label = tk.Label(self.root, text=f"You paid {rent} in rent\nYou have {self.restaurant_obj.money} money left and {self.restaurant_obj.reputation} reputation")
-            rent_label.pack()
-            if self.is_host == True:
-                end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
-                end_game_button.pack()
-            start_button = tk.Button(self.root, text="Start day!", command=self.host_ready_for_next_day)
-            start_button.pack()
+            self.next_day_screen(rent)
         # If you lose during post day calcs:
         else:
             lost_label = tk.Label(self.root, text="You couldn't pay rent, or ran out of reputation this day. Your restaurant has been shut down and purchased by your mean uncle, Gustave.\n You're now unemployed. Go get a job")
             lost_label.pack()
             accept_defeat_button = tk.Button(self.root, text="Time to go back to working fast food...", command=self.quit_game)
             accept_defeat_button.pack()
-    
+            
+    def next_day_screen(self, rent):
+        self.clear_screen()
+        self.restaurant_obj.update_restaurant()
+        title_label = tk.Label(self.root, text=f"You're about to begin day {self.restaurant_obj.day}!")
+        title_label.pack()
+        rent_label = tk.Label(self.root, text=f"You paid {rent} in rent\nYou have {self.restaurant_obj.money} money left and {self.restaurant_obj.reputation} reputation")
+        rent_label.pack()
+        if self.is_host == True:
+            end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
+            end_game_button.pack()
+        start_button = tk.Button(self.root, text="Start day!", command=self.host_ready_for_next_day)
+        start_button.pack()
+        
     # Host-only logic for setting up the next day        
     def next_day_setup_host(self) -> bool:
         # Conditions for checking if you've lost the game
@@ -1172,7 +1182,7 @@ class GameInstance:
     # Menu for adding an ingredient
     def add_ingredient_menu(self):
         self.clear_screen()
-        areas_list: list[str] = get_area_names(self.connection)
+        areas_list: list[str] = get_area_names(self.connection, self.room_ID)
         editor_title_label = tk.Button(self.root, text="Add an ingredient")
         editor_title_label.pack()
         enter_name = tk.Label(self.root, text="Ingredient name:")

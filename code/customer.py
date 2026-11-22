@@ -8,7 +8,7 @@ class Customer:
         self.room_id = room_id
         
     def still_exist(self) -> bool:
-        cursor = self.connection
+        cursor = self.connection.cursor()
         try: 
             cursor.execute(
                 "SELECT * FROM customers WHERE customer_name = %s AND recipe_name = %s AND room_id = %s",
@@ -32,9 +32,9 @@ class Customer:
                 "DELETE FROM customers WHERE room_id = %s AND customer_name = %s",
                 (self.room_id, self.name)
             )
-            cursor.commit()
+            self.connection.commit()
         except:
-            cursor.rollback()
+            self.connection.rollback()
         finally:
             cursor.close()
     
@@ -46,8 +46,8 @@ class Customer:
                 "INSERT INTO customers VALUES (%s, %s, %s)",
                 (self.name, self.room_id, self.order.name)
             )
-            cursor.commit()
+            self.connection.commit()
         except:
-            cursor.rollback()
+            self.connection.rollback()
         finally:
             cursor.close()

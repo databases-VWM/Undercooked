@@ -11,8 +11,9 @@ class Recipe:
                 (recipe_name, )
             )
             self.name = recipe_name
-            self.required_cookbook = cursor.fetchone()[1]
-            self.price = cursor.fetchone()[2]
+            recipe_tuple = cursor.fetchone()
+            self.required_cookbook = recipe_tuple[1]
+            self.price = recipe_tuple[2]
             self.raw_ingredients: list[list[str]] = []
             
             cursor.execute(
@@ -41,11 +42,7 @@ class Recipe:
     def display_ingredients(self) -> str:
         ingredients_str = ""
         for i in range(len(self.raw_ingredients)):
-            ingredients_str += self.raw_ingredients[i][0] + ": " + self.raw_ingredients[i][1]
+            ingredients_str += str(self.raw_ingredients[i][0]) + ": " + str(self.raw_ingredients[i][1])
             if i != len(self.raw_ingredients) - 1:
                 ingredients_str += "\n\t"
         return ingredients_str
-
-    # TODO
-    def can_cook(self) -> bool:
-        return True

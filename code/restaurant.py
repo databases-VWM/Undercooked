@@ -68,6 +68,9 @@ class Restaurant:
             self.onetime_purchases = [
                 row[0] for row in cursor.fetchall()
             ]
+            
+            # Updates the customers
+            self.update_customer_orders_from_database()
 
         finally:
             cursor.close()
@@ -325,12 +328,14 @@ class Restaurant:
                 new_customer = Customer(new_customer_name, new_customer_order, self.room_id, self.connection)
             # Actually pushes new customer to the database
             new_customer.push_to_database()
+            # Adds new customer to local array
+        self.update_customer_orders_from_database()
             
     def make_customer_name(self) -> str:
         # I had Claude generate this list
         names_list = [
             "Liam", "Olivia", "Noah", "Emma", "Oliver", "Ava", "Elijah", "Sophia", "James", "Isabella",
-            "William", "Mia", "Benjamin", "Charlotte", "Lucas", "Amelia", "Henry", "Harper", "Theodore", "Evelyn",
+            "William", "Mia", "Benjamin", "Charlotte", "Lucas", "Amillia", "Henry", "Harper", "Theodore", "Evelyn",
             "Jack", "Abigail", "Levi", "Emily", "Alexander", "Ella", "Mason", "Scarlett", "Ethan", "Grace",
             "Daniel", "Chloe", "Jacob", "Victoria", "Michael", "Riley", "Logan", "Aria", "Owen", "Lily",
             "Samuel", "Aurora", "Sebastian", "Zoey", "Caleb", "Penelope", "Ryan", "Layla", "Nathan", "Nora",

@@ -79,7 +79,7 @@ class Area:
         self.chosen_list = []
 
         # TODO Map unlock, idk how you want to implement this
-        self.map_unlock = ""
+        # self.map_unlock = ""
 
         # Flags for integration with game.py
         self.current_node: int = 0
@@ -214,12 +214,13 @@ def setup_ingredients_forecast(area_name: str, connection) -> str:
     return ingredients_forecast_str
 
 # Database function to return all area names
-def get_area_names(connection) -> list[str]:
+def get_area_names(connection, room_id) -> list[str]:
     cursor = connection.cursor()
     areas_list: list[str] = []
     try:
         cursor.execute(
-            "SELECT area_name FROM areas"
+            "SELECT * FROM cookbooks NATURAL JOIN unlocked_cookbooks NATURAL RIGHT JOIN areas WHERE room_id = %s OR room_id is NULL",
+            (room_id, )
         )
         area_tuples = cursor.fetchall()
         for row in area_tuples:
