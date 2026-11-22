@@ -313,12 +313,8 @@ class GameInstance:
         status_button.pack()
         rpg_switch_button = tk.Button(self.root, text="To the Wilderness", command=self.wilderness_area_select)
         rpg_switch_button.pack()
-        if self.is_host == False:
-            quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
-            quit_button.pack()
-        else:
-            end_game_button = tk.Button(self.root, text="End Game", command=self.end_game)
-            end_game_button.pack()
+        quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
+        quit_button.pack()
 
     # This is the menu that opens to let the player choose which area they are going to
     def wilderness_area_select(self):
@@ -1048,9 +1044,23 @@ class GameInstance:
         messagebox.showerror(message="You don't have enough money to purchase that")
         self.shop_menu()
         
-    # Logic for ending the game
+    # Menu for ending the game
     def end_game(self):
-        pass
+        self.clear_screen()
+        you_sure_label = tk.Label(self.root, text="Are you sure you want to end your run here?")
+        you_sure_label.pack()
+        yes_button = tk.Button(self.root, text="Yes", command=self.end_game_logic)
+        yes_button.pack()
+        no_button = tk.Button(self.root, text="No", command= self.next_day)
+        no_button.pack()
+        
+    # Runs the logic for ending the game
+    def end_game_logic(self):
+        self.clear_screen()
+        end_game_call(self.connection, self.room_ID)
+        messagebox.showinfo(message="Thanks for playing!")
+        self.quit_game()
+        
     
     # Menu for starting the day and associated logic
     def next_day(self):
@@ -1061,8 +1071,10 @@ class GameInstance:
             # Generates the customers and pushes them to the database
             self.restaurant_obj.create_customers(self.num_players)
         self.restaurant_obj.update_restaurant()
-        title_label = tk.Label(self.root, text=f"You begin day {self.restaurant_obj.day}!")
+        title_label = tk.Label(self.root, text=f"You're about to begin day {self.restaurant_obj.day}!")
         title_label.pack()
+        if self.is_host == True:
+            end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
         start_button = tk.Button(self.root, text="Start day!", command=self.restaurant_menu)
         start_button.pack()
         

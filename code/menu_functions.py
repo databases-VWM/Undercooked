@@ -315,3 +315,16 @@ def get_time(connection, room_id):
 
     finally:
         cursor.close()
+        
+# Deletes the room, triggering the trigger to delete everything dependent on the room as well
+def end_game_call(connection, room_id):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "DELETE FROM rooms WHERE room_id = %s",
+            (room_id)
+        )
+    except:
+        cursor.rollback()
+    finally:    
+        cursor.close()
