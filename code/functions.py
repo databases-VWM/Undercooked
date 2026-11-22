@@ -33,20 +33,30 @@ def get_attribute_from_names(fname: str, item_names: list[str], attr: str) -> li
         file_data = json.load(file_object)
         return [x[attr] for x in file_data.values() if x['name'] in item_names]
 
+# Database editor functions:
 
-
-# Temporary function for reference
-# def build_object_from_db(connection, table_name, id):
-#     cursor = connection.cursor()
-
-#     cursor.execute(
-#         "SELECT * FROM %s WHERE id = %s",
-#         (table_name, id)
-#     )
-#     result = cursor.fetchall()
-#     for (column1, column2, column3, column4) in result:
-#         self.column1 = column1
-#         self.column2, = column2
-#         self.column3 = column3
-#         self.column4 = column4
-
+# Submits a new ingredient entry into the appropriate tables
+def submit_editor_ingredient(connection, ingredient_name: str, ingredient_type: str, area_name: str, ingredient_weight: int):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "SELECT max(ingredient_id) FROM ingredients"
+        )
+        max_id = cursor.fetchone()
+        
+        cursor.execute(
+            "INSERT INTO ingredients VALUES(%s, %s, %s)",
+            (max_id + 1, ingredient_name, ingredient_type)
+        )
+        
+        cursor.execute(
+            "INSERT INTO area_ingredients VALUES(%s, %s, %s)",
+            (area_name, max_id + 1, ingredient_weight)
+        )
+        
+        connection.commit()
+        
+    except:
+        connection.rollback()
+    finally:
+        cursor.close()

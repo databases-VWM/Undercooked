@@ -251,7 +251,21 @@ class Restaurant:
         finally:
             cursor.close()
             
-    # Unlocks a ourchased cookbook in the database
+    # Updates reputation in the database
+    def update_reputation(self):
+        cursor = self.connection.cursor()
+
+        try:
+            cursor.execute(
+                "UPDATE rooms SET reputation = %s WHERE room_id = %s",
+                (self.reputation, self.room_id)
+            )
+            
+            self.update_restaurant()
+        finally:
+            cursor.close()
+            
+    # Unlocks a purchased cookbook in the database
     def unlock_cookbook(self, cookbook_name: str) -> None:
         cursor = self.connection.cursor()
         self.onetime_purchases.append(cookbook_name)

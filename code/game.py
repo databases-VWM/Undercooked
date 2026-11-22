@@ -173,6 +173,8 @@ class GameInstance:
         join_room_button.pack()
         IP_address_button = tk.Button(self.root, text="Show IP Address", command=self.show_IP)
         IP_address_button.pack()
+        database_editor_button = tk.Button(self.root, text="Database Editor", command=self.database_editor_main_menu)
+        database_editor_button.pack()
         quit_button = tk.Button(self.root, text="Quit", command=self.quit_game)
         quit_button.pack()
 
@@ -1133,8 +1135,6 @@ class GameInstance:
         else:
             return False
         
-        
-        
     # Checks to see if the host has started the next dau
     def host_ready_for_next_day(self) -> None:
         if self.restaurant_obj.day == check_day(self.connection, self.room_ID) and self.is_host == False:
@@ -1144,4 +1144,65 @@ class GameInstance:
             self.restaurant_obj.update_restaurant()
             messagebox.showinfo(message=f"You begin day {self.restaurant_obj.day}\nGood luck!")
             self.restaurant_menu()
+            
+    # Main menu for the database editor feature
+    def database_editor_main_menu(self):
+        self.clear_screen()
+        editor_title_label = tk.Button(self.root, text="Database Editor\nSelect which category of entry you would like to add to the database")
+        editor_title_label.pack()
+        # Add ingredients
+        add_ingredient_button = tk.Button(self.root, text="Add Ingredient", command=self.add_ingredient_menu)
+        add_ingredient_button.pack()
+        # Add recipes
+        add_recipe_button = tk.Button(self.root, text="Add Recipe")
+        add_recipe_button.pack()
+        # Add cookbooks
+        add_cookbook_button = tk.Button(self.root, text="Add Cookbook")
+        add_cookbook_button.pack()
+        # Add enemies
+        add_enemy_button = tk.Button(self.root, text="Add Enemy")
+        add_enemy_button.pack()
+        # Add areas
+        add_area_button = tk.Button(self.root, text="Add Area")
+        add_area_button.pack()
+        # Quit
+        back_button = tk.Button(self.root, text="Back", command=self.main_menu)
+        back_button.pack()
         
+    # Menu for adding an ingredient
+    def add_ingredient_menu(self):
+        self.clear_screen()
+        areas_list: list[str] = get_area_names(self.connection)
+        editor_title_label = tk.Button(self.root, text="Add an ingredient")
+        editor_title_label.pack()
+        enter_name = tk.Label(self.root, text="Ingredient name:")
+        enter_name.pack()
+        enter_name_entry = tk.Entry(self.root)
+        enter_name_entry.pack()
+        select_type_label = tk.Label(self.root, text="Select ingredient type")
+        select_type_label.pack()
+        select_type_entry = tk.Listbox(self.root)
+        select_type_entry.pack()
+        select_type_entry.insert(0, *["fish", "plant", "meat"])
+        select_area_label = tk.Label(self.root, text="What area(s) should this ingredient be found in?")
+        select_area_label.pack()
+        select_area_dropdown = tk.Listbox(self.root, selectmode="multiple")
+        select_area_dropdown.insert(0, *areas_list)
+        select_area_dropdown.pack()
+        
+        add_ingredient_submit = tk.Button(self.root, text="Go!", command=lambda: self.add_ingredient_weight(enter_name_entry.get(), select_type_entry.curselection(), select_area_dropdown.curselection(), areas_list, 0))
+        add_ingredient_submit.pack()
+        
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+    
+    # # Add weights for ingredients in different areas
+    # def add_ingredient_weight(self, ingredient_name: str, ingredient_type: str, selected_area_indexes: list[int], areas_list: list[str], i: int):
+    #     self.clear_screen()
+    #     weight_label = tk.Label(self.root, text=f"What weight would you like this ingredient to have in {areas_list[selected_area_indexes[i]]}?")
+    #     weight_label.pack()
+    #     weight_entry = tk.Entry(self.root)
+    #     weight_entry.pack()
+    #     submit_button = tk.Button(self.root, text="Submit", command=lambda: submit_editor_ingredient(self.connection, ingredient_name=ingredient_name, ingredient_type=ingredient_type, area_name=areas_list[selected_area_indexes[i]], ingredient_weight=int(weight_entry.get())))
+    #     submit_button.pack()
