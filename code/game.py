@@ -1190,8 +1190,8 @@ class GameInstance:
         select_area_dropdown.insert(0, *areas_list)
         select_area_dropdown.pack()
         
-        add_ingredient_submit = tk.Button(self.root, text="Go!", command=lambda: self.add_ingredient_weight(enter_name_entry.get(), select_type_entry.curselection(), select_area_dropdown.curselection(), areas_list, 0))
-        add_ingredient_submit.pack()
+        # add_ingredient_submit = tk.Button(self.root, text="Go!", command=lambda: self.add_ingredient_weight(enter_name_entry.get(), select_type_entry.curselection(), select_area_dropdown.curselection(), areas_list, 0))
+        # add_ingredient_submit.pack()
         
         
         back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
