@@ -4,7 +4,7 @@ import mysql.connector
 class Cookbook:
     def __init__(self, cookbook_name: str, connection):
         self.connection = connection
-        cursor = connection.cursor
+        cursor = connection.cursor()
         self.name = cookbook_name
         self.type_id = 4
         try:
@@ -26,9 +26,10 @@ def get_cookbook_names(connection) -> list[str]:
         cursor.execute(
             "SELECT cookbook_name FROM cookbooks"
         )
-        cookbooks_list: list[str] = cursor.fetchall()
-        
+        cookbooks_list: list[str] = []
+        cookbooks_tuples = cursor.fetchall()
+        for cookbook in cookbooks_tuples:
+            cookbooks_list.append(cookbook[0])
         return cookbooks_list
-        
     finally:
         cursor.close()

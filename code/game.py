@@ -44,7 +44,7 @@ class GameInstance:
         self.armor: Armor = Armor("Chef's Garbs")
         
         # Constant for deciding how many seconds long each day should be
-        self.TIME_CONSTRAINT_SECONDS = 30
+        self.TIME_CONSTRAINT_SECONDS = 60
         # Scalar basis for how much daily rent is
         self.RENT_SCALAR = 10
 
@@ -705,20 +705,20 @@ class GameInstance:
     # The menu for interacting with cooking and fulfilling orders of customers
     def cook_menu(self):
         self.clear_screen()
-        # Updates customer list
-        self.restaurant_obj.update_customer_orders_from_database()
+        # Updates everything for the restaurant
+        self.restaurant_obj.update_restaurant()
         # Sets up for displaying ingredients in inventory
         ingredients_list = print_ingredients_full(self.restaurant_obj.access_database_inventory_filter_type_id(1))
         
         # Frames
         orders_frame = tk.Frame(self.root)
-        orders_frame.pack(side=tk.LEFT, expand=True)
+        orders_frame.pack(side=tk.LEFT, expand=True, fill="both")
         
         ingredients_frame = tk.Frame(self.root)
-        ingredients_frame.pack(side=tk.RIGHT, expand=True)
+        ingredients_frame.pack(side=tk.RIGHT, expand=True, fill="both")
         
         buttons_frame = tk.Frame(self.root)
-        buttons_frame.pack(side=tk.BOTTOM, expand=True)
+        buttons_frame.pack(side=tk.BOTTOM, expand=True, fill="both")
         
         # Orders GUI
         orders_interface = tk.Listbox(orders_frame, selectmode="single")
@@ -727,8 +727,8 @@ class GameInstance:
         orders_interface.insert(0, *self.restaurant_obj.display_customer_order_list())
         
         # Ingredients Inventory GUI
-        ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}")
-        ingredients_display.pack()
+        ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}") 
+        ingredients_display.pack(side="top", expand=True, fill="both")
         
         # Buttons GUI
         back_button = tk.Button(buttons_frame, text="Back", command=self.restaurant_menu)
@@ -752,7 +752,7 @@ class GameInstance:
             # Iterates through each type of item
             for i in range(len(customer_order.raw_ingredients)):
                 temp_type_id = 1
-                temp_ingredient_id: int = int(customer_order.raw_ingredients[i][0])
+                temp_ingredient_id: int = get_ingredient_id_from_name(self.connection, customer_order.raw_ingredients[i][0])
                 temp_ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
                 temp_tuple = (temp_type_id, temp_ingredient_id, temp_ingredient_quantity)
                 ingredients_list.append(temp_tuple)

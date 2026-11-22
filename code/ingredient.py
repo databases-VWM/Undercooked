@@ -140,3 +140,16 @@ def harvest_item(ingredients_drop_list: list[tuple[str, int]], inventory: list[t
         if not item_found:
             inventory.append((node_ingredient, 1))
     return node_ingredient
+
+# Retrieves the ID of an ingredient from its name
+def get_ingredient_id_from_name(connection, item_name) -> int:
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "SELECT ingredient_id FROM ingredients WHERE ingredient_name = %s",
+            (item_name, )
+        )
+        ingredient_tuple = cursor.fetchone()
+        return ingredient_tuple[0]
+    finally:
+        cursor.close()

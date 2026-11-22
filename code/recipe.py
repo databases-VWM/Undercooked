@@ -14,6 +14,7 @@ class Recipe:
             recipe_tuple = cursor.fetchone()
             self.required_cookbook = recipe_tuple[1]
             self.price = recipe_tuple[2]
+            # string lists contain [ingredient name, quantity(str)]
             self.raw_ingredients: list[list[str]] = []
             
             cursor.execute(

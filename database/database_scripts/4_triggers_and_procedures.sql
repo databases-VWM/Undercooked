@@ -89,6 +89,10 @@ BEGIN
     UPDATE users
     SET room_id = NULL
     WHERE room_id = OLD.room_id;
+
+    UPDATE users
+    SET in_use = False
+    WHERE room_id = OLD.room_id;
 END //
 
 DELIMITER ;
