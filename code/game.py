@@ -42,6 +42,11 @@ class GameInstance:
         self.restaurant_obj: Restaurant
         self.weapon: Weapon = Weapon("Frying Pan")
         self.armor: Armor = Armor("Chef's Garbs")
+        
+        # Constant for deciding how many seconds long each day should be
+        self.TIME_CONSTRAINT_SECONDS = 30
+        # Scalar basis for how much daily rent is
+        self.RENT_SCALAR = 10
 
     # Clears the screen
     def clear_screen(self):
@@ -256,6 +261,9 @@ class GameInstance:
     # Starts the game (database setup from the host)
     def start_day(self):
         increment_day(self.connection, self.room_ID)
+        self.restaurant_obj.update_restaurant()
+        self.restaurant_obj.create_customers(self.num_players)
+        set_time(self.connection, int(time.time()) + self.TIME_CONSTRAINT_SECONDS, self.room_ID)
         self.has_game_started()
 
     # This is where the guests wait
@@ -299,6 +307,10 @@ class GameInstance:
             
     # This is the menu that first opens when the game starts
     def restaurant_menu(self):
+        continue_day = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
+        if continue_day == True:
+            messagebox.showinfo(message="The day is over!")
+            self.next_day()
         self.restaurant_obj.update_restaurant()
         self.clear_screen()
         self.player = Entity(get_username(self.connection, self.userID), self.connection, True)
@@ -383,6 +395,13 @@ class GameInstance:
     # This function specifically has the menu for campsites and checkpoints
     # This series of functions is kind of like Assembly labels due to how TKinter works. 
     def explore_node(self, pause_zone = False):
+        # Checks for the end of the day. If so, drop half of your gathered ingredients
+        continue_day = check_day_end(self.connection, self.room_ID, len(self.restaurant_obj.customers))
+        if continue_day == True:
+            messagebox.showinfo(message="The day is over!\nAs you hurry back to the restaurant before nightfall, you drop half of your gathered ingredients! Oh no!")
+            self.local_inventory = drop_random_ingredients(self.local_inventory)
+            inv_to_database(self.connection, self.room_ID, self.local_inventory)
+            self.next_day()
         self.clear_screen()
         # Resets the combat log
         self.combat_log = []
@@ -1060,21 +1079,69 @@ class GameInstance:
         end_game_call(self.connection, self.room_ID)
         messagebox.showinfo(message="Thanks for playing!")
         self.quit_game()
-        
     
     # Menu for starting the day and associated logic
     def next_day(self):
         self.clear_screen()
-        if self.is_host == True:
-        # Updates number of players
-            self.num_players = len(get_all_players(self.connection, self.room_ID))
-            # Generates the customers and pushes them to the database
-            self.restaurant_obj.create_customers(self.num_players)
+        rent: int = self.RENT_SCALAR * self.num_players * self.restaurant_obj.day
         self.restaurant_obj.update_restaurant()
-        title_label = tk.Label(self.root, text=f"You're about to begin day {self.restaurant_obj.day}!")
-        title_label.pack()
         if self.is_host == True:
-            end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
-        start_button = tk.Button(self.root, text="Start day!", command=self.restaurant_menu)
-        start_button.pack()
+        # Host setup stuff
+            didnt_die = self.next_day_setup_host()
+        if didnt_die == True:
+            self.restaurant_obj.update_restaurant()
+            title_label = tk.Label(self.root, text=f"You're about to begin day {self.restaurant_obj.day}!")
+            title_label.pack()
+            rent_label = tk.Label(self.root, text=f"You paid {rent} in rent\nYou have {self.restaurant_obj.money} money left and {self.restaurant_obj.reputation} reputation")
+            rent_label.pack()
+            if self.is_host == True:
+                end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
+                end_game_button.pack()
+            start_button = tk.Button(self.root, text="Start day!", command=self.host_ready_for_next_day)
+            start_button.pack()
+        # If you lose during post day calcs:
+        else:
+            lost_label = tk.Label(self.root, text="You couldn't pay rent, or ran out of reputation this day. Your restaurant has been shut down and purchased by your mean uncle, Gustave.\n You're now unemployed. Go get a job")
+            lost_label.pack()
+            accept_defeat_button = tk.Button(self.root, text="Time to go back to working fast food...", command=self.quit_game)
+            accept_defeat_button.pack()
+    
+    # Host-only logic for setting up the next day        
+    def next_day_setup_host(self) -> bool:
+        # Conditions for checking if you've lost the game
+        # Pay rent
+        self.restaurant_obj.money -= self.RENT_SCALAR * self.num_players * self.restaurant_obj.day
+        self.restaurant_obj.update_money()
+        # Update reputation
+        if len(self.restaurant_obj.customers) > 0:
+            self.restaurant_obj.reputation -= (len(self.restaurant_obj.customers) * self.num_players * self.restaurant_obj.day)
+        self.restaurant_obj.reputation += 5
+        # Do not exceed 200 reputation
+        if self.restaurant_obj.reputation > 200:
+            self.restaurant_obj.reputation = 200
+        self.restaurant_obj.update_reputation()
+        self.restaurant_obj.update_restaurant()
+        
+        # The restaurant lives on
+        if self.restaurant_obj.money > 0 and self.restaurant_obj.reputation > 0:
+            increment_day(self.connection, self.room_ID)
+            self.num_players = len(get_all_players(self.connection, self.room_ID))
+            self.restaurant_obj.update_restaurant()
+            self.restaurant_obj.create_customers(self.num_players)
+            set_time(self.connection, int(time.time()) + self.TIME_CONSTRAINT_SECONDS, self.room_ID)
+            return True
+        else:
+            return False
+        
+        
+        
+    # Checks to see if the host has started the next dau
+    def host_ready_for_next_day(self) -> None:
+        if self.restaurant_obj.day == check_day(self.connection, self.room_ID) and self.is_host == False:
+            messagebox.showwarning(message="The host hasn't begun the next day. Please wait")
+            self.next_day()
+        else:
+            self.restaurant_obj.update_restaurant()
+            messagebox.showinfo(message=f"You begin day {self.restaurant_obj.day}\nGood luck!")
+            self.restaurant_menu()
         

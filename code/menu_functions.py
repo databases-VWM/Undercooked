@@ -277,8 +277,9 @@ def check_day(connection, room_ID) -> int:
 
         result = cursor.fetchone()
 
+        # If room is deleted from game end, this returns -1, signaling that the game is over
         if result is None:
-            return 0
+            return -1
         
         return result[0]
     
@@ -309,9 +310,9 @@ def get_time(connection, room_id):
         result = cursor.fetchone()
 
         if result is None:
-            return ""
+            return 0
         
-        return result[0]
+        return int(result[0])
 
     finally:
         cursor.close()
@@ -328,3 +329,15 @@ def end_game_call(connection, room_id):
         cursor.rollback()
     finally:    
         cursor.close()
+        
+# Checks conditions to see if the day is over
+# Ends day if out of time or if there are no more customers to serve
+def check_day_end(connection, room_id, num_customers_unserved: int) -> bool:
+    current_time = int(time.time())
+    end_time = get_time(connection, room_id)
+    if (current_time >= end_time):
+        return True
+    elif (num_customers_unserved <= 0):
+        return True
+    else:
+        return False
