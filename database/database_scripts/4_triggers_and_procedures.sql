@@ -1,6 +1,7 @@
 DROP PROCEDURE IF EXISTS increment_day;
 DROP PROCEDURE IF EXISTS add_inventory_item;
 DROP PROCEDURE IF EXISTS remove_inventory_item;
+DROP TRIGGER IF EXISTS cleanup_deleted_room;
 
 DELIMITER //
 
@@ -67,7 +68,7 @@ END //
 
 DELIMITER ;
 
-DELIMETER //
+DELIMITER //
 -- Trigger for room cleanup when a room is deleted
 CREATE TRIGGER cleanup_deleted_room
 BEFORE DELETE ON rooms

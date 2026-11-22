@@ -3,6 +3,7 @@ from ingredient import Ingredient
 from weapon import Weapon
 from armor import Armor
 from customer import *
+import random
 
 
 # I want to make a class as If we need to access database information multiple times, it simplifies the code to be able to store it somewhere.
@@ -13,9 +14,11 @@ class Restaurant:
         self.room_id = room_id
         self.connection = connection
 
+        self.max_customers = 0
         self.money = 1000
         self.day = 0
         self.time = 0
+        self.reputation = 0
 
         self.areas_unlocked = []
 
@@ -35,7 +38,7 @@ class Restaurant:
         try:
             cursor.execute(
                 """
-                SELECT current_money, game_day, day_time
+                SELECT current_money, game_day, day_time, reputation
                 FROM rooms
                 WHERE room_id = %s
                 """,
@@ -50,6 +53,7 @@ class Restaurant:
             self.money = result[0]
             self.day = result[1]
             self.time = result[2]
+            self.reputation = result[3]
 
             # cookbook names that are unlocked
             cursor.execute(
@@ -289,4 +293,70 @@ class Restaurant:
             customer_str += self.customers[i].order.display_ingredients()
             customer_order_list.append(customer_str)
         return customer_order_list
+    
+    # Function to handle the generation of customers
+    def create_customers(self, num_players: int) -> None:
+        # Determines the amount of customers to be generated on a given day
+        self.max_customers = self.day * num_players
+        # Loops for customer generation
+        for i in range(self.max_customers):
+            new_customer: Customer
+            new_customer_name = self.make_customer_name()
+            new_customer_order = self.make_customer_order()
+            new_customer = Customer(new_customer_name, new_customer_order, self.room_id, self.connection)
+            # Checks to see if the generated customer already exists. If so, generates a new one
+            while(new_customer.still_exist()):
+                new_customer_name = self.make_customer_name()
+                new_customer_order = self.make_customer_order()
+                new_customer = Customer(new_customer_name, new_customer_order, self.room_id, self.connection)
+            # Actually pushes new customer to the database
+            new_customer.push_to_database()
             
+    def make_customer_name(self) -> str:
+        # I had Claude generate this list
+        names_list = [
+            "Liam", "Olivia", "Noah", "Emma", "Oliver", "Ava", "Elijah", "Sophia", "James", "Isabella",
+            "William", "Mia", "Benjamin", "Charlotte", "Lucas", "Amelia", "Henry", "Harper", "Theodore", "Evelyn",
+            "Jack", "Abigail", "Levi", "Emily", "Alexander", "Ella", "Mason", "Scarlett", "Ethan", "Grace",
+            "Daniel", "Chloe", "Jacob", "Victoria", "Michael", "Riley", "Logan", "Aria", "Owen", "Lily",
+            "Samuel", "Aurora", "Sebastian", "Zoey", "Caleb", "Penelope", "Ryan", "Layla", "Nathan", "Nora",
+            "Isaac", "Hazel", "Leo", "Luna", "Hudson", "Stella", "Wyatt", "Ellie", "Gabriel", "Violet",
+            "Julian", "Willow", "Dylan", "Naomi", "Asher", "Savannah", "Carter", "Brooklyn", "Jayden", "Bella",
+            "Grayson", "Claire", "Lincoln", "Skylar", "Anthony", "Lucy", "Eli", "Paisley", "Joshua", "Everly",
+            "Christopher", "Anna", "Andrew", "Caroline", "Thomas", "Nova", "Joseph", "Genesis", "Hunter", "Aaliyah",
+            "Adrian", "Kennedy", "Ezra", "Maya", "Miles", "Sarah", "Easton", "Madelyn", "Declan", "Adeline",
+            "Vincent", "Max", "Wesley"
+        ]
+        return random.choice(names_list)
+    
+    def make_customer_order(self) -> str:
+        unlocked_recipes_list = self.get_available_recipes()
+        return random.choice(unlocked_recipes_list)
+    
+    # This checks all unlocked recipes in the database for the room and returns a list of them
+    def get_available_recipes(self) -> list[str]:
+        recipe_names_list: list [str] = []
+        cursor = self.connection.cursor()
+        try:
+            # First, retrieve all recipes that don't require a cookbook
+            cursor.execute(
+                "SELECT recipe_name FROM recipes WHERE cookbook_name IS NULL"
+            )
+            no_cookbook_recipe_list = cursor.fetchall()
+            # Append to overall list
+            for db_tuple in no_cookbook_recipe_list:
+                recipe_names_list.append(db_tuple[0])
+                
+            cursor.execute(
+                "SELECT recipe_name FROM recipes NATURAL JOIN (SELECT * FROM cookbooks NATURAL JOIN unlocked_cookbooks WHERE room_id = %s) AS unlocked_cookbooks;",
+                (self.room_id, )
+            )
+            # Appends anything found that uses an unlocked cookbook
+            yes_cookbook_recipe_list = cursor.fetchall()
+            if yes_cookbook_recipe_list != None:
+                for db_tuple in yes_cookbook_recipe_list:
+                    recipe_names_list.append(db_tuple[0])
+            return recipe_names_list
+            
+        finally:
+            cursor.close()

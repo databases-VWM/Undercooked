@@ -11,8 +11,8 @@ class Customer:
         cursor = self.connection
         try: 
             cursor.execute(
-                "SELECT * FROM customers WHERE customer_name = %s AND room_id = %s",
-                (self.name, self.room_id)
+                "SELECT * FROM customers WHERE customer_name = %s AND recipe_name = %s AND room_id = %s",
+                (self.name, self.order.name, self.room_id)
             )
             
             result = cursor.fetchone()
@@ -31,6 +31,20 @@ class Customer:
             cursor.execute(
                 "DELETE FROM customers WHERE room_id = %s AND customer_name = %s",
                 (self.room_id, self.name)
+            )
+            cursor.commit()
+        except:
+            cursor.rollback()
+        finally:
+            cursor.close()
+    
+    # Pushes the customer to the database
+    def push_to_database(self):
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO customers VALUES (%s, %s, %s)",
+                (self.name, self.room_id, self.order.name)
             )
             cursor.commit()
         except:

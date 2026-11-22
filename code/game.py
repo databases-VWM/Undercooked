@@ -32,6 +32,7 @@ class GameInstance:
         self.player: Entity
         self.current_enemy: Entity
         self.is_host: bool = False
+        self.num_players: int = 1
         # list of tuples of (ingredient name, quantity)
         self.local_inventory: list[tuple[str, int]] = []
         self.current_area: Area
@@ -291,7 +292,7 @@ class GameInstance:
             messagebox.showinfo(message="You have successfully joined the game!")
             # Creates restaurant object
             self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
-            self.restaurant_menu()
+            self.next_day()
         else:
             messagebox.showerror(message="The game hasn't started yet. You will be able to join when the host starts the game")
             self.waiting_room_guest()
@@ -663,12 +664,14 @@ class GameInstance:
         else: 
             self.battle_menu()
     
+    # Checks for if the player is still alive
     def is_player_alive(self):
         if self.player.health > 0:
             self.is_enemy_slain()
         else:
             self.fallen_text()
         
+    # Retrieves checkpoint
     def get_checkpoint(self) -> int:
         checkpoint_num = 0
         try:
@@ -1048,3 +1051,18 @@ class GameInstance:
     # Logic for ending the game
     def end_game(self):
         pass
+    
+    # Menu for starting the day and associated logic
+    def next_day(self):
+        self.clear_screen()
+        if self.is_host == True:
+        # Updates number of players
+            self.num_players = len(get_all_players(self.connection, self.room_ID))
+            # Generates the customers and pushes them to the database
+            self.restaurant_obj.create_customers(self.num_players)
+        self.restaurant_obj.update_restaurant()
+        title_label = tk.Label(self.root, text=f"You begin day {self.restaurant_obj.day}!")
+        title_label.pack()
+        start_button = tk.Button(self.root, text="Start day!", command=self.restaurant_menu)
+        start_button.pack()
+        

@@ -14,6 +14,7 @@ CREATE TABLE rooms (
     current_money int not null,
     game_day int not null,
     day_time int,
+    reputation int not null,
     PRIMARY KEY (room_id)
 );
 
@@ -107,7 +108,7 @@ CREATE TABLE customers (
     customer_name varchar(100) not null,
     room_id int not null,
     recipe_name varchar(100) not null,
-    PRIMARY KEY (customer_name, room_id),
+    PRIMARY KEY (customer_name, room_id, recipe_name),
     FOREIGN KEY (room_id) references rooms,
     FOREIGN KEY (recipe_name) REFERENCES recipes
 );

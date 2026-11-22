@@ -181,7 +181,7 @@ def create_new_room(connection, room_ID, room_name):
 
     try:
         cursor.execute(
-            "INSERT INTO rooms VALUES (%s, %s, 1000, 0, NULL)",
+            "INSERT INTO rooms VALUES (%s, %s, 1000, 0, NULL, 100)",
             (room_ID, room_name)
         )
         connection.commit()
