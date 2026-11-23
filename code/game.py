@@ -1184,6 +1184,10 @@ class GameInstance:
         # Add ingredients
         add_ingredient_button = tk.Button(self.root, text="Add Ingredient", command=self.add_ingredient_menu)
         add_ingredient_button.pack()
+        # Add Ingredient to area
+        # Add ingredients
+        add_ingredient_area_button = tk.Button(self.root, text="Add Ingredient to Area", command=self.add_ingredient_menu)
+        add_ingredient_area_button.pack()
         # Add recipes
         add_recipe_button = tk.Button(self.root, text="Add Recipe")
         add_recipe_button.pack()
@@ -1203,8 +1207,7 @@ class GameInstance:
     # Menu for adding an ingredient
     def add_ingredient_menu(self):
         self.clear_screen()
-        areas_list: list[str] = get_area_names(self.connection, self.room_ID)
-        editor_title_label = tk.Button(self.root, text="Add an ingredient")
+        editor_title_label = tk.Button(self.root, text="Add an ingredient to the database")
         editor_title_label.pack()
         enter_name = tk.Label(self.root, text="Ingredient name:")
         enter_name.pack()
@@ -1212,28 +1215,264 @@ class GameInstance:
         enter_name_entry.pack()
         select_type_label = tk.Label(self.root, text="Select ingredient type")
         select_type_label.pack()
-        select_type_entry = tk.Listbox(self.root)
+        select_type_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
         select_type_entry.pack()
         select_type_entry.insert(0, *["fish", "plant", "meat"])
-        select_area_label = tk.Label(self.root, text="What area(s) should this ingredient be found in?")
-        select_area_label.pack()
-        select_area_dropdown = tk.Listbox(self.root, selectmode="multiple")
-        select_area_dropdown.insert(0, *areas_list)
-        select_area_dropdown.pack()
         
-        # add_ingredient_submit = tk.Button(self.root, text="Go!", command=lambda: self.add_ingredient_weight(enter_name_entry.get(), select_type_entry.curselection(), select_area_dropdown.curselection(), areas_list, 0))
-        # add_ingredient_submit.pack()
+        add_ingredient_submit = tk.Button(self.root, text="Go!", command=lambda: submit_editor_ingredient(self.connection, enter_name_entry.get(), select_type_entry.get(select_type_entry.curselection())))
+        add_ingredient_submit.pack()
         
         
         back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
         back_button.pack()
-    
-    # # Add weights for ingredients in different areas
-    # def add_ingredient_weight(self, ingredient_name: str, ingredient_type: str, selected_area_indexes: list[int], areas_list: list[str], i: int):
-    #     self.clear_screen()
-    #     weight_label = tk.Label(self.root, text=f"What weight would you like this ingredient to have in {areas_list[selected_area_indexes[i]]}?")
-    #     weight_label.pack()
-    #     weight_entry = tk.Entry(self.root)
-    #     weight_entry.pack()
-    #     submit_button = tk.Button(self.root, text="Submit", command=lambda: submit_editor_ingredient(self.connection, ingredient_name=ingredient_name, ingredient_type=ingredient_type, area_name=areas_list[selected_area_indexes[i]], ingredient_weight=int(weight_entry.get())))
-    #     submit_button.pack()
+
+    # Menu for adding an ingredient to an area
+    def add_ingredient_to_area(self):
+        editor_title_label = tk.Button(self.root, text="Add an ingredient to an area in the database")
+        editor_title_label.pack()
+        
+        areas_list: list[str] = get_all_area_names(self.connection)
+        ingredients_list: list[str] = get_ingredient_names(self.connection)
+        select_ingredient_label = tk.Label(self.root, text="Select an ingredient")
+        select_ingredient_label.pack()
+        
+        select_ingredient_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        select_ingredient_entry.insert(0, *ingredients_list)
+        select_ingredient_entry.pack()
+        
+        select_area_label = tk.Label(self.root, text="What area(s) should this ingredient be found in?")
+        select_area_label.pack()
+        select_area_dropdown = tk.Listbox(self.root, selectmode="single")
+        select_area_dropdown.insert(0, *areas_list)
+        select_area_dropdown.pack()
+        
+        weight_label = tk.Label(self.root, text="Insert ingredient weight for this area")
+        weight_label.pack()
+        weight_entry = tk.Entry(self.root)
+        weight_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_ingredient_area(self.connection, select_ingredient_entry.get(select_ingredient_entry.curselection()), select_area_dropdown.get(select_area_dropdown.curselection()), weight_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds an entry to the area table
+    def add_area(self):
+        editor_title_label = tk.Button(self.root, text="Add an area to the database")
+        editor_title_label.pack()
+        
+        enter_area_entry = tk.Entry(self.root)
+        enter_area_entry.pack()
+        
+        enter_area_power_entry = tk.Entry(self.root)
+        enter_area_power_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_area(self.connection, enter_area_entry.get(), enter_area_power_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds a cookbook to the database
+    def add_cookbook(self):
+        areas_list = get_all_area_names(self.connection, )
+        editor_title_label = tk.Button(self.root, text="Add a cookbook to the database")
+        editor_title_label.pack()
+        
+        cookbook_name_label = tk.Label(self.root, text="Insert cookbook name")
+        cookbook_name_label.pack()
+        
+        cookbook_name_entry = tk.Entry(self.root)
+        cookbook_name_entry.pack()
+        
+        cookbook_area_label = tk.Label(self.root, text="Select an area for the cookbook to unlock")
+        cookbook_area_label.pack()
+        
+        cookbook_area_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        cookbook_area_entry.insert(0, *areas_list)
+        cookbook_area_entry.pack()
+        
+        cookbook_price_label = tk.Label(self.root, text="Select a price for your cookbook")
+        cookbook_price_label.pack()
+        
+        cookbook_price_entry = tk.Entry(self.root)
+        cookbook_price_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_cookbook(self.connection, cookbook_name_entry.get(), cookbook_area_entry.get(cookbook_area_entry.curselection()), cookbook_price_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds a recipe to the database
+    def add_recipe(self):
+        cookbooks_list: list[str] = get_cookbook_names(self.connection)
+        editor_title_label = tk.Button(self.root, text="Add a recipe to the database")
+        editor_title_label.pack()
+        
+        recipe_name_label = tk.Label(self.root, text="Insert recipe name")
+        recipe_name_label.pack()
+        
+        recipe_name_entry = tk.Entry(self.root)
+        recipe_name_entry.pack()
+        
+        recipe_cookbook_label = tk.Label(self.root, text="Select a cookbook that your recipe is in")
+        recipe_cookbook_label.pack()
+        
+        recipe_cookbook_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        recipe_cookbook_entry.insert(0, *cookbooks_list)
+        recipe_cookbook_entry.pack()
+        
+        recipe_price_label = tk.Label(self.root, text="How much should your recipe be sold for?")
+        recipe_price_label.pack()
+        
+        recipe_price_entry = tk.Entry(self.root)
+        recipe_price_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_recipe(self.connection, recipe_name_entry.get(), recipe_cookbook_entry.get(recipe_cookbook_entry.curselection()), recipe_price_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds a required ingredient to a recipe
+    def add_recipe_ingredient(self):
+        recipes_list: list[str] = get_recipe_names(self.connection)
+        ingredients_list: list[str] = get_ingredient_names(self.connection)
+        editor_title_label = tk.Button(self.root, text="Add an ingredient to a recipe in the database")
+        editor_title_label.pack()
+        
+        recipe_name_label = tk.Label(self.root, text="Select recipe name")
+        recipe_name_label.pack()
+        
+        recipe_name_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        recipe_name_entry.insert(0, *recipes_list)
+        recipe_name_entry.pack()
+        
+        ingredient_name_label = tk.Label(self.root, text="Select ingredient name")
+        ingredient_name_label.pack()
+        
+        ingredient_name_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        ingredient_name_entry.insert(0, *ingredients_list)
+        ingredient_name_entry.pack()
+        
+        quantity_label = tk.Label(self.root, text="Quantity")
+        quantity_label.pack()
+        
+        quantity_input = tk.Entry(self.root)
+        quantity_input.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_recipe_ingredient(self.connection, recipe_name_entry.get(recipe_name_entry.curselection()), ingredient_name_entry.get(ingredient_name_entry.curselection()), quantity_input.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds an enemy to the database
+    def add_enemy(self):
+        is_boss_boolean = tk.BooleanVar()
+        
+        editor_title_label = tk.Button(self.root, text="Add an enemy to the database")
+        editor_title_label.pack()
+        
+        enemy_name_label = tk.Label(self.root, text="Insert enemy name")
+        enemy_name_label.pack()
+        
+        enemy_name_entry = tk.Entry(self.root)
+        enemy_name_entry.pack()
+        
+        enemy_health_label = tk.Label(self.root, text="Insert enemy health")
+        enemy_health_label.pack()
+        
+        enemy_health_input = tk.Entry(self.root)
+        enemy_health_input.pack()
+        
+        enemy_defense_label = tk.Label(self.root, text="Insert enemy defense")
+        enemy_defense_label.pack()
+        
+        enemy_defense_entry = tk.Entry(self.root)
+        enemy_defense_entry.pack()
+        
+        enemy_is_boss = tk.Label(self.root, text="Is this enemy a boss")
+        enemy_is_boss.pack()
+        
+        enemy_is_boss_entry = tk.Checkbutton(self.root, variable=is_boss_boolean)
+        enemy_is_boss_entry.pack()
+        
+        enemy_desc_label = tk.Label(self.root, text="Enter enemy description")
+        enemy_desc_label.pack()
+        
+        enemy_desc_entry = tk.Entry(self.root)
+        enemy_desc_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_enemy(self.connection, enemy_name_entry.get(), enemy_health_input.get(), enemy_defense_entry.get(), is_boss_boolean.get(), enemy_desc_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds attack dice to an enemy
+    def add_enemy_attack_dice(self):
+        enemies_list: list[str] = get_enemy_names(self.connection)
+        editor_title_label = tk.Button(self.root, text="Add an enemy's attack dice to the database")
+        editor_title_label.pack()
+        
+        enemy_name_label = tk.Label(self.root, text="Select enemy name")
+        enemy_name_label.pack()
+        
+        enemy_name_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        enemy_name_entry.insert(0, *enemies_list)
+        enemy_name_entry.pack()
+        
+        enemy_num_dice_label = tk.Label(self.root, text="Input number of specified die")
+        enemy_num_dice_label.pack()
+        
+        enemy_num_dice_entry = tk.Entry(self.root)
+        enemy_num_dice_entry.pack()
+        
+        enemy_dice_max_label = tk.Label(self.root, text="Enter the amount of sides on this attack die")
+        enemy_dice_max_label.pack()
+        
+        enemy_dice_sides = tk.Entry(self.root)
+        enemy_dice_sides.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_enemy_attack_dice(self.connection, enemy_name_entry.get(enemy_name_entry.curselection()), enemy_num_dice_entry.get(), enemy_dice_sides.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        
+    # Adds an enemy to an area
+    def add_enemy_to_area(self):
+        areas_list: list[str] = get_all_area_names(self.connection)
+        enemies_list: list[str] = get_enemy_names(self.connection)
+        editor_title_label = tk.Button(self.root, text="Add an enemy's attack dice to the database")
+        editor_title_label.pack()
+        
+        area_name_label = tk.Label(self.root, text="Input area name")
+        area_name_label.pack()
+        
+        area_name_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        area_name_entry.insert(0, *areas_list)
+        area_name_entry.pack()
+        
+        enemy_name_label = tk.Label(self.root, text="Input enemy name")
+        enemy_name_label.pack()
+        
+        enemy_name_entry = tk.Listbox(self.root, selectmode=tk.SINGLE)
+        enemy_name_entry.insert(0, *enemies_list)
+        enemy_name_entry.pack()
+        
+        enemy_weight_label = tk.Label(self.root, text="Input enemy weight")
+        enemy_weight_label.pack()
+        
+        enemy_weight_entry = tk.Entry(self.root)
+        enemy_weight_entry.pack()
+        
+        submit_button = tk.Button(self.root, text="Go!", command=lambda: submit_editor_add_enemy_to_area(self.connection, area_name_entry.get(area_name_entry.curselection()), enemy_name_entry.get(enemy_name_entry.curselection()), enemy_weight_entry.get()))
+        submit_button.pack()
+        
+        back_button = tk.Button(self.root, text="Back", command=self.database_editor_main_menu)
+        back_button.pack()
+        

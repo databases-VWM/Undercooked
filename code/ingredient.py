@@ -1,5 +1,4 @@
 from functions import *
-from ingredient import *
 import mysql.connector
 
 # Allows for dynamic creation of an object from the database
@@ -140,16 +139,31 @@ def harvest_item(ingredients_drop_list: list[tuple[str, int]], inventory: list[t
         if not item_found:
             inventory.append((node_ingredient, 1))
     return node_ingredient
-
-# Retrieves the ID of an ingredient from its name
-def get_ingredient_id_from_name(connection, item_name) -> int:
+        
+def get_ingredient_name_from_id(connection, item_id) -> str:
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "SELECT ingredient_id FROM ingredients WHERE ingredient_name = %s",
-            (item_name, )
+            "SELECT ingredient_name FROM ingredients WHERE ingredient_id = %s",
+            (item_id, )
         )
-        ingredient_tuple = cursor.fetchone()
-        return ingredient_tuple[0]
+        result = cursor.fetchone()
+        return result[0]
+    finally:
+        cursor.close()
+        
+# Returns the name of every ingredient in the database
+def get_ingredient_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    ingredients_names_list: list[str] = []
+    try:
+        cursor.execute(
+            "SELECT ingredient_name FROM ingredients"
+        )
+        ingredients_tuples = cursor.fetchall()
+        for ingredient in ingredients_tuples:
+            ingredients_names_list.append(ingredient[0])
+        
+        return ingredients_names_list
     finally:
         cursor.close()

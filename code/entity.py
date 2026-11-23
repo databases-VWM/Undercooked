@@ -135,3 +135,17 @@ def output_entity_stats(entity: Entity, extended: bool = False) -> list[str]:
     entity_array.append(f"\"{entity.description}\"")
     return entity_array
         
+# Returns the names of all enemies
+def get_enemy_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    enemies_names_list: list[str] = []
+    try:
+        cursor.execute(
+            "SELECT enemy_name FROM enemies"
+        )
+        result = cursor.fetchall()
+        for enemy in result:
+            enemies_names_list.append(enemy[0])
+        return enemies_names_list
+    finally:cursor.close()
+    

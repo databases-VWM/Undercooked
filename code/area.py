@@ -235,6 +235,18 @@ def get_area_names(connection, room_id) -> list[str]:
     finally:
         cursor.close()
         
-    
-    
-    
+def get_all_area_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    areas_list: list[str] = []
+    try:
+        cursor.execute(
+            """
+            SELECT area_name FROM areas;
+            """
+        )
+        area_tuples = cursor.fetchall()
+        for row in area_tuples:
+            areas_list.append(row[0])
+        return areas_list
+    finally:
+        cursor.close()

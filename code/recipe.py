@@ -47,3 +47,18 @@ class Recipe:
             if i != len(self.raw_ingredients) - 1:
                 ingredients_str += "\n\t"
         return ingredients_str
+
+# Retrieves all recipe names
+def get_recipe_names(connection) -> list[str]:
+    cursor = connection.cursor()
+    recipes_list: list[str] = []
+    try:
+        cursor.execute(
+            "SELECT recipe_name FROM recipes"
+        )
+        result = cursor.fetchall()
+        for res_tuple in result:
+            recipes_list.append(res_tuple[0])
+        return recipes_list
+    finally:
+        cursor.close()
