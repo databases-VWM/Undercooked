@@ -44,7 +44,7 @@ class GameInstance:
         self.armor: Armor = Armor("Chef's Garbs")
         
         # Constant for deciding how many seconds long each day should be
-        self.TIME_CONSTRAINT_SECONDS = 60
+        self.TIME_CONSTRAINT_SECONDS = 120
         # Scalar basis for how much daily rent is
         self.RENT_SCALAR = 10
 
@@ -742,7 +742,6 @@ class GameInstance:
     
     # Function that actually handles cooking an order
     def cook_order(self, selected_order_index):
-        print(selected_order_index) # debugging
         if selected_order_index == None:
             messagebox.showwarning(message="You haven't select an order!")
             self.cook_menu()
@@ -756,7 +755,7 @@ class GameInstance:
                 # Iterates through each type of item
                 for i in range(len(customer_order.raw_ingredients)):
                     temp_type_id = 1
-                    temp_ingredient_id: int = get_ingredient_id_from_name(self.connection, customer_order.raw_ingredients[i][0])
+                    temp_ingredient_id: int = int(customer_order.raw_ingredients[i][0])
                     temp_ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
                     temp_tuple = (temp_type_id, temp_ingredient_id, temp_ingredient_quantity)
                     ingredients_list.append(temp_tuple)
@@ -769,7 +768,7 @@ class GameInstance:
                 else:
                     current_customer.delete()
                     self.restaurant_obj.update_restaurant()
-                    messagebox.showinfo("Order fulfilled!")
+                    messagebox.showinfo(message="Order fulfilled!")
                     self.cook_menu()
             else:
                 messagebox.showerror(message="That customer's order has already been fulfilled!")

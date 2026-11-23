@@ -150,6 +150,6 @@ def get_ingredient_id_from_name(connection, item_name) -> int:
             (item_name, )
         )
         ingredient_tuple = cursor.fetchone()
-        return ingredient_tuple
+        return ingredient_tuple[0]
     finally:
         cursor.close()

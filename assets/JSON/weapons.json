@@ -15,9 +15,9 @@
     },
     "Frying Pan": {
         "name": "Frying Pan",
-        "attack_dice": [[3, 4]],
+        "attack_dice": [[1, 2]],
         "modifier": 1,
-        "price": 50,
+        "price": 10,
         "item_id": 1
     }
 }
