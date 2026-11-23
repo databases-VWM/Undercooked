@@ -140,14 +140,6 @@ INSERT INTO enemies VALUES (
     "He's literally the biggest of craws"
 );
 
-INSERT INTO enemies VALUES (
-    "Vincent's Procrastination",
-    100,
-    69,
-    False,
-    "Maybe exists"
-);
-
 -- enemy_attack_dice
 INSERT INTO enemy_attack_dice VALUES (
     "The Big Craw", 
@@ -155,24 +147,6 @@ INSERT INTO enemy_attack_dice VALUES (
     4
 );
 
-INSERT INTO enemy_attack_dice VALUES (
-    "Vincent's Procrastination", 
-    11, 
-    11
-);
-
--- area_enemies
-INSERT INTO area_enemies VALUES (
-    "Blasted Beach",
-    "Vincent's Procrastination",
-    2
-);
-
-INSERT INTO area_enemies VALUES (
-    "Craw's Domain",
-    "Vincent's Procrastination",
-    1
-);
 
 INSERT INTO area_enemies VALUES (
     "Craw's Domain",
