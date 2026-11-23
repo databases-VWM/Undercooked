@@ -1186,25 +1186,25 @@ class GameInstance:
         add_ingredient_button.pack()
         # Add Ingredient to area
         # Add ingredients
-        add_ingredient_area_button = tk.Button(self.root, text="Add Ingredient to Area", command=self.add_ingredient_menu)
+        add_ingredient_area_button = tk.Button(self.root, text="Add Ingredient to Area", command=self.add_ingredient_to_area)
         add_ingredient_area_button.pack()
         # Add recipes
-        add_recipe_button = tk.Button(self.root, text="Add Recipe")
+        add_recipe_button = tk.Button(self.root, text="Add Recipe", command=self.add_recipe)
         add_recipe_button.pack()
         # Add ingredient to recipe
         add_ingredient_to_recipe = tk.Button(self.root, text="Add Ingredient to a Recipe", command=self.add_recipe_ingredient)
         add_ingredient_to_recipe.pack()
         # Add cookbooks
-        add_cookbook_button = tk.Button(self.root, text="Add Cookbook")
+        add_cookbook_button = tk.Button(self.root, text="Add Cookbook", command=self.add_cookbook)
         add_cookbook_button.pack()
         # Add enemies
-        add_enemy_button = tk.Button(self.root, text="Add Enemy")
+        add_enemy_button = tk.Button(self.root, text="Add Enemy", command=self.add_enemy)
         add_enemy_button.pack()
         # Add enemy attack dice
         add_enemy_attack_dice_button = tk.Button(self.root, text="Add Attack Dice to Enemy", command=self.add_enemy_attack_dice)
         add_enemy_attack_dice_button.pack()
         # Add areas
-        add_area_button = tk.Button(self.root, text="Add Area")
+        add_area_button = tk.Button(self.root, text="Add Area", command=self.add_area)
         add_area_button.pack()
         # Add ingredient to area
         add_ingredient_to_area_button = tk.Button(self.root, text="Add Ingredient to an Area", command=self.add_ingredient_to_area)
@@ -1237,6 +1237,7 @@ class GameInstance:
 
     # Menu for adding an ingredient to an area
     def add_ingredient_to_area(self):
+        self.clear_screen()
         editor_title_label = tk.Button(self.root, text="Add an ingredient to an area in the database")
         editor_title_label.pack()
         
@@ -1268,11 +1269,18 @@ class GameInstance:
         
     # Adds an entry to the area table
     def add_area(self):
+        self.clear_screen()
         editor_title_label = tk.Button(self.root, text="Add an area to the database")
         editor_title_label.pack()
         
+        enter_area_label = tk.Label(self.root, text="Insert area name")
+        enter_area_label.pack()
+        
         enter_area_entry = tk.Entry(self.root)
         enter_area_entry.pack()
+        
+        enter_area_power_label = tk.Label(self.root, text="Enter area recommended power")
+        enter_area_power_label.pack()
         
         enter_area_power_entry = tk.Entry(self.root)
         enter_area_power_entry.pack()
@@ -1285,6 +1293,7 @@ class GameInstance:
         
     # Adds a cookbook to the database
     def add_cookbook(self):
+        self.clear_screen()
         areas_list = get_all_area_names(self.connection, )
         editor_title_label = tk.Button(self.root, text="Add a cookbook to the database")
         editor_title_label.pack()
@@ -1316,6 +1325,7 @@ class GameInstance:
         
     # Adds a recipe to the database
     def add_recipe(self):
+        self.clear_screen()
         cookbooks_list: list[str] = get_cookbook_names(self.connection)
         editor_title_label = tk.Button(self.root, text="Add a recipe to the database")
         editor_title_label.pack()
@@ -1347,6 +1357,7 @@ class GameInstance:
         
     # Adds a required ingredient to a recipe
     def add_recipe_ingredient(self):
+        self.clear_screen()
         recipes_list: list[str] = get_recipe_names(self.connection)
         ingredients_list: list[str] = get_ingredient_names(self.connection)
         editor_title_label = tk.Button(self.root, text="Add an ingredient to a recipe in the database")
@@ -1380,6 +1391,7 @@ class GameInstance:
         
     # Adds an enemy to the database
     def add_enemy(self):
+        self.clear_screen()
         is_boss_boolean = tk.BooleanVar()
         
         editor_title_label = tk.Button(self.root, text="Add an enemy to the database")
@@ -1423,6 +1435,7 @@ class GameInstance:
         
     # Adds attack dice to an enemy
     def add_enemy_attack_dice(self):
+        self.clear_screen()
         enemies_list: list[str] = get_enemy_names(self.connection)
         editor_title_label = tk.Button(self.root, text="Add an enemy's attack dice to the database")
         editor_title_label.pack()
@@ -1454,6 +1467,7 @@ class GameInstance:
         
     # Adds an enemy to an area
     def add_enemy_to_area(self):
+        self.clear_screen()
         areas_list: list[str] = get_all_area_names(self.connection)
         enemies_list: list[str] = get_enemy_names(self.connection)
         editor_title_label = tk.Button(self.root, text="Add an enemy's attack dice to the database")
