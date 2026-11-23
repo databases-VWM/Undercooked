@@ -263,6 +263,7 @@ class GameInstance:
     # Starts the game (database setup from the host)
     def start_day(self):
         increment_day(self.connection, self.room_ID)
+        give_starting_cookbooks(self.connection, self.room_ID)
         self.restaurant_obj = Restaurant(self.room_name, self.room_ID, self.connection)
         self.restaurant_obj.update_restaurant()
         self.restaurant_obj.create_customers(self.num_players)

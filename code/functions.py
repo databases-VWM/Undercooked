@@ -206,3 +206,22 @@ def submit_editor_add_enemy_to_area(connection, area_name, enemy_name, weight):
         messagebox.showerror(message="Something went wrong. Nothing was added to the database")
     finally:
         cursor.close()
+    
+# Gives starting cookbooks to the players    
+def give_starting_cookbooks(connection, room_id):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO unlocked_cookbooks VALUES ('Beachside Bites', %s)",
+            (room_id, )
+        )
+        
+        cursor.execute(
+            "INSERT INTO unlocked_cookbooks VALUES ('Craw''s Cookbook', %s)",
+            (room_id, )
+        )
+        connection.commit()
+    except:
+        connection.rollback()
+    finally:
+        cursor.close()
