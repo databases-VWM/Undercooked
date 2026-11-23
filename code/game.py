@@ -1191,15 +1191,24 @@ class GameInstance:
         # Add recipes
         add_recipe_button = tk.Button(self.root, text="Add Recipe")
         add_recipe_button.pack()
+        # Add ingredient to recipe
+        add_ingredient_to_recipe = tk.Button(self.root, text="Add Ingredient to a Recipe", command=self.add_recipe_ingredient)
+        add_ingredient_to_recipe.pack()
         # Add cookbooks
         add_cookbook_button = tk.Button(self.root, text="Add Cookbook")
         add_cookbook_button.pack()
         # Add enemies
         add_enemy_button = tk.Button(self.root, text="Add Enemy")
         add_enemy_button.pack()
+        # Add enemy attack dice
+        add_enemy_attack_dice_button = tk.Button(self.root, text="Add Attack Dice to Enemy", command=self.add_enemy_attack_dice)
+        add_enemy_attack_dice_button.pack()
         # Add areas
         add_area_button = tk.Button(self.root, text="Add Area")
         add_area_button.pack()
+        # Add ingredient to area
+        add_ingredient_to_area_button = tk.Button(self.root, text="Add Ingredient to an Area", command=self.add_ingredient_to_area)
+        add_ingredient_to_area_button.pack()
         # Quit
         back_button = tk.Button(self.root, text="Back", command=self.main_menu)
         back_button.pack()
