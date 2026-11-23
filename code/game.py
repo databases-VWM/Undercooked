@@ -44,7 +44,7 @@ class GameInstance:
         self.armor: Armor = Armor("Chef's Garbs")
         
         # Constant for deciding how many seconds long each day should be
-        self.TIME_CONSTRAINT_SECONDS = 30
+        self.TIME_CONSTRAINT_SECONDS = 120
         # Scalar basis for how much daily rent is
         self.RENT_SCALAR = 10
 
@@ -255,7 +255,7 @@ class GameInstance:
         IP_address_button.pack()
         players_list = tk.Label(self.root, textvariable=current_players_list)
         players_list.pack()
-        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=lambda: current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID))))
+        update_players_list_button = tk.Button(self.root, text="Refresh Player List", command=lambda: [current_players_list.set(setup_for_stringvar(get_all_players(self.connection, self.room_ID))), self.waiting_room_host()])
         update_players_list_button.pack()
         start_button = tk.Button(self.root, text="Start Game", command=self.start_day)
         start_button.pack()
@@ -705,30 +705,30 @@ class GameInstance:
     # The menu for interacting with cooking and fulfilling orders of customers
     def cook_menu(self):
         self.clear_screen()
-        # Updates customer list
-        self.restaurant_obj.update_customer_orders_from_database()
+        # Updates everything for the restaurant
+        self.restaurant_obj.update_restaurant()
         # Sets up for displaying ingredients in inventory
         ingredients_list = print_ingredients_full(self.restaurant_obj.access_database_inventory_filter_type_id(1))
         
         # Frames
         orders_frame = tk.Frame(self.root)
-        orders_frame.pack(side=tk.LEFT, expand=True)
+        orders_frame.pack(side=tk.LEFT, expand=True, fill="both")
         
         ingredients_frame = tk.Frame(self.root)
-        ingredients_frame.pack(side=tk.RIGHT, expand=True)
+        ingredients_frame.pack(side=tk.RIGHT, expand=True, fill="both")
         
         buttons_frame = tk.Frame(self.root)
-        buttons_frame.pack(side=tk.BOTTOM, expand=True)
+        buttons_frame.pack(side=tk.BOTTOM, expand=True, fill="both")
         
         # Orders GUI
-        orders_interface = tk.Listbox(orders_frame, selectmode="single")
-        orders_interface.pack()
+        orders_interface = tk.Listbox(orders_frame, selectmode=tk.SINGLE)
         # Write a query to bring down the names of the requested orders
         orders_interface.insert(0, *self.restaurant_obj.display_customer_order_list())
+        orders_interface.pack()
         
         # Ingredients Inventory GUI
-        ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}")
-        ingredients_display.pack()
+        ingredients_display = tk.Label(ingredients_frame, text=f"{ingredients_list}") 
+        ingredients_display.pack(side="top", expand=True, fill="both")
         
         # Buttons GUI
         back_button = tk.Button(buttons_frame, text="Back", command=self.restaurant_menu)
@@ -737,39 +737,42 @@ class GameInstance:
         # Refreshes the page
         refresh_button = tk.Button(buttons_frame, text="Refresh", command=self.cook_menu)
         refresh_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
-        
-        cook_button = tk.Button(buttons_frame, text="Cook selected order meal", command=lambda: self.cook_order(orders_interface.get(orders_interface.curselection())))
+        cook_button = tk.Button(buttons_frame, text="Cook selected order meal", command=lambda: self.cook_order(orders_interface.curselection()[0]))
         cook_button.pack(side=tk.LEFT, expand=True, fill="both", padx=10)
     
     # Function that actually handles cooking an order
-    def cook_order(self, selected_order_index: int):
-        self.clear_screen()
-        current_customer: Customer = self.restaurant_obj.customers[selected_order_index]
-        customer_order: Recipe = current_customer.order
-        ingredients_list: list[tuple[int, int, int]] = []
-        if current_customer.still_exist() == True:
-            # Setup to send this data in remove item
-            # Iterates through each type of item
-            for i in range(len(customer_order.raw_ingredients)):
-                temp_type_id = 1
-                temp_ingredient_id: int = int(customer_order.raw_ingredients[i][0])
-                temp_ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
-                temp_tuple = (temp_type_id, temp_ingredient_id, temp_ingredient_quantity)
-                ingredients_list.append(temp_tuple)
-                
-            # Checks if this order can be cooked based on the user's ingredients
-            successful_cook = self.restaurant_obj.remove_item(ingredients_list)
-            if successful_cook != True:
-                messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
-                self.cook_menu()
-            else:
-                current_customer.delete()
-                self.restaurant_obj.update_restaurant()
-                messagebox.showinfo("Order fulfilled!")
-                self.cook_menu()
-        else:
-            messagebox.showerror(message="That customer's order has already been fulfilled!")
+    def cook_order(self, selected_order_index):
+        if selected_order_index == None:
+            messagebox.showwarning(message="You haven't select an order!")
             self.cook_menu()
+        else:
+            self.clear_screen()
+            current_customer: Customer = self.restaurant_obj.customers[selected_order_index]
+            customer_order: Recipe = current_customer.order
+            ingredients_list: list[tuple[int, int, int]] = []
+            if current_customer.still_exist() == True:
+                # Setup to send this data in remove item
+                # Iterates through each type of item
+                for i in range(len(customer_order.raw_ingredients)):
+                    temp_type_id = 1
+                    temp_ingredient_id: int = int(customer_order.raw_ingredients[i][0])
+                    temp_ingredient_quantity: int = int(customer_order.raw_ingredients[i][1])
+                    temp_tuple = (temp_type_id, temp_ingredient_id, temp_ingredient_quantity)
+                    ingredients_list.append(temp_tuple)
+                    
+                # Checks if this order can be cooked based on the user's ingredients
+                successful_cook = self.restaurant_obj.remove_item(ingredients_list)
+                if successful_cook != True:
+                    messagebox.showerror(message="Check your supply, chef. You don't have the necessary ingredients to cook that!")
+                    self.cook_menu()
+                else:
+                    current_customer.delete()
+                    self.restaurant_obj.update_restaurant()
+                    messagebox.showinfo(message="Order fulfilled!")
+                    self.cook_menu()
+            else:
+                messagebox.showerror(message="That customer's order has already been fulfilled!")
+                self.cook_menu()
             
     # Allows for equipping weapons and armor
     def equipment_menu(self):
@@ -1093,9 +1096,13 @@ class GameInstance:
         self.clear_screen()
         rent: int = self.RENT_SCALAR * self.num_players * self.restaurant_obj.day
         self.restaurant_obj.update_restaurant()
+        #Set default value
+        didnt_die = True
         if self.is_host == True:
-        # Host setup stuff
+            # Host setup stuff
             didnt_die = self.next_day_setup_host()
+        else:
+            self.next_day_non_host()
         if didnt_die == True:
             self.next_day_screen(rent)
         # If you lose during post day calcs:
@@ -1104,6 +1111,20 @@ class GameInstance:
             lost_label.pack()
             accept_defeat_button = tk.Button(self.root, text="Time to go back to working fast food...", command=self.quit_game)
             accept_defeat_button.pack()
+            
+    def next_day_non_host(self):
+        self.clear_screen()
+        if check_day(self.connection, self.room_ID) == -1:
+            lost_label = tk.Label(self.root, text="You couldn't pay rent, or ran out of reputation this day. Your restaurant has been shut down and purchased by your mean uncle, Gustave.\n You're now unemployed. Go get a job")
+            lost_label.pack()
+            accept_defeat_button = tk.Button(self.root, text="Time to go back to working fast food...", command=self.quit_game)
+            accept_defeat_button.pack()
+        else:
+            waiting_label = tk.Label(self.root, text="The day is over. Please wait for the host to start the next day")
+            waiting_label.pack()
+            next_day_button = tk.Button(self.root, text="Next Day", command=self.host_ready_for_next_day)
+            next_day_button.pack()
+            
             
     def next_day_screen(self, rent):
         self.clear_screen()

@@ -219,7 +219,13 @@ def get_area_names(connection, room_id) -> list[str]:
     areas_list: list[str] = []
     try:
         cursor.execute(
-            "SELECT * FROM cookbooks NATURAL JOIN unlocked_cookbooks NATURAL RIGHT JOIN areas WHERE room_id = %s OR room_id is NULL",
+            """
+            SELECT *
+            FROM (cookbooks NATURAL RIGHT JOIN areas) 
+            WHERE cookbook_name is NULL 
+            OR cookbook_name 
+            IN (SELECT cookbook_name FROM unlocked_cookbooks WHERE room_id = %s)
+            """,
             (room_id, )
         )
         area_tuples = cursor.fetchall()

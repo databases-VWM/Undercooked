@@ -327,8 +327,9 @@ def end_game_call(connection, room_id):
             "DELETE FROM rooms WHERE room_id = %s",
             (room_id)
         )
+        connection.commit()
     except:
-        cursor.rollback()
+        connection.rollback()
     finally:    
         cursor.close()
         

@@ -292,6 +292,8 @@ class Restaurant:
             )
             
             customer_tuples = cursor.fetchall()
+            # Resets list of customers before re-pulling
+            self.customers = []
             for customer in customer_tuples:
                 self.customers.append(Customer(customer[0], customer[2], customer[1], self.connection))
         finally:
