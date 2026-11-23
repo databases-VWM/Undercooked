@@ -1133,11 +1133,11 @@ class GameInstance:
         title_label.pack()
         rent_label = tk.Label(self.root, text=f"You paid {rent} in rent\nYou have {self.restaurant_obj.money} money left and {self.restaurant_obj.reputation} reputation")
         rent_label.pack()
+        start_button = tk.Button(self.root, text="Start day!", command=self.host_ready_for_next_day)
+        start_button.pack()
         if self.is_host == True:
             end_game_button = tk.Button(self.root, text="End the game", command=self.end_game)
             end_game_button.pack()
-        start_button = tk.Button(self.root, text="Start day!", command=self.host_ready_for_next_day)
-        start_button.pack()
         
     # Host-only logic for setting up the next day        
     def next_day_setup_host(self) -> bool:
